@@ -99,6 +99,12 @@ public:
 protected:
   void LogBytes(std::span<std::byte> data);
 
+  //!
+  void HandleClientConnect(ClientId clientId);
+
+  //!
+  void HandleClientDisconnect(ClientId clientId);
+
   //! Splits the incoming raw packet data into its packet ID, size and payload.
   //!
   //! @param clientId Client ID.
@@ -128,102 +134,46 @@ protected:
   std::unordered_map<PacketId, RawPacketHandler> _handlers{};
   std::unordered_map<ClientId, PacketClientClass> _clients{};
 
+
+private:
+  //!
+  void HandleClientRead(
+    ClientId clientId,
+    asio::streambuf& readBuffer);
+
+  //!
+  void HandleClientWrite(
+    ClientId clientId,
+    asio::streambuf& writeBuffer);
+
+
   Server _server;
 };
 
 template<typename PacketId, class PacketClientClass>
-PacketServer<PacketId, PacketClientClass>::PacketServer(std::string name)
+PacketServer<PacketId, PacketClientClass>::PacketServer(std::string name) : _server(
+  [this](ClientId clientId)
+  {
+    HandleClientConnect(clientId);
+  },
+  [this](ClientId clientId)
+  {
+    HandleClientDisconnect(clientId);
+  },
+  [this](
+    ClientId clientId,
+    asio::streambuf& readBuffer)
+  {
+    HandleClientRead(clientId, readBuffer);
+  },
+  [this](
+    ClientId clientId,
+    asio::streambuf& writeBuffer)
+  {
+    HandleClientWrite(clientId, writeBuffer);
+  })
 {
   _name = std::move(name);
-  _server.SetOnConnectHandler([this](ClientId clientId)
-  {
-    spdlog::info("Client {} connected to {}", clientId, this->_name);
-    auto& client = _server.GetClient(clientId);
-    auto& packetClient = _clients[clientId];
-
-    // Set the read handler for the new client.
-    client.SetReadHandler(
-      [this, clientId, &packetClient](asio::streambuf& readBuffer)
-      {
-        SourceStream packetStream({
-          static_cast<const std::byte*>(readBuffer.data().data()),
-          readBuffer.data().size()
-        });
-
-        // Flag indicates whether to consume the bytes
-        // when the read handler exits.
-        bool consumeBytesOnExit = true;
-
-        // Defer the consumption of the bytes from the read buffer,
-        // until the end of the function.
-        const Deferred deferredConsume([&]()
-        {
-          if (!consumeBytesOnExit)
-            return;
-
-          // Consume the amount of bytes that were
-          // read from the packet stream.
-          readBuffer.consume(packetStream.GetCursor());
-        });
-
-        PacketId packetId;
-        size_t payloadDataSize;
-        std::array<std::byte, MaxPayloadDataSize> payloadDataBuffer;
-        try
-        {
-          std::tie(packetId, payloadDataSize, payloadDataBuffer) = this->PreprocessReceivedPacket(clientId, packetClient, packetStream);
-        }
-        catch(const std::overflow_error& e)
-        {
-          // If all the required packet data are not buffered,
-          // wait for them to arrive.
-          // Indicate that the bytes read until now
-          // shouldn't be consumed, as we expect more data to arrive.
-          consumeBytesOnExit = false;
-          return;
-        }
-
-        if(!this->IsMuted(packetId))
-        {
-          spdlog::debug("Received packet '{}', Length: {},",
-            this->GetPacketName(packetId),
-            payloadDataSize);
-          this->LogBytes({payloadDataBuffer.data(), payloadDataSize});
-        }
-
-        // Find the handler of the packet.
-        const auto handlerIter = _handlers.find(packetId);
-        if (handlerIter == _handlers.cend())
-        {
-          if(!this->IsMuted(packetId))
-          {
-            spdlog::warn("Unhandled packet '{}', Length: {}",
-              this->GetPacketName(packetId),
-              payloadDataSize);
-          }
-        }
-        else
-        {
-          const auto& handler = handlerIter->second;
-          // Handler validity is checked when registering.
-          assert(handler);
-
-          // Call the handler.
-          SourceStream packetDataStream = SourceStream({payloadDataBuffer.begin(), payloadDataSize});
-          handler(clientId, packetDataStream);
-        
-          // There shouldn't be any left-over data in the stream.
-          assert(packetDataStream.GetCursor() == packetDataStream.Size());
-
-          if(!this->IsMuted(packetId))
-          {
-            spdlog::debug("Handled packet '{}', Length: {}",
-                GetPacketName(packetId),
-                payloadDataSize);
-          }
-        }
-      });
-  });
 }
 
 template<typename PacketId, class PacketClientClass>
@@ -280,34 +230,6 @@ void PacketServer<PacketId, PacketClientClass>::QueuePacket(
 }
 
 template<typename PacketId, class PacketClientClass>
-std::tuple<PacketId, size_t, std::array<std::byte, MaxPayloadDataSize>> PacketServer<PacketId, PacketClientClass>::PreprocessReceivedPacket(ClientId clientId, PacketClientClass& client, SourceStream& packetStream)
-{
-  // Implementación específica de la subclase
-  return {};
-}
-
-template<typename PacketId, class PacketClientClass>
-size_t PacketServer<PacketId, PacketClientClass>::WriteOutgoingPacket(PacketId packetId, PacketSupplier supplier, SinkStream& packetSink)
-{
-  // Implementación específica de la subclase
-  return 0;
-}
-
-template<typename PacketId, class PacketClientClass>
-std::string_view PacketServer<PacketId, PacketClientClass>::GetPacketName(PacketId packetId)
-{
-  // Implementación específica de la subclase
-  return {};
-}
-
-template<typename PacketId, class PacketClientClass>
-bool PacketServer<PacketId, PacketClientClass>::IsMuted(PacketId id)
-{
-  // Implementación específica de la subclase
-  return false;
-}
-
-template<typename PacketId, class PacketClientClass>
 void PacketServer<PacketId, PacketClientClass>::LogBytes(std::span<std::byte> data)
 {
   if(data.size() == 0) {
@@ -346,6 +268,143 @@ void PacketServer<PacketId, PacketClientClass>::LogBytes(std::span<std::byte> da
   }
   printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
 }
+
+
+//!
+template<typename PacketId, class PacketClientClass>
+void PacketServer<PacketId, PacketClientClass>::HandleClientConnect(ClientId clientId)
+{
+  spdlog::info("Client {} connected to {}", clientId, _name);
+}
+
+//!
+template<typename PacketId, class PacketClientClass>
+void PacketServer<PacketId, PacketClientClass>::HandleClientDisconnect(ClientId clientId)
+{
+  spdlog::info("Client {} disconnected from {}", clientId, _name);
+}
+
+template<typename PacketId, class PacketClientClass>
+std::tuple<PacketId, size_t, std::array<std::byte, MaxPayloadDataSize>> PacketServer<PacketId, PacketClientClass>::PreprocessReceivedPacket(ClientId clientId, PacketClientClass& client, SourceStream& packetStream)
+{
+  // Subclasses must implement this method.
+  return {};
+}
+
+template<typename PacketId, class PacketClientClass>
+size_t PacketServer<PacketId, PacketClientClass>::WriteOutgoingPacket(PacketId packetId, PacketSupplier supplier, SinkStream& packetSink)
+{
+  // Subclasses must implement this method.
+  return 0;
+}
+
+template<typename PacketId, class PacketClientClass>
+std::string_view PacketServer<PacketId, PacketClientClass>::GetPacketName(PacketId packetId)
+{
+  // Subclasses must implement this method.
+  return {};
+}
+
+template<typename PacketId, class PacketClientClass>
+bool PacketServer<PacketId, PacketClientClass>::IsMuted(PacketId id)
+{
+  // Subclasses must implement this method.
+  return false;
+}
+
+//!
+template<typename PacketId, class PacketClientClass>
+void PacketServer<PacketId, PacketClientClass>::HandleClientRead(
+  ClientId clientId,
+  asio::streambuf& readBuffer)
+{
+  auto& client = _server.GetClient(clientId);
+  auto& packetClient = _clients[clientId];
+
+  SourceStream packetStream({
+    static_cast<const std::byte*>(readBuffer.data().data()),
+    readBuffer.data().size()
+  });
+
+  // Flag indicates whether to consume the bytes
+  // when the read handler exits.
+  bool consumeBytesOnExit = true;
+
+  // Defer the consumption of the bytes from the read buffer,
+  // until the end of the function.
+  const Deferred deferredConsume([&]()
+  {
+    if (!consumeBytesOnExit)
+      return;
+
+    // Consume the amount of bytes that were
+    // read from the packet stream.
+    readBuffer.consume(packetStream.GetCursor());
+  });
+
+  PacketId packetId;
+  size_t payloadDataSize;
+  std::array<std::byte, MaxPayloadDataSize> payloadDataBuffer;
+  try
+  {
+    std::tie(packetId, payloadDataSize, payloadDataBuffer) = this->PreprocessReceivedPacket(clientId, packetClient, packetStream);
+  }
+  catch(const std::overflow_error& e)
+  {
+    // If all the required packet data are not buffered,
+    // wait for them to arrive.
+    // Indicate that the bytes read until now
+    // shouldn't be consumed, as we expect more data to arrive.
+    consumeBytesOnExit = false;
+    return;
+  }
+
+  if(!this->IsMuted(packetId))
+  {
+    spdlog::debug("Received packet '{}', Length: {},",
+      this->GetPacketName(packetId),
+      payloadDataSize);
+    this->LogBytes({payloadDataBuffer.data(), payloadDataSize});
+  }
+
+  // Find the handler of the packet.
+  const auto handlerIter = _handlers.find(packetId);
+  if (handlerIter == _handlers.cend())
+  {
+    if(!this->IsMuted(packetId))
+    {
+      spdlog::warn("Unhandled packet '{}', Length: {}",
+        this->GetPacketName(packetId),
+        payloadDataSize);
+    }
+  }
+  else
+  {
+    const auto& handler = handlerIter->second;
+    // Handler validity is checked when registering.
+    assert(handler);
+
+    // Call the handler.
+    SourceStream packetDataStream = SourceStream({payloadDataBuffer.begin(), payloadDataSize});
+    handler(clientId, packetDataStream);
+  
+    // There shouldn't be any left-over data in the stream.
+    assert(packetDataStream.GetCursor() == packetDataStream.Size());
+
+    if(!this->IsMuted(packetId))
+    {
+      spdlog::debug("Handled packet '{}', Length: {}",
+          GetPacketName(packetId),
+          payloadDataSize);
+    }
+  }
+}
+
+//!
+template<typename PacketId, class PacketClientClass>
+void PacketServer<PacketId, PacketClientClass>::HandleClientWrite(
+  ClientId clientId,
+  asio::streambuf& writeBuffer) {}
 
 } // namespace alicia
 

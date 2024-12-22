@@ -210,8 +210,13 @@ void RanchDirector::HandleEnterRanch(
       .gender = ranchCharacter->gender,
       .unk0 = 1,
       .unk1 = 1,
-      .description = "yolo",
-      .character = {.parts = {.charId = 0xA, .mouthSerialId = 0x01, .faceSerialId = 0x2, .val0 = 0x01},
+      .description = ranchCharacter->status,
+      .character = {
+        .parts = {
+          .charId = static_cast<uint8_t>(ranchCharacter->gender == Gender::Boy ? 10 : 20),
+          .mouthSerialId = 0x01,
+          .faceSerialId = 0x2,
+          .val0 = 0x01},
        .appearance =
          {.val0 = 0xFFFF,
           .headSize = 0x01,
@@ -290,7 +295,7 @@ void RanchDirector::HandleEnterRanch(
         .val16 = 0xb8a167e4,
         .val17 = 0
       },
-      // TODO: characterEquipment
+      .characterEquipment = ranchCharacter->characterEquipment,
       .playerRelatedThing = {
         .val1 = 1
       },
@@ -333,7 +338,7 @@ void RanchDirector::HandleEnterRanch(
     }
 
     // Do not broadcast to clients that are not on the ranch.
-    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterId(
+    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
       clientCharacterUid);
     if (characterEntityId == InvalidEntityId)
     {
@@ -359,7 +364,7 @@ void RanchDirector::HandleSnapshot(
   auto& ranchInstance = _ranches[character->ranchUid];
 
   const RanchCommandRanchSnapshotNotify response {
-    .ranchIndex = ranchInstance._worldTracker.GetCharacterId(characterUid),
+    .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(characterUid),
     .unk0 = snapshot.unk0,
     .snapshot = snapshot.snapshot
   };
@@ -375,7 +380,7 @@ void RanchDirector::HandleSnapshot(
     }
 
     // Do not broadcast to clients that are not on the ranch.
-    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterId(
+    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
       clientCharacterUid);
     if (characterEntityId == InvalidEntityId)
     {
@@ -444,7 +449,7 @@ void RanchDirector::HandleUpdateBusyState(ClientId clientId, const RanchCommandU
 
   for (auto [clientId, clientCharacterUid] : _clientCharacters)
   {
-    if (ranchInstance._worldTracker.GetCharacterId(clientCharacterUid) == InvalidEntityId)
+    if (ranchInstance._worldTracker.GetCharacterEntityId(clientCharacterUid) == InvalidEntityId)
     {
       continue;
     }
