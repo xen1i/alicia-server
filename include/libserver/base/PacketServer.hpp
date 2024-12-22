@@ -288,28 +288,28 @@ template<typename PacketId, class PacketClientClass>
 std::tuple<PacketId, size_t, std::array<std::byte, MaxPayloadDataSize>> PacketServer<PacketId, PacketClientClass>::PreprocessReceivedPacket(ClientId clientId, PacketClientClass& client, SourceStream& packetStream)
 {
   // Subclasses must implement this method.
-  return {};
+  throw std::logic_error("Not implemented.");
 }
 
 template<typename PacketId, class PacketClientClass>
 size_t PacketServer<PacketId, PacketClientClass>::WriteOutgoingPacket(PacketId packetId, PacketSupplier supplier, SinkStream& packetSink)
 {
   // Subclasses must implement this method.
-  return 0;
+  throw std::logic_error("Not implemented.");
 }
 
 template<typename PacketId, class PacketClientClass>
 std::string_view PacketServer<PacketId, PacketClientClass>::GetPacketName(PacketId packetId)
 {
   // Subclasses must implement this method.
-  return {};
+  throw std::logic_error("Not implemented.");
 }
 
 template<typename PacketId, class PacketClientClass>
 bool PacketServer<PacketId, PacketClientClass>::IsMuted(PacketId id)
 {
   // Subclasses must implement this method.
-  return false;
+  throw std::logic_error("Not implemented.");
 }
 
 //!
