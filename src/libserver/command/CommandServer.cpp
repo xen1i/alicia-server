@@ -32,7 +32,7 @@ namespace
 constexpr std::size_t MaxCommandDataSize = 4092;
 
 //! Flag indicating whether to use the XOR algorithm on recieved data.
-constexpr std::size_t UseXorAlgorithm = true;
+constexpr std::size_t UseXorAlgorithm = false;
 
 //! Max size of the whole command payload.
 //! That is command data size + size of the message magic.

@@ -58,6 +58,15 @@ struct Item
   uint32_t count{};
 };
 
+struct WeirdItem
+{
+  uint32_t xx0{};
+  uint32_t xx1{};
+  uint32_t xx2{};
+  uint16_t xx3{};
+  uint16_t xx4{};
+};
+
 //!
 enum class OptionType : uint32_t
 {
@@ -87,40 +96,42 @@ struct MacroOptions
 
 struct Character
 {
-  //! Used to build character from the _ClientCharDefaultPartInfo table.
-  struct CharacterParts
-  {
-    uint8_t charId{};
-    //! FaceId
-    uint8_t mouthSerialId{};
-    //! EyeId
-    uint8_t faceSerialId{};
+  int32_t uid{};
+  int32_t tid{};
 
-    uint8_t val0{};
-  } parts{};
-
-  //! Seems to not be based on any physical units...
-  struct CharacterAppearance
-  {
-    uint16_t val0{};
-    //! FigFace
-    uint16_t headSize{};
-    //! FigTall
-    uint16_t height{};
-    //! FigVolume
-    uint16_t thighVolume{};
-    //! FigShape
-    uint16_t legVolume{};
-
-    uint16_t val1{};
-  } appearance{};
+  int8_t xx0;
+  int32_t xx1;
+  int16_t xx2;
 };
 
 struct Horse
 {
   uint32_t uid{};
   uint32_t tid{};
+  // Max 17 characters.
   std::string name{};
+
+  uint8_t xx0{};
+  uint8_t xx1{};
+  uint16_t xx2{};
+  uint32_t xx3{};
+  uint32_t xx4{};
+  uint32_t xx5{};
+
+  struct Unk
+  {
+    uint16_t xx0{};
+    uint16_t xx1{};
+    uint16_t xx2{};
+    uint16_t xx3{};
+  };
+  std::array<Unk, 2> xx6{};
+
+  uint8_t xx7{};
+  uint8_t xx8{};
+  uint8_t xx9{};
+  uint8_t xx10{};
+  uint8_t xx11{};
 
   struct Parts
   {
@@ -149,69 +160,18 @@ struct Horse
     uint32_t ambition{};
   } stats{};
 
-  uint32_t rating{};
-  uint8_t clazz{};
-  uint8_t val0{}; // classProgress
-  uint8_t grade{};
-  uint16_t growthPoints{};
+  uint16_t xx12{};
 
-  struct
-  {
-    uint16_t stamina{};
-    uint16_t attractiveness{};
+  std::array<uint32_t, 4> xx13{};
 
-    uint16_t hunger{};
-    uint16_t val0{};
+  uint32_t xx14{};
+  uint8_t xx15{};
+  uint16_t xx16{};
 
-    uint16_t val1{};
-    uint16_t val2{};
+  uint32_t xx17{};
+  uint32_t xx18{};
 
-    uint16_t val3{};
-    uint16_t val4{};
-
-    uint16_t val5{};
-    uint16_t val6{};
-
-    uint16_t val7{};
-    uint16_t val8{};
-
-    uint16_t val9{};
-    uint16_t val10{};
-  } vals0{};
-
-  struct
-  {
-    uint8_t val0{};
-    uint32_t val1{};
-    uint32_t val2{};
-
-    uint8_t val3{};
-    uint8_t val4{};
-    uint32_t classProgression{};
-    uint32_t val5{};
-
-    uint8_t val6{};
-    uint8_t val7{};
-    uint8_t val8{};
-    uint8_t val9{};
-
-    uint8_t val10{};
-    uint8_t val11{};
-    uint8_t val12{};
-
-    uint16_t val13{};
-    uint16_t val14{};
-    uint16_t val15{};
-  } vals1{};
-
-  struct Mastery
-  {
-    uint32_t magic{};
-    uint32_t jumping{};
-    uint32_t sliding{};
-    //! Divided by 10?
-    uint32_t gliding{};
-  } mastery{};
+  std::array<WeirdItem, 4> xx19;
 
   uint32_t val16{};
   uint32_t val17{};
@@ -223,10 +183,9 @@ struct Struct5
   uint32_t val0{};
   uint8_t val1{};
   uint32_t val2{};
+  // Max 25 characters.
   std::string val3{};
   uint8_t val4{};
-  uint32_t val5{};
-  // ignored by the client?
   uint8_t val6{};
 };
 

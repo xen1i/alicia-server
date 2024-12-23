@@ -87,7 +87,7 @@ void WriteRanchPlayer(
     .Write(struct5.val2)
     .Write(struct5.val3)
     .Write(struct5.val4)
-    .Write(struct5.val5)
+    //.Write(struct5.val5)
     .Write(struct5.val6);
 
   buf.Write(ranchPlayer.ranchIndex)

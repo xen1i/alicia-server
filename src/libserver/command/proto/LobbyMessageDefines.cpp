@@ -42,21 +42,12 @@ void WriteCharacter(
   SinkStream& buf,
   const Character& character)
 {
-  const auto& [parts, appearance] = character;
-
   // Write the character parts.
-  buf.Write(parts.charId)
-    .Write(parts.mouthSerialId)
-    .Write(parts.faceSerialId)
-    .Write(parts.val0);
-
-  // Write the character appearance.
-  buf.Write(appearance.val0)
-    .Write(appearance.headSize)
-    .Write(appearance.height)
-    .Write(appearance.thighVolume)
-    .Write(appearance.legVolume)
-    .Write(appearance.val1);
+  buf.Write(character.uid)
+    .Write(character.tid)
+    .Write(character.xx0)
+    .Write(character.xx1)
+    .Write(character.xx2);
 }
 
 //! Reads character data from the buffer.
@@ -66,21 +57,7 @@ void ReadCharacter(
   SourceStream& buf,
   Character& character)
 {
-  auto& [parts, appearance] = character;
 
-  // Write the character parts.
-  buf.Read(parts.charId)
-    .Read(parts.mouthSerialId)
-    .Read(parts.faceSerialId)
-    .Read(parts.val0);
-
-  // Write the character appearance.
-  buf.Read(appearance.val0)
-    .Read(appearance.headSize)
-    .Read(appearance.height)
-    .Read(appearance.thighVolume)
-    .Read(appearance.legVolume)
-    .Read(appearance.val1);
 }
 
 //! Writes horse data to the buffer.
@@ -420,57 +397,16 @@ void LobbyCommandShowInventoryOK::Write(
 }
 
 void LobbyCommandShowInventoryOK::Read(
-  LobbyCommandShowInventoryOK& command, SourceStream& buffer)
+  LobbyCommandShowInventoryOK& command,
+  SourceStream& buffer)
 {
   throw std::logic_error("Not implemented.");
-}
-
-void LobbyCommandCreateNicknameNotify::Write(
-  const LobbyCommandCreateNicknameNotify& command, SinkStream& buffer)
-{
-  // Empty.
-}
-
-void LobbyCommandCreateNicknameNotify::Read(
-  LobbyCommandCreateNicknameNotify& command, SourceStream& buffer)
-{
-  throw std::runtime_error("Not implemented.");
-}
-
-void LobbyCommandCreateNicknameOK::Write(
-  const LobbyCommandCreateNicknameOK& command,
-  SinkStream& buffer)
-{
-  throw std::runtime_error("Not implemented.");
-}
-
-void LobbyCommandCreateNicknameOK::Read(
-  LobbyCommandCreateNicknameOK& command,
-  SourceStream& buffer)
-{
-  buffer.Read(command.nickname);
-  ReadCharacter(buffer, command.character);
-}
-
-void LobbyCommandCreateNicknameCancel::Write(
-  const LobbyCommandCreateNicknameCancel& command,
-  SinkStream& buffer)
-{
-  buffer.Write(command.error);
-}
-
-void LobbyCommandCreateNicknameCancel::Read(
-  LobbyCommandCreateNicknameCancel& command,
-  SourceStream& buffer)
-{
-  throw std::runtime_error("Not implemented.");
 }
 
 void LobbyCommandShowInventoryCancel::Write(
   const LobbyCommandShowInventoryCancel& command,
   SinkStream& buffer)
 {
-  throw std::runtime_error("Not implemented.");
 }
 
 void LobbyCommandShowInventoryCancel::Read(

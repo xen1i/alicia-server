@@ -81,13 +81,20 @@ struct LobbyCommandLoginOK
   uint32_t val0{};
 
   uint32_t selfUid{};
+  // Max 17 characters.
   std::string nickName{};
+  // Max 256 characters.
   std::string motd{};
   Gender profileGender{Gender::Unspecified};
+  // Max 256 characters.
   std::string status{};
 
-  std::vector<Item> characterEquipment{};
-  std::vector<Item> horseEquipment{};
+  uint16_t xx0{};
+  uint8_t xx1{};
+  uint8_t xx2{};
+
+  std::vector<WeirdItem> characterEquipment{};
+  std::vector<WeirdItem> horseEquipment{};
 
   uint16_t level{};
   int32_t carrots{};
@@ -115,7 +122,8 @@ struct LobbyCommandLoginOK
     };
     std::vector<Unk1Unk1> val1{};
   };
-  std::vector<Unk1> val5; // max 17
+  // Max 17 elements.
+  std::vector<Unk1> val5;
 
   // 256 characters max
   std::string val6{};
@@ -139,15 +147,6 @@ struct LobbyCommandLoginOK
 
   // std::bitset
   uint32_t val8{};
-
-  struct Struct1
-  {
-    uint16_t val0{};
-    uint16_t val1{};
-    uint16_t val2{};
-  } val9{};
-
-  uint32_t val10{};
 
   struct Struct2
   {
@@ -180,13 +179,10 @@ struct LobbyCommandLoginOK
   } val13{};
 
   uint32_t val14{};
-  Struct5 val15{};
-  uint8_t val16{};
-  Struct6 val17{};
 
-  uint32_t val18{};
-  uint32_t val19{};
-  uint32_t val20{};
+  Struct5 val15{};
+  uint32_t xx3{};
+  uint32_t xx4{};
 
   Struct7 val21{};
 
