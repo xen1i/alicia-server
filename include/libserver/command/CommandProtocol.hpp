@@ -134,6 +134,9 @@ enum class CommandId
   LobbyInquiryTreecashOK = 0x2b2,
   LobbyInquiryTreecashCancel = 0x2b3,
 
+  LobbyGuildPartyList = 0x3c2,
+  LobbyGuildPartyListOK = 0x3c3,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,
   RanchEnterRanchNotify = 0x12e,
@@ -173,6 +176,9 @@ enum class CommandId
   RanchUpdateMountNicknameOK = 0x198,
   RanchUpdateMountNicknameCancel = 0x199,
 
+  RanchRequestStorage = 0x299,
+  RanchRequestStorageOK = 0x29a,
+  RanchRequestStorageCancel = 0x29b,
 
   Count = 0xFFFF
 };
