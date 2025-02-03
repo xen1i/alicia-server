@@ -6,6 +6,31 @@
 
 namespace {
 
+struct Datum
+{
+  std::string value;
+
+  static void Write(const Datum& datum, alicia::SinkStream& sink)
+  {
+    sink.Write("i love food");
+  }
+  static void Read(const Datum& datum, alicia::SinkStream& sink)
+  {
+    sink.Write("i love food");
+  }
+};
+
+void TestStructures()
+{
+  std::array<std::byte, 1024> buffer{};
+  alicia::SinkStream sink(std::span(
+    buffer.begin(), buffer.end()));
+
+  Datum datum;
+  sink.Write(datum);
+  printf("abc");
+}
+
 //! Perform test of magic encoding/decoding.
 void TestBuffers()
 {
@@ -38,5 +63,6 @@ void TestBuffers()
 
 int main() {
   TestBuffers();
+  TestStructures();
 }
 

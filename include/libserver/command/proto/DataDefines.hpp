@@ -63,8 +63,6 @@ struct Item
   static void Read(Item& item, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(Item);
-
 //!
 enum class OptionType : uint32_t
 {
@@ -93,9 +91,6 @@ struct KeyboardOptions
   static void Read(KeyboardOptions& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(KeyboardOptions::Option);
-DECLARE_WRITER_READER(KeyboardOptions);
-
 struct MacroOptions
 {
   std::array<std::string, 8> macros;
@@ -103,8 +98,6 @@ struct MacroOptions
   static void Write(const MacroOptions& value, SinkStream& buffer);
   static void Read(MacroOptions& value, SourceStream& buffer);
 };
-
-DECLARE_WRITER_READER(MacroOptions);
 
 struct Character
 {
@@ -145,10 +138,6 @@ struct Character
   static void Write(const Character& value, SinkStream& buffer);
   static void Read(Character& value, SourceStream& buffer);
 };
-
-DECLARE_WRITER_READER(Character::CharacterParts);
-DECLARE_WRITER_READER(Character::CharacterAppearance);
-DECLARE_WRITER_READER(Character);
 
 struct Horse
 {
@@ -266,12 +255,6 @@ struct Horse
   static void Read(Horse& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(Horse);
-DECLARE_WRITER_READER(Horse::Parts);
-DECLARE_WRITER_READER(Horse::Appearance);
-DECLARE_WRITER_READER(Horse::Stats);
-DECLARE_WRITER_READER(Horse::Mastery);
-
 //!
 struct Struct5
 {
@@ -288,8 +271,6 @@ struct Struct5
   static void Read(Struct5& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(Struct5);
-
 //!
 struct Struct6
 {
@@ -300,8 +281,6 @@ struct Struct6
   static void Write(const Struct6& value, SinkStream& buffer);
   static void Read(Struct6& value, SourceStream& buffer);
 };
-
-DECLARE_WRITER_READER(Struct6);
 
 //!
 struct Struct7
@@ -315,8 +294,6 @@ struct Struct7
   static void Read(Struct7& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(Struct7);
-
 //!
 struct RanchHorse {
   uint16_t ranchIndex{};
@@ -325,8 +302,6 @@ struct RanchHorse {
   static void Write(const RanchHorse& value, SinkStream& buffer);
   static void Read(RanchHorse& value, SourceStream& buffer);
 };
-
-DECLARE_WRITER_READER(RanchHorse);
 
 //!
 struct RanchPlayer
@@ -358,8 +333,6 @@ struct RanchPlayer
   static void Read(RanchPlayer& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(RanchPlayer);
-
 struct Quest
 {
   uint16_t unk0{};
@@ -371,8 +344,6 @@ struct Quest
   static void Write(const Quest& value, SinkStream& buffer);
   static void Read(Quest& value, SourceStream& buffer);
 };
-
-DECLARE_WRITER_READER(Quest);
 
 } // namespace alicia
 

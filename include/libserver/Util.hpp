@@ -20,39 +20,18 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-#define DECLARE_WRITER_READER(x)                                                                   \
-  template <> struct StreamWriter<x>                                                               \
-  {                                                                                                \
-    void operator()(const x& value, SinkStream& buffer) const;                                     \
-  };                                                                                               \
-  template <> struct StreamReader<x>                                                               \
-  {                                                                                                \
-    void operator()(x& value, SourceStream& buffer) const;                                         \
-  };
-
-#define DEFINE_WRITER_READER(x, writer, reader)                                                    \
-  void StreamWriter<x>::operator()(const x& value, SinkStream& buffer) const                       \
-  {                                                                                                \
-    return writer(value, buffer);                                                                  \
-  }                                                                                                \
-  void StreamReader<x>::operator()(x& value, SourceStream& buffer) const                           \
-  {                                                                                                \
-    return reader(value, buffer);                                                                  \
-  }
-
-#define COMMAND_WRITER_READER(x)                                                                   \
-  DECLARE_WRITER_READER(x)                                                                         \
-  DEFINE_WRITER_READER(x, x::Write, x::Read)
-
 #include <boost/asio.hpp>
-#include <chrono>
 #include <cstdint>
 #include <format>
 #include <functional>
 #include <span>
 
+#include <type_traits>
+
 namespace alicia
 {
+
+namespace asio = boost::asio;
 
 //! Windows file-time represents number of 100 nanosecond intervals since January 1, 1601 (UTC).
 struct WinFileTime
@@ -61,8 +40,6 @@ struct WinFileTime
   uint32_t dwHighDateTime = 0;
 };
 
-namespace asio = boost::asio;
-
 //! Converts a time point to the Windows file time.
 //! @param timePoint Point in time.
 //! @return Windows file time representing specified point in time.
@@ -70,7 +47,8 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
 
 asio::ip::address_v4 ResolveHostName(const std::string& host);
 
-template <typename StorageType> class StreamBase
+template <typename StorageType>
+class StreamBase
 {
 public:
   //! Storage type.
@@ -93,7 +71,8 @@ public:
   {
     if (cursor > _storage.size())
     {
-      throw std::overflow_error(std::format("Couldn't seek to {}. Not enough space.", cursor));
+      throw std::overflow_error(
+        std::format("Couldn't seek to {}. Not enough space.", cursor));
     }
 
     _cursor = cursor;
@@ -112,11 +91,31 @@ protected:
   std::size_t _cursor{};
 };
 
-//! Forward declaration of a stream writer.
-template <typename T> struct StreamWriter;
+class SinkStream;
+class SourceStream;
+
+template<typename T>
+concept Writable = requires(const T& a)
+{
+  std::is_class<>
+  T::Write(a, std::declval<SinkStream>);
+};
+
+template<typename T>
+concept Readable = requires(T& a)
+{
+  T::Read(a, std::declval<SinkStream>);
+};
+
+template<typename T>
+concept Simple = requires
+{
+  std::is_arithmetic_v<T>;
+};
 
 //! Buffered stream sink.
-class SinkStream final : public StreamBase<std::span<std::byte>>
+class SinkStream final
+  : public StreamBase<std::span<std::byte>>
 {
 public:
   //! Default constructor
@@ -148,30 +147,16 @@ public:
   //! @param value Value to write.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> SinkStream& Write(const T& value)
+  template <Writable T>
+  SinkStream& Write(const T& value)
   {
-    StreamWriter<T>{}(value, *this);
+    T::Write(value, *this);
     return *this;
   }
+
+  //!
+  SinkStream& Write(const std::string& string);
 };
-
-//! General binary stream writer.
-//! Writes a little-endian byte sequence to the provided sink buffer.
-//!
-//! @tparam T Type of value.
-template <typename T> struct StreamWriter
-{
-  void operator()(const T& value, SinkStream& buffer)
-  {
-    const auto requiredByteCount = sizeof(value);
-
-    // Write the value to the buffer.
-    buffer.Write(reinterpret_cast<const void*>(&value), requiredByteCount);
-  }
-};
-
-//! Forward declaration of a reader.
-template <typename T> struct StreamReader;
 
 //! Buffered stream source.
 class SourceStream final : public StreamBase<std::span<const std::byte>>
@@ -206,27 +191,16 @@ public:
   //! @param value Value to read.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> SourceStream& Read(T& value)
+  template <Readable T>
+  SourceStream& Read(T& value)
   {
-    StreamReader<T>{}(value, *this);
+    T::Read(value, *this);
     return *this;
   }
-};
 
-//! General binary reader.
-//! Reads a little-endian byte sequence from the provided source buffer.
-//!
-//! @tparam T Type of value.
-template <typename T> struct StreamReader
-{
-  void operator()(T& value, SourceStream& buffer)
-  {
-    const auto byteCount = sizeof(value);
-    buffer.Read(reinterpret_cast<void*>(&value), byteCount);
-  }
+  //!
+  SourceStream& Read(std::string value, size_t maxSize = 256);
 };
-
-DECLARE_WRITER_READER(std::string)
 
 //! Performs deferred call on destruction.
 struct Deferred final

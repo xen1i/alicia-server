@@ -21,42 +21,6 @@
 
 #define Int32x32To64(a, b) ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
-namespace
-{
-
-void WriteCString(const std::string& value, alicia::SinkStream& buffer)
-{
-  for (char b : value)
-  {
-    buffer.Write(b);
-  }
-
-  buffer.Write(static_cast<char>(0x00));
-}
-
-void ReadCString(std::string& value, alicia::SourceStream& buffer)
-{
-  value.reserve(512);
-
-  bool readNext = true;
-  do
-  {
-    char read = '\0';
-    buffer.Read(read);
-
-    if (read == '\0')
-    {
-      readNext = false;
-    }
-    else
-    {
-      value += read;
-    }
-  } while (readNext);
-}
-
-} // namespace
-
 namespace alicia
 {
 
@@ -96,8 +60,6 @@ asio::ip::address_v4 ResolveHostName(const std::string& host)
   return {};
 }
 
-DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
-
 SourceStream::SourceStream(Storage buffer)
     : StreamBase(buffer)
 {
@@ -118,6 +80,41 @@ SourceStream& SourceStream::operator=(SourceStream&& rhs) noexcept
 {
   this->_cursor = rhs._cursor;
   this->_storage = rhs._storage;
+  return *this;
+}
+
+void SourceStream::Read(void* data, std::size_t size)
+{
+  if (_cursor + size > _storage.size())
+  {
+    throw std::overflow_error(std::format(
+      "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
+      size,
+      _cursor,
+      _storage.size()));
+  }
+
+  // Read the bytes.
+  for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
+  {
+    static_cast<std::byte*>(data)[byteIdx] = _storage[_cursor++];
+  }
+}
+
+SourceStream& SourceStream::Read(std::string value, size_t maxSize)
+{
+  value.reserve(maxSize);
+
+  for (size_t i = 0; i < maxSize; ++i)
+  {
+    char v = '\0';
+    Read(v);
+
+    if (v == '\0')
+      break;
+    value += v;
+  }
+
   return *this;
 }
 
@@ -162,22 +159,15 @@ void SinkStream::Write(const void* data, std::size_t size)
   }
 }
 
-void SourceStream::Read(void* data, std::size_t size)
+SinkStream& SinkStream::Write(const std::string& string)
 {
-  if (_cursor + size > _storage.size())
+  for (char b : string)
   {
-    throw std::overflow_error(std::format(
-      "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
-      size,
-      _cursor,
-      _storage.size()));
+    Write(b);
   }
+  Write(static_cast<char>(0x00));
 
-  // Read the bytes.
-  for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
-  {
-    static_cast<std::byte*>(data)[byteIdx] = _storage[_cursor++];
-  }
+  return *this;
 }
 
 } // namespace alicia
