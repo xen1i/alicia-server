@@ -104,28 +104,32 @@ struct MacroOptions
   static void Read(MacroOptions& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(MacroOptions);
 
+DECLARE_WRITER_READER(MacroOptions);
+  
+//!
 struct Character
 {
   //! Used to build character from the _ClientCharDefaultPartInfo table.
-  struct CharacterParts
+  struct Parts
   {
+    //!
     uint8_t charId{ 10 };
     //! FaceId
     uint8_t mouthSerialId{};
     //! EyeId
     uint8_t faceSerialId{};
-
+    //!
     uint8_t val0{};
 
     static void Write(const CharacterParts& value, SinkStream& buffer);
     static void Read(CharacterParts& value, SourceStream& buffer);
   } parts{};
 
-  //! Seems to not be based on any physical units...
-  struct CharacterAppearance
+  //!
+  struct Appearance
   {
+    //!
     uint16_t val0{};
     //! FigFace
     uint16_t headSize{};
@@ -135,7 +139,7 @@ struct Character
     uint16_t thighVolume{};
     //! FigShape
     uint16_t legVolume{};
-
+    //!
     uint16_t val1{};
 
     static void Write(const CharacterAppearance& value, SinkStream& buffer);
@@ -146,21 +150,30 @@ struct Character
   static void Read(Character& value, SourceStream& buffer);
 };
 
-DECLARE_WRITER_READER(Character::CharacterParts);
-DECLARE_WRITER_READER(Character::CharacterAppearance);
+DECLARE_WRITER_READER(Character::Parts);
+DECLARE_WRITER_READER(Character::Appearance);
 DECLARE_WRITER_READER(Character);
 
+//!
 struct Horse
 {
+  //!
   uint32_t uid{};
+  //!
   uint32_t tid{};
+  //! Max length is 255.
   std::string name{};
 
+  //!
   struct Parts
   {
+    //!
     uint8_t skinId{};
+    //!
     uint8_t maneId{};
+    //!
     uint8_t tailId{};
+    //!
     uint8_t faceId{};
 
     static void Write(const Parts& value, SinkStream& buffer);
@@ -170,10 +183,15 @@ struct Horse
   //! Figure
   struct Appearance
   {
+    //!
     uint8_t scale{};
+    //!
     uint8_t legLength{};
+    //!
     uint8_t legVolume{};
+    //!
     uint8_t bodyLength{};
+    //!
     uint8_t bodyVolume{};
 
     static void Write(const Appearance& value, SinkStream& buffer);
@@ -182,10 +200,15 @@ struct Horse
 
   struct Stats
   {
+    //!
     uint32_t agility{};
+    //!
     uint32_t spirit{};
+    //!
     uint32_t speed{};
+    //!
     uint32_t strength{};
+    //!
     uint32_t ambition{};
 
     static void Write(const Stats& value, SinkStream& buffer);

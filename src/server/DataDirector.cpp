@@ -10,119 +10,59 @@ namespace
 {
 
 //!
-template<typename T>
-void ProvideLockedDatumAccess(
-  alicia::DataDirector::Datum<T>& datum,
-  const alicia::DatumConsumer<T&>& immutableConsumer)
-{
-  std::scoped_lock lock(datum.lock);
-  try
-  {
-    immutableConsumer(datum.value);
-  }
-  catch (const std::exception& x)
-  {
-    spdlog::error("Unhandled exception in immutable datum consumer:", x.what());
-  }
-}
+const std::string QueryUserTokenStatementId = "queryUserToken";
 
 } // anon namespace
+
 
 namespace alicia
 {
 
-DataDirector::DataDirector()
+DataDirector::DataDirector(Settings::DataSource settings)
+  : _settings(std::move(settings))
 {
-  _users["rgnter"].value = {
-    .characterUid = 1
-  };
-  _users["laith"].value = {
-    .characterUid = 2
-  };
+  try
+  {
+    _connection = pqxx::connection(
+      _settings.connectionString);
 
-  _characters[1].value = {
-    .nickName = "rgnt",
-    .gender = Gender::Unspecified,
-    .level = 60,
-    .carrots = 5000,
-    .looks = alicia::Character{},
-    .characterEquipment = {Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}},
-    .mountUid = 3,
-    .ranchUid = 100,
-    .horses = {3}
-  };
-  _characters[2].value = {
-    .nickName = "laith",
-    .gender = Gender::Unspecified,
-    .level = 60,
-    .carrots = 5000,
-    .characterEquipment = {},
-    .mountUid = 4,
-    .ranchUid = 100,
-    .horses = {4}
-  };
+    _connection.prepare(
+      QueryUserTokenStatementId,
+      "SELECT token, user_uid FROM token WHERE login=$1");
+  }
+  catch (std::exception& x)
+  {
+    spdlog::error(
+      "Failed to initialize the data source with connection string '{}' because: {}",
+      settings.connectionString,
+      x.what());
 
-  _mounts[3].value = {
-    .tid = 0x4E21, .name = "idontunderstand"
-  };
-  _mounts[4].value = {
-    .tid = 0x4E21, .name = "Ramon"
-  };
-
-  _ranches[100].value = {
-    .ranchName = "SoA Ranch"
-  };
+    throw;
+  }
 }
 
-
-void DataDirector::GetUser(const std::string& name, DatumConsumer<User&> consumer)
-{
-  consumer(_users[name].value);
-}
-
-DataDirector::DatumAccess<User> DataDirector::GetUser(
+DataDirector::DatumAccess<data::User> DataDirector::GetUser(
   const std::string& name)
 {
   auto& datum = _users[name];
   return DatumAccess(datum);
 }
 
-void DataDirector::GetCharacter(
-  DatumUid characterUid,
-  DatumConsumer<User::Character&> consumer)
-{
-  ProvideLockedDatumAccess(_characters[characterUid], consumer);
-}
-
-DataDirector::DatumAccess<User::Character> DataDirector::GetCharacter(
+DataDirector::DatumAccess<data::Character> DataDirector::GetCharacter(
   DatumUid characterUid)
 {
   auto& datum = _characters[characterUid];
   return DatumAccess(datum);
 }
 
-void DataDirector::GetMount(
-  DatumUid mountUid,
-  DatumConsumer<User::Mount&> consumer)
-{
-  ProvideLockedDatumAccess(_mounts[mountUid], consumer);
-}
-
-DataDirector::DatumAccess<User::Mount> DataDirector::GetMount(
+DataDirector::DatumAccess<data::Horse> DataDirector::GetHorse(
   DatumUid mountUid)
 {
-  auto& datum = _mounts[mountUid];
+  auto& datum = _horses[mountUid];
   return DatumAccess(datum);
 }
 
-void DataDirector::GetRanch(
-  DatumUid ranchUid,
-  DatumConsumer<User::Ranch&> consumer)
-{
-  ProvideLockedDatumAccess(_ranches[ranchUid], consumer);
-}
-
-DataDirector::DatumAccess<User::Ranch> DataDirector::GetRanch(
+DataDirector::DatumAccess<data::Ranch> DataDirector::GetRanch(
   DatumUid ranchUid)
 {
   auto& datum = _ranches[ranchUid];
