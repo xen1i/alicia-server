@@ -104,7 +104,6 @@ struct MacroOptions
   static void Read(MacroOptions& value, SourceStream& buffer);
 };
 
-
 DECLARE_WRITER_READER(MacroOptions);
   
 //!
@@ -122,8 +121,8 @@ struct Character
     //!
     uint8_t val0{};
 
-    static void Write(const CharacterParts& value, SinkStream& buffer);
-    static void Read(CharacterParts& value, SourceStream& buffer);
+    static void Write(const Parts& value, SinkStream& buffer);
+    static void Read(Parts& value, SourceStream& buffer);
   } parts{};
 
   //!
@@ -142,8 +141,8 @@ struct Character
     //!
     uint16_t val1{};
 
-    static void Write(const CharacterAppearance& value, SinkStream& buffer);
-    static void Read(CharacterAppearance& value, SourceStream& buffer);
+    static void Write(const Appearance& value, SinkStream& buffer);
+    static void Read(Appearance& value, SourceStream& buffer);
   } appearance{};
 
   static void Write(const Character& value, SinkStream& buffer);

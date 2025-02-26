@@ -18,8 +18,6 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         src/libserver/Alicia.cpp
         src/libserver/Util.cpp
-        src/server/Settings.cpp
-        src/libserver/Executor.cpp
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp
@@ -28,6 +26,7 @@ add_library(alicia-libserver STATIC
         src/libserver/command/proto/RaceMessageDefines.cpp
         src/libserver/command/proto/RanchMessageDefines.cpp
         include/libserver/command/proto/DataDefines.hpp)
+
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
@@ -36,14 +35,15 @@ target_link_libraries(alicia-libserver
 # Alicia server executable
 add_executable(alicia-server
         src/server/main.cpp
-        src/server/Scheduler.cpp
+        src/server/Settings.cpp
+        src/server/Executor.cpp
         src/server/DataDirector.cpp
         src/server/tracker/WorldTracker.cpp
         src/server/lobby/LobbyDirector.cpp
         src/server/lobby/LoginHandler.cpp
         src/server/race/RaceDirector.cpp
         src/server/ranch/RanchDirector.cpp)
-        
+
 # Version variables
 set(AliciaServerBuildName alpha)
 set(AliciaServerBuildVersionMajor ${CMAKE_PROJECT_VERSION_MAJOR})
@@ -54,38 +54,38 @@ set(AliciaServerBuildVersion ${CMAKE_PROJECT_VERSION}-${AliciaServerBuildName})
 configure_file(
         include/server/Version.hpp.in
         generated/Version.hpp)
-        
+
 target_include_directories(alicia-server PRIVATE
         include/)
 target_link_libraries(alicia-server
-        PRIVATE project-properties alicia-libserver libpqxx::pqxx)
+        PRIVATE project-properties alicia-libserver)
 
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
 
 if (${MSVC})
-        target_compile_options(alicia-server
-                PRIVATE /utf-8)
+    target_compile_options(alicia-server
+            PRIVATE /utf-8)
 endif ()
 
-if (BUILD_TESTS) 
-        enable_testing()
-        add_subdirectory(tests)
-endif()
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Adding -fexperimental-library for Clang compiler")
     target_compile_options(alicia-libserver
-        PRIVATE -fexperimental-library)
+            PRIVATE -fexperimental-library)
     target_compile_options(alicia-server
-        PRIVATE -fexperimental-library)
-endif()
+            PRIVATE -fexperimental-library)
+endif ()
 
 add_custom_command(
         TARGET alicia-server POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_SOURCE_DIR}/resources
-                ${CMAKE_CURRENT_BINARY_DIR}/resources)
+        ${CMAKE_SOURCE_DIR}/resources
+        ${CMAKE_CURRENT_BINARY_DIR}/resources)
 
-install(TARGETS alicia-server DESTINATION dist)  
+install(TARGETS alicia-server DESTINATION dist)
 install(DIRECTORY resources DESTINATION dist)  

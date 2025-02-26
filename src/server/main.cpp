@@ -3,11 +3,9 @@
 #include "server/lobby/LobbyDirector.hpp"
 #include "server/race/RaceDirector.hpp"
 #include "server/ranch/RanchDirector.hpp"
-#include "server/Scheduler.hpp"
+#include "server/Settings.hpp"
 
 #include <libserver/base/Server.hpp>
-#include <libserver/command/CommandServer.hpp>
-#include <server/Settings.hpp>
 
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -16,10 +14,8 @@
 #include <memory>
 #include <thread>
 
-
 namespace
 {
-  
 
 std::unique_ptr<alicia::DataDirector> g_dataDirector;
 std::unique_ptr<alicia::LobbyDirector> g_loginDirector;
@@ -27,14 +23,6 @@ std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
 
 } // namespace
-
-// Adds task to queue
-
-Scheduler g_scheduler;
-void EnqueueTask(std::function<void()> task)
-{
-    g_scheduler.EnqueueTask(std::move(task));
-}
 
 int main()
 {
@@ -61,7 +49,7 @@ int main()
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json");
 
-  g_dataDirector = std::make_unique<alicia::DataDirector>(settings._dataSourceSettings);
+  g_dataDirector = std::make_unique<alicia::DataDirector>();
 
   // Lobby director thread.
   std::jthread lobbyThread(

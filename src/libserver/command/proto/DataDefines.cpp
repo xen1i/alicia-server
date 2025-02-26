@@ -100,7 +100,7 @@ void MacroOptions::Read(MacroOptions& value, SourceStream& buffer)
 DEFINE_WRITER_READER(MacroOptions, MacroOptions::Write, MacroOptions::Read)
 
 
-void Character::CharacterParts::Write(const CharacterParts& value, SinkStream& buffer)
+void Character::Parts::Write(const Parts& value, SinkStream& buffer)
 {
     buffer.Write(value.charId)
         .Write(value.mouthSerialId)
@@ -108,7 +108,7 @@ void Character::CharacterParts::Write(const CharacterParts& value, SinkStream& b
         .Write(value.val0);
 }
 
-void Character::CharacterParts::Read(CharacterParts& value, SourceStream& buffer)
+void Character::Parts::Read(Parts& value, SourceStream& buffer)
 {
     buffer.Read(value.charId)
         .Read(value.mouthSerialId)
@@ -116,10 +116,10 @@ void Character::CharacterParts::Read(CharacterParts& value, SourceStream& buffer
         .Read(value.val0);
 }
 
-DEFINE_WRITER_READER(Character::CharacterParts, Character::CharacterParts::Write, Character::CharacterParts::Read)
+DEFINE_WRITER_READER(Character::Parts, Character::Parts::Write, Character::Parts::Read)
 
 
-void Character::CharacterAppearance::Write(const CharacterAppearance& value, SinkStream& buffer)
+void Character::Appearance::Write(const Appearance& value, SinkStream& buffer)
 {
     buffer.Write(value.val0)
         .Write(value.headSize)
@@ -129,7 +129,7 @@ void Character::CharacterAppearance::Write(const CharacterAppearance& value, Sin
         .Write(value.val1);
 }
 
-void Character::CharacterAppearance::Read(CharacterAppearance& value, SourceStream& buffer)
+void Character::Appearance::Read(Appearance& value, SourceStream& buffer)
 {
     buffer.Read(value.val0)
         .Read(value.headSize)
@@ -139,7 +139,7 @@ void Character::CharacterAppearance::Read(CharacterAppearance& value, SourceStre
         .Read(value.val1);
 }
 
-DEFINE_WRITER_READER(Character::CharacterAppearance, Character::CharacterAppearance::Write, Character::CharacterAppearance::Read)
+DEFINE_WRITER_READER(Character::Appearance, Character::Appearance::Write, Character::Appearance::Read)
 
 
 void Character::Write(const Character& value, SinkStream& buffer)
