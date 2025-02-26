@@ -1,4 +1,4 @@
-#include "server/Executor.hpp"
+#include "server/Scheduler.hpp"
 
 #include <condition_variable>
 #include <mutex>
@@ -46,11 +46,7 @@ void TaskLoop::Begin()
 
   while (true)
   {
-    // Wait for queue notification.
-    std::unique_lock queueLock(_queueMutex);
-    _queueNotification.wait(queueLock);
-
-    if (!_queue.empty())
+    while (!_queue.empty())
     {
       // Poll the task from the queue.
       std::function<void()> task;
@@ -70,6 +66,10 @@ void TaskLoop::Begin()
         break;
       }
     }
+
+    // Wait for queue notification.
+    std::unique_lock queueLock(_queueMutex);
+    _queueNotification.wait(queueLock);
   }
 }
 
@@ -165,9 +165,16 @@ void MultiThreadedExecutor::Begin()
   // }
 }
 
-void MultiThreadedExecutor::End()
-{
+void MultiThreadedExecutor::End() {}
 
+Scheduler::Scheduler()
+{
+  _mainThreadExecutor.Begin();
+}
+
+Scheduler::~Scheduler()
+{
+  _mainThreadExecutor.End();
 }
 
 void Scheduler::RunOnMainThread(const Task& task)
@@ -180,6 +187,5 @@ void Scheduler::RunOnWorkerThread(const Task& task)
   // todo
   throw std::runtime_error("not implemented");
 }
-
 
 } // namespace server

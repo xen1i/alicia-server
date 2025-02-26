@@ -175,7 +175,6 @@ struct Ranch
 struct User
 {
   std::string _token;
-
   DatumUid characterUid;
 };
 
@@ -238,7 +237,7 @@ public:
     Settings::DataSource settings = {});
 
   //!
-  DatumAccess<data::User::Token> GetToken(
+  DatumAccess<std::string> GetToken(
     const std::string& name);
 
   //!
@@ -270,7 +269,7 @@ private:
   //!
   std::mutex _connectionMtx;
   //!
-  pqxx::connection _connection;
+  std::unique_ptr<pqxx::connection> _connection;
 };
 
 }

@@ -58,9 +58,12 @@ protected:
 class Executor
 {
 public:
-  virtual ~Executor();
-  virtual void Begin() = delete;
-  virtual void End() = delete;
+  virtual ~Executor()
+  {};
+  virtual void Begin()
+  {};
+  virtual void End()
+  {};
 
   void Submit(const Task& task);
 
@@ -73,12 +76,13 @@ class SingleThreadedExecutor final
   : public Executor
 {
 public:
+  ~SingleThreadedExecutor() override = default;
+
   void Begin() override;
   void End() override;
 
 private:
   std::thread _thread;
-
 };
 
 //! Pooled multi-threaded task executor.
@@ -86,6 +90,8 @@ class MultiThreadedExecutor final
   : public Executor
 {
 public:
+  ~MultiThreadedExecutor() override = default;
+
   void Begin() override;
   void End() override;
 
@@ -97,6 +103,8 @@ private:
 class Scheduler final
 {
 public:
+  Scheduler();
+  ~Scheduler();
   //! Runs a task on the main thread.
   //! @param task Task to run on a main thread.
   void RunOnMainThread(const Task& task);

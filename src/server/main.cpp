@@ -12,10 +12,13 @@
 #include <spdlog/spdlog.h>
 
 #include <memory>
+#include <server/Scheduler.hpp>
 #include <thread>
 
 namespace
 {
+
+std::unique_ptr<server::Scheduler> g_scheduler;
 
 std::unique_ptr<alicia::DataDirector> g_dataDirector;
 std::unique_ptr<alicia::LobbyDirector> g_loginDirector;
@@ -48,6 +51,18 @@ int main()
   // Parsing settings file
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json");
+
+  g_scheduler = std::make_unique<server::Scheduler>();
+  g_scheduler->RunOnMainThread([]()
+  {
+    spdlog::info("hello my friend");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  });
+  g_scheduler->RunOnMainThread([]()
+  {
+    spdlog::info("main thraed!");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  });
 
   g_dataDirector = std::make_unique<alicia::DataDirector>();
 

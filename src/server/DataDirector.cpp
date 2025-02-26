@@ -19,26 +19,27 @@ namespace alicia
 {
 
 DataDirector::DataDirector(Settings::DataSource settings)
-  : _settings(std::move(settings))
+    : _settings(std::move(settings))
 {
   try
   {
-    _connection = pqxx::connection(
-      _settings.connectionString);
+    _connection = std::make_unique<pqxx::connection>(_settings.connectionString);
 
-    _connection.prepare(
-      QueryUserTokenStatementId,
-      "SELECT token, user_uid FROM token WHERE login=$1");
+    _connection->prepare(
+      QueryUserTokenStatementId, "SELECT token, user_uid FROM token WHERE login=$1");
   }
-  catch (std::exception& x)
+  catch (const std::exception& x)
   {
     spdlog::error(
       "Failed to initialize the data source with connection string '{}' because: {}",
       settings.connectionString,
       x.what());
-
-    throw;
   }
+  spdlog::info("Runn");
+}
+
+DataDirector::DatumAccess<std::string> DataDirector::GetToken(const std::string& name)
+{
 }
 
 DataDirector::DatumAccess<data::User> DataDirector::GetUser(
