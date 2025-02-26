@@ -59,11 +59,14 @@ class Executor
 {
 public:
   virtual ~Executor()
-  {};
+  {}
+
   virtual void Begin()
-  {};
+  {}
   virtual void End()
-  {};
+  {}
+  virtual void Synchronize()
+  {}
 
   void Submit(const Task& task);
 
@@ -80,6 +83,7 @@ public:
 
   void Begin() override;
   void End() override;
+  void Synchronize() override;
 
 private:
   std::thread _thread;
@@ -111,6 +115,9 @@ public:
   //! Runs a task on a available worker thread.
   //! @param task Task to run on a worker thread.
   void RunOnWorkerThread(const Task& task);
+
+  //! @return The single threaded executor.
+  SingleThreadedExecutor& GetMainThreadExecutor();
 
 private:
   SingleThreadedExecutor _mainThreadExecutor;

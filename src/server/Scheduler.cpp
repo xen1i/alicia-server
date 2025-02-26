@@ -107,6 +107,17 @@ void SingleThreadedExecutor::End()
   _taskLoop.End();
 }
 
+void SingleThreadedExecutor::Synchronize()
+{
+  if (_thread.joinable())
+    _thread.join();
+}
+
+SingleThreadedExecutor& Scheduler::GetMainThreadExecutor()
+{
+  return _mainThreadExecutor;
+}
+
 void MultiThreadedExecutor::Begin()
 {
   // todo

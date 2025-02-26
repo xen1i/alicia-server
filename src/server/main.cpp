@@ -53,54 +53,34 @@ int main()
   settings.LoadFromFile("resources/settings.json");
 
   g_scheduler = std::make_unique<server::Scheduler>();
-  g_scheduler->RunOnMainThread([]()
+
+  g_scheduler->RunOnMainThread([&settings]()
   {
-    spdlog::info("hello my friend");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // Data director.
+    g_dataDirector = std::make_unique<alicia::DataDirector>();
+
+    // Lobby director.
+    g_loginDirector = std::make_unique<alicia::LobbyDirector>(
+      *g_dataDirector,
+      settings._lobbySettings);
+
+    // Ranch director.
+    g_ranchDirector = std::make_unique<alicia::RanchDirector>(
+    *g_dataDirector,
+      settings._ranchSettings);
+
+    // Race director.
+    g_raceDirector = std::make_unique<alicia::RaceDirector>(
+      *g_dataDirector,
+      settings._raceSettings);
+
+    // TODO: Messenger
+    alicia::CommandServer messengerServer("Messenger");
+    messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
   });
-  g_scheduler->RunOnMainThread([]()
-  {
-    spdlog::info("main thraed!");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  });
 
-  g_dataDirector = std::make_unique<alicia::DataDirector>();
-
-  // Lobby director thread.
-  std::jthread lobbyThread(
-    [&settings]()
-    {
-      g_loginDirector = std::make_unique<alicia::LobbyDirector>(
-        *g_dataDirector,
-        settings._lobbySettings);
-    });
-
-  // Ranch director thread.
-  std::jthread ranchThread(
-    [&settings]()
-    {
-      g_ranchDirector = std::make_unique<alicia::RanchDirector>(
-        *g_dataDirector,
-        settings._ranchSettings);
-    });
-
-  // Race director thread.
-  std::jthread raceThread(
-    [&settings]()
-    {
-      g_raceDirector = std::make_unique<alicia::RaceDirector>(
-        *g_dataDirector,
-        settings._raceSettings);
-    });
-
-  // Messenger thread.
-  std::jthread messengerThread(
-    [&settings]()
-    {
-      alicia::CommandServer messengerServer("Messenger");
-      // TODO: Messenger
-      messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
-    });
+  // Synchronize the main thread with the main server thread.
+  g_scheduler->GetMainThreadExecutor().Synchronize();
 
   return 0;
 }
