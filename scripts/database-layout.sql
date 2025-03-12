@@ -1,4 +1,5 @@
-create table if not exists horse
+create schema if not exists data;
+create table if not exists data.horse
 (
     uid          integer PRIMARY KEY,
     tid          integer,
@@ -31,13 +32,13 @@ create table if not exists horse
     gliding      integer
 );
 
-create table if not exists ranch
+create table if not exists data.ranch
 (
     uid  integer PRIMARY KEY,
     name text
 );
 
-create table if not exists character
+create table if not exists data.character
 (
     uid           integer PRIMARY KEY,
 
@@ -59,31 +60,31 @@ create table if not exists character
     legVolume     integer,
 
     horse_uid     integer
-        REFERENCES horse (uid),
+        REFERENCES data.horse (uid),
     ranch_uid     integer
-        REFERENCES ranch (uid)
+        REFERENCES data.ranch (uid)
 );
 
-create table if not exists item
+create table if not exists data.item
 (
     uid           integer PRIMARY KEY,
     tid           integer,
     count         integer,
     character_uid integer
-        REFERENCES character (uid)
+        REFERENCES data.character (uid)
 );
 
-create table if not exists "user"
+create table if not exists data.user
 (
     uid           integer PRIMARY KEY,
     character_uid integer
-        REFERENCES character (uid)
+        REFERENCES data.character (uid)
 );
 
-create table if not exists token
+create table if not exists data.token
 (
-    login    text PRIMARY KEY,
-    token    text UNIQUE,
-    user_uid integer
-        REFERENCES "user" (uid)
+    login    text UNIQUE PRIMARY KEY,
+    token    text,
+    user_uid integer UNIQUE
+        REFERENCES data.user (uid)
 );

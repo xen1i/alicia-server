@@ -28,11 +28,11 @@ namespace data
 //! Item.
 struct Item
 {
-  //!
+  //! A unique identifier.
   uint32_t uid{};
-  //!
+  //! A type identifier.
   uint32_t tid{};
-  //!
+  //! Amount of an item.
   uint32_t count{};
 };
 
@@ -174,102 +174,88 @@ struct Ranch
 //! User.
 struct User
 {
-  std::string _token;
   DatumUid characterUid;
+};
+
+struct Token
+{
+  DatumUid userUid{0};
+  std::string token;
 };
 
 
 }
 
-//! Datum consumer is a callback which provides access to a value,
-//! to which access is guaranteed while in the consumer function.
-template<typename T>
-using DatumConsumer = std::function<void(T value)>;
-
 class DataDirector
 {
 public:
-  //!
-  template<typename Val>
-  struct Datum
+  template<typename T>
+  struct View
   {
-    Val value;
-    std::mutex lock;
-  };
-
-  template<typename Val>
-  struct DatumAccess
-  {
-    //!
-    explicit DatumAccess(Datum<Val>& datum)
-      : _datum(datum)
-      , _accessLock(_datum.lock)
+    explicit View(T& value)
+      : _value(value)
     {
     }
 
-    //! Deleted copy constructor.
-    DatumAccess(const DatumAccess&) noexcept = delete;
-    //! Move constructor.
-    DatumAccess(DatumAccess&& other) noexcept
-      : _datum(other._datum)
-    {
-      other._accessLock.unlock();
-      other._accessLock.release();
+    View(const View&) = delete;
+    void operator=(const View&) = delete;
 
-      _accessLock = _datum.lock;
+    View(View&& other)
+      : _value(other._value)
+      , _lock(std::move(other._lock))
+    {
+    }
+    View& operator=(View&& other) noexcept
+    {
+      _value = other._value;
+      _lock = std::move(other._lock);
+      return *this;
     }
 
-    ~DatumAccess()
+    T& operator()()
     {
-      _accessLock.unlock();
-    }
-
-    [[nodiscard]] Val* operator->() const noexcept {
-      return &_datum.value;
+      return _value;
     }
 
   private:
-    Datum<Val>& _datum;
-    std::unique_lock<std::mutex> _accessLock;
+    T& _value;
+    std::unique_lock<std::mutex> _lock;
   };
 
+  //!
   explicit DataDirector(
     Settings::DataSource settings = {});
 
-  //!
-  DatumAccess<std::string> GetToken(
-    const std::string& name);
+  void GetToken(
+    const std::string& user,
+    const std::function<void(View<data::Token>&&)>& consumer,
+    const std::function<void()>& errorConsumer);
 
-  //!
-  DatumAccess<data::User> GetUser(
-    const std::string& name);
-  //!
-  DatumAccess<data::Character> GetCharacter(
-    DatumUid characterUid);
-  //!
-  DatumAccess<data::Horse> GetHorse(
-    DatumUid mountUid);
-  //!
-  DatumAccess<data::Ranch> GetRanch(
-    DatumUid ranchUid);
+  void GetUser(
+    uint32_t userUid,
+    const std::function<void(View<data::User>&&)>& consumer,
+    const std::function<void()>& errorConsumer);
 
 private:
+  template<typename T>
+  struct Record
+  {
+    std::chrono::steady_clock::time_point created{
+      std::chrono::steady_clock::now()};
+    std::mutex mutex;
+    T value;
+  };
+
   //!
-  std::unordered_map<std::string, Datum<data::User>> _users;
-  //!
-  std::unordered_map<DatumUid, Datum<data::Character>> _characters;
-  //!
-  std::unordered_map<DatumUid, Datum<data::Horse>> _horses;
-  //!
-  std::unordered_map<DatumUid, Datum<data::Ranch>> _ranches;
+  std::unordered_map<uint32_t, Record<data::User>> _users;
 
   //!
   Settings::DataSource _settings;
 
   //!
-  std::mutex _connectionMtx;
+  std::mutex _connectionMtx{};
   //!
-  std::unique_ptr<pqxx::connection> _connection;
+  std::unique_ptr<pqxx::connection> _connection{nullptr};
 };
 
 }

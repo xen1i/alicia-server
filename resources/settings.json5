@@ -53,6 +53,6 @@
   "data_source": {
     // Connection string to the postgres database.
     // Read more here: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
-    "connection_string": "postgresql://postgres:example@localhost/soa_dev"
+    "connection_string": "postgresql://postgres:example@localhost/postgres"
   }
 }

@@ -4,60 +4,66 @@
 
 #include "server/lobby/LoginHandler.hpp"
 
+#include "spdlog/spdlog.h"
+
 namespace alicia
 {
 
 LoginHandler::LoginHandler(DataDirector& dataDirector)
-    : _dataDirector(_dataDirector)
+    : _dataDirector(dataDirector)
 {
 }
 
-bool LoginHandler::Authenticate(const std::string& userName, const std::string& providedUserToken)
+void LoginHandler::Authenticate(
+  const std::string& userName,
+  const std::string& authenticationToken,
+  std::function<void(Result result)> resultCallback)
 {
   // Both strings must be valid.
-  if (userName.empty() || providedUserToken.empty())
+  if (userName.empty() || authenticationToken.empty())
   {
-    return false;
+    resultCallback(Result{
+      .verdict = Result::Verdict::Rejected});
+    return;
   }
 
-  DatumUid userUid = InvalidDatumUid;
-  std::string validUserToken;
+  _dataDirector.GetToken(
+    userName,
+    [userName, authenticationToken, resultCallback = std::move(resultCallback)](
+      auto tokenRecord)
+    {
+      const auto [userUid, token] = tokenRecord();
 
-  // try
-  // {
-  //   std::scoped_lock connectionLock(_connectionMtx);
-  //
-  //   pqxx::transaction tx(_connection);
-  //   const auto result = tx.exec(
-  //     pqxx::prepped(QueryUserStatementId),
-  //     userName);
-  //
-  //   tx.commit();
-  //
-  //   if (result.size() <= 0)
-  //   {
-  //     return false;
-  //   }
-  //
-  //   // extract the data
-  //   std::tie(validUserToken, userUid) = result.one_row().as<
-  //     std::string, DatumUid>();
-  // }
-  // catch (std::exception& x)
-  // {
-  //   spdlog::error("Database issue: {}", x.what());
-  //   return false;
-  // }
-  //
-  // if (userUid == InvalidDatumUid
-  //   || validUserToken.empty())
-  // {
-  //   spdlog::warn("Invalid data retrieved from the database for user '{}'", userName);
-  //   assert(false);
-  //   return false;
-  // }
+      // If the tokens do not match reject the login.
+      if (authenticationToken != token)
+      {
+        spdlog::info(
+          "User '{}' ({}) authentication rejected.",
+          userName,
+          userUid);
 
-  return providedUserToken == validUserToken;
+        resultCallback(Result{
+          .verdict = Result::Verdict::Rejected});
+        return;
+      }
+
+      spdlog::info(
+        "User '{}' ({}) authentication accepted.",
+        userName,
+        userUid);
+      resultCallback(Result{
+        .verdict = Result::Verdict::Accepted,
+        .userUid = userUid});
+    },
+    [userName, resultCallback = std::move(resultCallback)]()
+    {
+      spdlog::error(
+        "User '{}' couldn't authenticate due to error",
+        userName);
+
+      resultCallback(Result{
+        .verdict = Result::Verdict::Rejected});
+    });
 }
 
 }

@@ -1,11 +1,11 @@
 
 
-INSERT INTO soa_dev.public.user (uid)
+INSERT INTO data.user (uid)
     VALUES (1);
-INSERT INTO soa_dev.public.user (uid)
+INSERT INTO data.user (uid)
     VALUES (2);
 
-INSERT INTO soa_dev.public.token (login, token, user_uid)
-    VALUES ('regent', 'test', 1);
-INSERT INTO soa_dev.public.token (login, token, user_uid)
-    VALUES ('laith', 'test', 2);
+INSERT INTO data.token (login, token, user_uid)
+    VALUES ('regent', 'rgnter-token', 1);
+INSERT INTO data.token (login, token, user_uid)
+    VALUES ('laith', 'laith-test', 2);

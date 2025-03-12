@@ -50,14 +50,15 @@ int main()
 
   // Parsing settings file
   alicia::Settings settings;
-  settings.LoadFromFile("resources/settings.json");
+  settings.LoadFromFile("resources/settings.json5");
 
   g_scheduler = std::make_unique<server::Scheduler>();
 
   g_scheduler->RunOnMainThread([&settings]()
   {
     // Data director.
-    g_dataDirector = std::make_unique<alicia::DataDirector>();
+    g_dataDirector = std::make_unique<alicia::DataDirector>(
+      settings._dataSourceSettings);
 
     // Lobby director.
     g_loginDirector = std::make_unique<alicia::LobbyDirector>(

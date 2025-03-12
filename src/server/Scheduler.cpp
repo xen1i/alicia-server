@@ -2,7 +2,6 @@
 
 #include <condition_variable>
 #include <mutex>
-#include <pthread.h>
 #include <queue>
 #include <thread>
 
@@ -10,35 +9,6 @@
 
 namespace server
 {
-
-namespace
-{
-
-// holds the task_executor parameters
-struct task_executor_param
-{
-  std::function<void()> task;
-  std::condition_variable* cv;
-};
-
-// pthread start_routine function
-void* task_executor(void* param)
-{
-  // make the thread cancellable
-  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
-  // make the thread stop execution anywhere
-  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
-
-  // cast parameters to the correct struct
-  const auto p = static_cast<struct task_executor_param*>(param);
-
-  p->task();
-  p->cv->notify_one();
-
-  return nullptr;
-}
-
-} // namespace
 
 void TaskLoop::Begin()
 {

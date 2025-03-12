@@ -14,14 +14,30 @@ namespace alicia
 class LoginHandler
 {
 public:
+  struct Result
+  {
+    //! Verdict of the result.
+    enum class Verdict
+    {
+      Accepted,
+      Rejected
+    } verdict{Verdict::Rejected};
+
+    //! Unique identifier of the authenticated user.
+    uint32_t userUid{0};
+  };
+
   explicit LoginHandler(DataDirector& dataDirector);
 
   //!
-  bool Authenticate(
+  void Authenticate(
     const std::string& userName,
-    const std::string& providedUserToken);
+    const std::string& providedUserToken,
+    std::function<void(Result)> resultCallback);
 
 private:
+
+
   //!
   DataDirector& _dataDirector;
 };

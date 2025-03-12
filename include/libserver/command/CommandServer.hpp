@@ -92,6 +92,19 @@ public:
 
   void SetCode(ClientId client, XorCode code);
 
+  template<typename T>
+  void QueueCommand(
+    ClientId clientId,
+    CommandId commandId,
+    std::function<T()> supplier)
+  {
+    QueueCommand(clientId, commandId, [supplier](auto& sink)
+    {
+      const auto command = supplier();
+      T::Write(command, sink);
+    });
+  }
+
   //!
   void QueueCommand(
     ClientId client,

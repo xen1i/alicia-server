@@ -14,24 +14,44 @@
 namespace alicia
 {
 
-class LobbyDirector
+class LobbyDirector final
 {
 public:
   //!
-  LobbyDirector(
+  explicit LobbyDirector(
     DataDirector& dataDirector,
     Settings::LobbySettings settings = {});
 
+  LobbyDirector(const LobbyDirector&) = delete;
+  LobbyDirector& operator=(const LobbyDirector&) = delete;
+
+  LobbyDirector(LobbyDirector&&) = delete;
+  LobbyDirector& operator=(LobbyDirector&&) = delete;
+
 private:
-  //!
+  //! Handles the user login command.
+  //! @param clientId ID of the client.
+  //! @param login Login command.
   void HandleUserLogin(
     ClientId clientId,
     const LobbyCommandLogin& login);
+  //! Handles the login accept
+  void ProcessUserLoginResult(
+    ClientId clientId,
+    LoginHandler::Result result);
+
+  void QueueUserLoginAccepted(
+    ClientId clientId,
+    uint32_t userUid);
+  void QueueUserLoginRejected(
+    ClientId clientId);
 
   //!
   void HandleCreateNicknameOK(
     ClientId clientId,
     const LobbyCommandCreateNicknameOK& createNickname);
+  void ProcessCreateNicknameResult();
+
 
   //!
   void HandleEnterChannel(

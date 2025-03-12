@@ -10,7 +10,17 @@ namespace
 {
 
 //!
-const std::string QueryUserTokenStatementId = "queryUserToken";
+const std::string QueryUserTokenRecordStatementId = "queryUserTokenRecord";
+//!
+const std::string QueryUserRecordStatementId = "queryUserRecord";
+//!
+const std::string QueryCharacterRecordStatementId = "queryCharacterRecord";
+//!
+const std::string QueryHorseRecordStatementId = "queryHorseRecord";
+//!
+const std::string QueryItemRecordStatementId = "queryItemRecord";
+//!
+const std::string QueryRanchRecordStatementId = "queryRanchRecord";
 
 } // anon namespace
 
@@ -23,51 +33,105 @@ DataDirector::DataDirector(Settings::DataSource settings)
 {
   try
   {
-    _connection = std::make_unique<pqxx::connection>(_settings.connectionString);
+    _connection = std::make_unique<pqxx::connection>(
+      _settings.connectionString.c_str());
 
     _connection->prepare(
-      QueryUserTokenStatementId, "SELECT token, user_uid FROM token WHERE login=$1");
+      QueryUserTokenRecordStatementId,
+      "SELECT token, user_uid FROM data.token WHERE login=$1");
+    _connection->prepare(
+      QueryUserRecordStatementId,
+      "SELECT * FROM data.user WHERE uid=$1");
+    _connection->prepare(
+      QueryCharacterRecordStatementId,
+      "SELECT * FROM data.character WHERE uid=$1");
+    _connection->prepare(
+      QueryHorseRecordStatementId,
+      "SELECT * FROM data.horse WHERE uid=$1");
+    _connection->prepare(
+      QueryRanchRecordStatementId,
+      "SELECT * FROM data.ranch WHERE uid=$1");
+    _connection->prepare(
+      QueryItemRecordStatementId,
+      "SELECT * FROM data.item WHERE uid=$1");
+
+    spdlog::info(
+      "Initialized the data source with connection string '{}'",
+      _settings.connectionString);
   }
   catch (const std::exception& x)
   {
     spdlog::error(
       "Failed to initialize the data source with connection string '{}' because: {}",
-      settings.connectionString,
+      _settings.connectionString,
       x.what());
   }
-  spdlog::info("Runn");
 }
 
-DataDirector::DatumAccess<std::string> DataDirector::GetToken(const std::string& name)
+void DataDirector::GetToken(
+  const std::string& user,
+  const std::function<void(View<data::Token>&&)>& consumer,
+  const std::function<void()>& errorConsumer)
 {
+  if (not _connection)
+  {
+    errorConsumer();
+    return;
+  }
+
+  try
+  {
+    pqxx::work query(*_connection);
+
+    // Query and find the user login and the token.
+    const auto result = query.exec_prepared1(
+      QueryUserTokenRecordStatementId, user.c_str());
+
+    data::Token token{};
+    if (result.num())
+    {
+      token = {
+        .userUid = result["user_uid"].as<uint32_t>(),
+        .token = result["token"].as<std::string>()};
+    }
+
+    consumer(View(token));
+  }
+  catch (std::exception& x)
+  {
+    spdlog::error("DataDirector error: {}", x.what());
+    errorConsumer();
+  }
 }
 
-DataDirector::DatumAccess<data::User> DataDirector::GetUser(
-  const std::string& name)
+void DataDirector::GetUser(
+  uint32_t userUid,
+  const std::function<void(View<data::User>&&)>& consumer,
+  const std::function<void()>& errorConsumer)
 {
-  auto& datum = _users[name];
-  return DatumAccess(datum);
-}
+  // Return the user from the cache if possible.
+  if (const auto userIter = _users.find(userUid);
+      userIter != _users.cend())
+  {
+    consumer(View(userIter->second.value));
+    return;
+  }
 
-DataDirector::DatumAccess<data::Character> DataDirector::GetCharacter(
-  DatumUid characterUid)
-{
-  auto& datum = _characters[characterUid];
-  return DatumAccess(datum);
-}
+  try
+  {
+    pqxx::work query(*_connection);
 
-DataDirector::DatumAccess<data::Horse> DataDirector::GetHorse(
-  DatumUid mountUid)
-{
-  auto& datum = _horses[mountUid];
-  return DatumAccess(datum);
-}
+    // Query and find the user login and the token.
+    const auto result = query.exec_prepared1(QueryUserRecordStatementId, userUid);
 
-DataDirector::DatumAccess<data::Ranch> DataDirector::GetRanch(
-  DatumUid ranchUid)
-{
-  auto& datum = _ranches[ranchUid];
-  return DatumAccess(datum);
+    auto& userRecord = _users[userUid];
+    consumer(View(userRecord.value));
+  }
+  catch (std::exception& x)
+  {
+    spdlog::error("DataDirector error: {}", x.what());
+    errorConsumer();
+  }
 }
 
 } // namespace alicia
