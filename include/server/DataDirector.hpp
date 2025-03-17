@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <future>
 #include <mutex>
 #include <unordered_map>
 
@@ -41,13 +42,15 @@ struct Item
 struct Character
 {
   //!
-  std::string nickName;
+  std::string name;
+  //!
+  std::string status;
   //!
   uint16_t level{};
   //!
   int32_t carrots{};
   //!
-  std::string status;
+  int32_t cash{};
 
   //!
   enum class AgeGroup
@@ -85,7 +88,7 @@ struct Character
     uint16_t legVolume{};
   } appearance{};
 
-  //!
+  //! TODO in db
   std::vector<Item> characterEquipment;
   //!
   std::vector<Item> horseEquipment;
@@ -95,7 +98,7 @@ struct Character
   //!
   DatumUid ranchUid{};
 
-  //!
+  //! TODO in db
   std::vector<DatumUid> horses{};
 };
 
@@ -172,20 +175,15 @@ struct Ranch
   std::string ranchName;
 };
 
-//! User.
+//! User
 struct User
 {
   DatumUid characterUid;
-};
-
-struct Token
-{
-  DatumUid userUid{0};
+  std::string name;
   std::string token;
 };
 
-
-}
+} // namespace data
 
 class DataDirector
 {
@@ -235,20 +233,11 @@ public:
   //! Establishes connection with the data source.
   void EstablishConnection();
 
-  void GetToken(
-    const std::string& user,
-    const std::function<void(View<data::Token>&&)>& consumer,
-    const std::function<void()>& errorConsumer);
+  //! Neviem este
+  std::future<data::User> GetUser(std::string const &name);
 
-  void GetUser(
-    uint32_t userUid,
-    const std::function<void(View<data::User>&&)>& consumer,
-    const std::function<void()>& errorConsumer);
-
-  void GetUser(
-    DatumUid userUid,
-    )
-
+  //! Ani tu este neviem
+  std::future<data::Character> GetCharacter(DatumUid uid);
 private:
   template<typename T>
   struct Record
@@ -258,8 +247,11 @@ private:
     T value;
   };
 
-  //!
-  std::unordered_map<uint32_t, Record<data::User>> _users;
+  //! username, promise
+  std::unordered_map<std::string, std::promise<data::User>> _users;
+
+  //! uid, promise
+  std::unordered_map<DatumUid, std::promise<data::Character>> _characters;
 
   //!
   Settings::DataSource _settings;
