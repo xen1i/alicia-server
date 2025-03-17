@@ -3,7 +3,6 @@
 #include <condition_variable>
 #include <mutex>
 #include <queue>
-#include <thread>
 
 #include <spdlog/spdlog.h>
 
@@ -16,6 +15,8 @@ void TaskLoop::Begin()
 
   while (true)
   {
+    std::unique_lock queueLock(_queueMutex);
+
     while (!_queue.empty())
     {
       // Poll the task from the queue.
@@ -38,7 +39,6 @@ void TaskLoop::Begin()
     }
 
     // Wait for queue notification.
-    std::unique_lock queueLock(_queueMutex);
     _queueNotification.wait(queueLock);
   }
 }
@@ -57,116 +57,6 @@ void TaskLoop::Queue(const Task& task)
   }
 
   _queueNotification.notify_all();
-}
-
-void Executor::Submit(const Task& task)
-{
-  _taskLoop.Queue(task);
-}
-
-void SingleThreadedExecutor::Begin()
-{
-  _thread = std::thread([this]()
-  {
-    _taskLoop.Begin();
-  });
-}
-
-void SingleThreadedExecutor::End()
-{
-  _taskLoop.End();
-}
-
-void SingleThreadedExecutor::Synchronize()
-{
-  if (_thread.joinable())
-    _thread.join();
-}
-
-SingleThreadedExecutor& Scheduler::GetMainThreadExecutor()
-{
-  return _mainThreadExecutor;
-}
-
-void MultiThreadedExecutor::Begin()
-{
-  // todo
-  // - spawn worker if no free worker available (unless max worker thread count reached)
-  // - workers idle and poll the queue, and they despawn when they idle more than they work
-
-  // std::condition_variable condition;
-  //
-  // task_executor_param param = {
-  //   .task = task,
-  //   .cv = &condition,
-  // };
-  //
-  // pthread_t taskThread;
-  // if (pthread_create(&taskThread, nullptr, &task_executor, &param) != 0)
-  // {
-  //   spdlog::error("pthread_create failed: {}", strerror(errno));
-  //   return;
-  // }
-  //
-  // if (timeout == 0)
-  //   return;
-  //
-  // std::mutex mutex;
-  // std::unique_lock lock(mutex);
-  //
-  // // wait for timeout milliseconds before terminating the execution thread
-  // if (condition.wait_for(lock, std::chrono::milliseconds(timeout)) == std::cv_status::timeout)
-  // {
-  //   if (pthread_cancel(taskThread) != 0)
-  //   {
-  //     spdlog::error("pthread_cancel failed: {}", strerror(errno));
-  //     exit(0XDEAD);
-  //   }
-  //
-  //   void* ret;
-  //
-  //   // the only way to know if the thread was cancelled it to join with it, and compare the
-  //   return
-  //   // value to PTHREAD_CANCELED
-  //   if (pthread_join(taskThread, &ret) != 0)
-  //   {
-  //     spdlog::error("pthread_join failed: {}", strerror(errno));
-  //     exit(0XDEAD);
-  //   }
-  //
-  //   if (ret == PTHREAD_CANCELED)
-  //   {
-  //     spdlog::error("task was cancelled, timeout reached");
-  //     // free(ret);
-  //     //  i'm pretty sure free needs to be called, but this throws sigsegv
-  //     exit(0xDEAD);
-  //   }
-  //
-  //   // free(&ret);
-  // }
-}
-
-void MultiThreadedExecutor::End() {}
-
-Scheduler::Scheduler()
-{
-  _mainThreadExecutor.Begin();
-}
-
-Scheduler::~Scheduler()
-{
-  _mainThreadExecutor.End();
-}
-
-void Scheduler::RunOnMainThread(const Task& task)
-{
-  _mainThreadExecutor.Submit(task);
-}
-
-void Scheduler::RunOnWorkerThread(const Task& task)
-{
-  // todo
-  throw std::runtime_error("not implemented");
 }
 
 } // namespace server

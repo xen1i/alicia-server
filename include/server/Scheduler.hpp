@@ -22,7 +22,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <cstdint>
 #include <functional>
 #include <queue>
 #include <thread>
@@ -54,74 +53,25 @@ protected:
   std::atomic<bool> _shouldRun;
 };
 
-//!
-class Executor
+class Scheduler
 {
 public:
-  virtual ~Executor()
-  {}
+  void SubmitToMain(
+    const Task& task)
+  {
+    _mainTaskLoop.Queue(task);
+  }
 
-  virtual void Begin()
-  {}
-  virtual void End()
-  {}
-  virtual void Synchronize()
-  {}
-
-  void Submit(const Task& task);
-
-protected:
-  TaskLoop _taskLoop;
-};
-
-//! Single-threaded task executor.
-class SingleThreadedExecutor final
-  : public Executor
-{
-public:
-  ~SingleThreadedExecutor() override = default;
-
-  void Begin() override;
-  void End() override;
-  void Synchronize() override;
+  void SubmitToWorker(
+    const Task& task)
+  {
+    _workerTaskPool.Queue(task);
+  }
 
 private:
-  std::thread _thread;
-};
-
-//! Pooled multi-threaded task executor.
-class MultiThreadedExecutor final
-  : public Executor
-{
-public:
-  ~MultiThreadedExecutor() override = default;
-
-  void Begin() override;
-  void End() override;
-
-private:
-  std::vector<std::thread> _threadPool;
-};
-
-//! Task scheduler.
-class Scheduler final
-{
-public:
-  Scheduler();
-  ~Scheduler();
-  //! Runs a task on the main thread.
-  //! @param task Task to run on a main thread.
-  void RunOnMainThread(const Task& task);
-  //! Runs a task on a available worker thread.
-  //! @param task Task to run on a worker thread.
-  void RunOnWorkerThread(const Task& task);
-
-  //! @return The single threaded executor.
-  SingleThreadedExecutor& GetMainThreadExecutor();
-
-private:
-  SingleThreadedExecutor _mainThreadExecutor;
-  MultiThreadedExecutor _workerThreadExecutor;
+  TaskLoop _mainTaskLoop;
+  TaskLoop _workerTaskPool;
+  std::array<std::thread, 4> _pool;
 };
 
 } // namespace server

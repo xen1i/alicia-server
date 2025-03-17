@@ -1,7 +1,3 @@
-//
-// Created by rgnter on 25/11/2024.
-//
-
 #include "server/DataDirector.hpp"
 
 #include <spdlog/spdlog.h>
@@ -29,7 +25,12 @@ namespace alicia
 {
 
 DataDirector::DataDirector(Settings::DataSource settings)
-    : _settings(std::move(settings))
+  : _settings(std::move(settings))
+{
+  _taskLoop.Begin();
+}
+
+void DataDirector::EstablishConnection()
 {
   try
   {
@@ -56,13 +57,13 @@ DataDirector::DataDirector(Settings::DataSource settings)
       "SELECT * FROM data.item WHERE uid=$1");
 
     spdlog::info(
-      "Initialized the data source with connection string '{}'",
+      "Initialized the data source with the connection string '{}'",
       _settings.connectionString);
   }
   catch (const std::exception& x)
   {
     spdlog::error(
-      "Failed to initialize the data source with connection string '{}' because: {}",
+      "Failed to establish the data source connection with connection string '{}' because: {}",
       _settings.connectionString,
       x.what());
   }
@@ -79,29 +80,33 @@ void DataDirector::GetToken(
     return;
   }
 
-  try
-  {
-    pqxx::work query(*_connection);
-
-    // Query and find the user login and the token.
-    const auto result = query.exec_prepared1(
-      QueryUserTokenRecordStatementId, user.c_str());
-
-    data::Token token{};
-    if (result.num())
+  _taskLoop.Queue(
+    [this, user, consumer, errorConsumer]()
     {
-      token = {
-        .userUid = result["user_uid"].as<uint32_t>(),
-        .token = result["token"].as<std::string>()};
-    }
+      try
+      {
+        pqxx::work query(*_connection);
 
-    consumer(View(token));
-  }
-  catch (std::exception& x)
-  {
-    spdlog::error("DataDirector error: {}", x.what());
-    errorConsumer();
-  }
+        // Query and find the user login and the token.
+        const auto result = query.exec_prepared1(
+          QueryUserTokenRecordStatementId, user.c_str());
+
+        data::Token token{};
+        if (result.num())
+        {
+          token = {
+            .userUid = result["user_uid"].as<uint32_t>(),
+            .token = result["token"].as<std::string>()};
+        }
+
+        consumer(View(token));
+      }
+      catch (std::exception& x)
+      {
+        spdlog::error("DataDirector error: {}", x.what());
+        errorConsumer();
+      }
+    });
 }
 
 void DataDirector::GetUser(
@@ -117,21 +122,25 @@ void DataDirector::GetUser(
     return;
   }
 
-  try
-  {
-    pqxx::work query(*_connection);
+  _taskLoop.Queue(
+    [this, userUid, consumer, errorConsumer]()
+    {
+      try
+      {
+        pqxx::work query(*_connection);
 
-    // Query and find the user login and the token.
-    const auto result = query.exec_prepared1(QueryUserRecordStatementId, userUid);
+        // Query and find the user login and the token.
+        const auto result = query.exec_prepared1(QueryUserRecordStatementId, userUid);
 
-    auto& userRecord = _users[userUid];
-    consumer(View(userRecord.value));
-  }
-  catch (std::exception& x)
-  {
-    spdlog::error("DataDirector error: {}", x.what());
-    errorConsumer();
-  }
+        auto& userRecord = _users[userUid];
+        consumer(View(userRecord.value));
+      }
+      catch (std::exception& x)
+      {
+        spdlog::error("DataDirector error: {}", x.what());
+        errorConsumer();
+      }
+    });
 }
 
 } // namespace alicia

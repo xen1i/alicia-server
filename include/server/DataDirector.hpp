@@ -5,6 +5,7 @@
 #ifndef DATADIRECTOR_HPP
 #define DATADIRECTOR_HPP
 
+#include "Scheduler.hpp"
 #include "server/Settings.hpp"
 
 #include <cstdint>
@@ -212,6 +213,11 @@ public:
       return *this;
     }
 
+    bool IsAvailable()
+    {
+      return _value.available;
+    }
+
     T& operator()()
     {
       return _value;
@@ -226,6 +232,9 @@ public:
   explicit DataDirector(
     Settings::DataSource settings = {});
 
+  //! Establishes connection with the data source.
+  void EstablishConnection();
+
   void GetToken(
     const std::string& user,
     const std::function<void(View<data::Token>&&)>& consumer,
@@ -236,12 +245,15 @@ public:
     const std::function<void(View<data::User>&&)>& consumer,
     const std::function<void()>& errorConsumer);
 
+  void GetUser(
+    DatumUid userUid,
+    )
+
 private:
   template<typename T>
   struct Record
   {
-    std::chrono::steady_clock::time_point created{
-      std::chrono::steady_clock::now()};
+    bool available{false};
     std::mutex mutex;
     T value;
   };
@@ -251,6 +263,8 @@ private:
 
   //!
   Settings::DataSource _settings;
+  //!
+  server::TaskLoop _taskLoop;
 
   //!
   std::mutex _connectionMtx{};

@@ -18,10 +18,11 @@
 namespace
 {
 
-std::unique_ptr<server::Scheduler> g_scheduler;
-
+std::unique_ptr<server::Scheduler<
+  server::BlockingExecutor>> g_dataScheduler;
 std::unique_ptr<alicia::DataDirector> g_dataDirector;
-std::unique_ptr<alicia::LobbyDirector> g_loginDirector;
+
+std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
 
@@ -52,36 +53,53 @@ int main()
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json5");
 
-  g_scheduler = std::make_unique<server::Scheduler>();
+  //
+  // LobbyThread
+  //  -> Loops DataTaskLoop
+  //  LobbyNetworkThread
+  //    -> Loops asio
+  //
 
-  g_scheduler->RunOnMainThread([&settings]()
+  const std::jthread dataThread([&settings]()
   {
     // Data director.
     g_dataDirector = std::make_unique<alicia::DataDirector>(
       settings._dataSourceSettings);
 
+    g_dataScheduler = std::make_unique<server::Scheduler<
+      server::BlockingExecutor>>();
+  });
+
+  const std::jthread lobbyThread([&settings]()
+  {
     // Lobby director.
-    g_loginDirector = std::make_unique<alicia::LobbyDirector>(
+    g_lobbyDirector = std::make_unique<alicia::LobbyDirector>(
       *g_dataDirector,
       settings._lobbySettings);
+  });
 
+  const std::jthread ranchThread([&settings]()
+  {
     // Ranch director.
     g_ranchDirector = std::make_unique<alicia::RanchDirector>(
-    *g_dataDirector,
+      *g_dataDirector,
       settings._ranchSettings);
+  });
 
+  const std::jthread raceThread([&settings]()
+  {
     // Race director.
     g_raceDirector = std::make_unique<alicia::RaceDirector>(
       *g_dataDirector,
       settings._raceSettings);
+  });
 
+  const std::jthread messengerThread([&settings]()
+  {
     // TODO: Messenger
     alicia::CommandServer messengerServer("Messenger");
     messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
   });
-
-  // Synchronize the main thread with the main server thread.
-  g_scheduler->GetMainThreadExecutor().Synchronize();
 
   return 0;
 }

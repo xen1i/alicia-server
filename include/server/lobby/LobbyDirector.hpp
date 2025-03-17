@@ -29,22 +29,14 @@ public:
   LobbyDirector& operator=(LobbyDirector&&) = delete;
 
 private:
+  void Tick();
+
   //! Handles the user login command.
   //! @param clientId ID of the client.
   //! @param login Login command.
   void HandleUserLogin(
     ClientId clientId,
     const LobbyCommandLogin& login);
-  //! Handles the login accept
-  void ProcessUserLoginResult(
-    ClientId clientId,
-    LoginHandler::Result result);
-
-  void QueueUserLoginAccepted(
-    ClientId clientId,
-    uint32_t userUid);
-  void QueueUserLoginRejected(
-    ClientId clientId);
 
   //!
   void HandleCreateNicknameOK(
@@ -127,26 +119,15 @@ private:
   Settings::LobbySettings _settings;
 
   //!
+  CommandServer _server;
+
+  //!
   DataDirector& _dataDirector;
   //!
   LoginHandler _loginHandler;
 
   //!
-  CommandServer _server;
-  //!
   std::unordered_map<ClientId, DatumUid> _clientCharacters;
-
-  //!
-  struct ClientLoginContext
-  {
-    std::string userName;
-
-    DatumUid characterUid{InvalidDatumUid};
-    LobbyCommandLoginOK response{};
-  };
-
-  //!
-  std::unordered_map<ClientId, ClientLoginContext> _queuedClientLogins;
 };
 
 }

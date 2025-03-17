@@ -6,6 +6,7 @@
 #define LOGINHANDLER_HPP
 
 #include "server/DataDirector.hpp"
+#include "libserver/command/CommandServer.hpp"
 
 namespace alicia
 {
@@ -14,30 +15,36 @@ namespace alicia
 class LoginHandler
 {
 public:
-  struct Result
-  {
-    //! Verdict of the result.
-    enum class Verdict
-    {
-      Accepted,
-      Rejected
-    } verdict{Verdict::Rejected};
+  LoginHandler(
+    DataDirector& dataDirector,
+    CommandServer& server);
 
-    //! Unique identifier of the authenticated user.
-    uint32_t userUid{0};
-  };
-
-  explicit LoginHandler(DataDirector& dataDirector);
+  void Tick();
 
   //!
-  void Authenticate(
-    const std::string& userName,
-    const std::string& providedUserToken,
-    std::function<void(Result)> resultCallback);
+  void HandleUserLogin(
+    ClientId clientId,
+    const LobbyCommandLogin& login);
+
+  void QueueUserLoginAccepted(ClientId clientId, const DatumUid& characterUid);
+  void QueueUserLoginRejected(ClientId clientId);
 
 private:
+  struct LoginContext
+  {
+    ClientId clientId;
+    std::string userName;
+    std::string userToken;
 
+    DatumUid userUid;
+  };
 
+  std::unordered_map<ClientId, LoginContext> _clientLogins;
+  std::queue<ClientId> _clientLoginRequestQueue;
+  std::queue<ClientId> _clientLoginResponseQueue;
+
+  //!
+  CommandServer& _server;
   //!
   DataDirector& _dataDirector;
 };

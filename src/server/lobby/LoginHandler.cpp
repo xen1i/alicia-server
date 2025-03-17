@@ -9,63 +9,161 @@
 namespace alicia
 {
 
-LoginHandler::LoginHandler(DataDirector& dataDirector)
-    : _dataDirector(dataDirector)
+LoginHandler::LoginHandler(DataDirector& dataDirector, CommandServer& server)
+  : _server(server)
+  , _dataDirector(dataDirector)
 {
 }
 
-void LoginHandler::Authenticate(
-  const std::string& userName,
-  const std::string& authenticationToken,
-  std::function<void(Result result)> resultCallback)
+void LoginHandler::Tick()
 {
-  // Both strings must be valid.
-  if (userName.empty() || authenticationToken.empty())
+  // Process the login queue.
+  while (not _clientLoginRequestQueue.empty())
   {
-    resultCallback(Result{
-      .verdict = Result::Verdict::Rejected});
+    const ClientId clientId = _clientLoginRequestQueue.front();
+
+    assert(_clientLogins.contains(clientId));
+    const LoginContext& loginContext = _clientLogins[clientId];
+
+    // Get the user credentials.
+    const auto user = _dataDirector.GetUser(loginContext.userName);
+    if (not user)
+    {
+      continue;
+    }
+
+    _clientLoginRequestQueue.pop();
+
+    // If the provided user token does not match the one stored
+    // then reject the login.
+    if (loginContext.userToken != user.token)
+    {
+      QueueUserLoginRejected(clientId);
+    }
+    else
+    {
+      // Queue the response.
+      _clientLoginResponseQueue.emplace(clientId);
+    }
+
+    // Only one user login per tick.
+    break;
+  }
+
+  while (not _clientLoginResponseQueue.empty())
+  {
+    const ClientId clientId = _clientLoginResponseQueue.front();
+
+    assert(_clientLogins.contains(clientId));
+    const LoginContext& loginContext = _clientLogins[clientId];
+
+    // Load the character.
+    const auto character = _dataDirector.GetCharacter(user.characterUid);
+    if (not character)
+    {
+      continue;
+    }
+
+    // Load the equipment.
+    const auto characterEquipment = _dataDirector.GetItems(character.characterEquipment);
+    const auto horseEquipment = _dataDirector.GetItems(character.characterEquipment);
+    // Load the horses.
+    const auto horses = _dataDirector.GetHorses(character.horses);
+    // Load the ranch
+    const auto ranch = _dataDirector.GetRanch(character.ranchUid);
+
+    if (not characterEquipment ||
+      not horseEquipment ||
+      not horses ||
+      not ranch)
+    {
+      continue;
+    }
+
+    QueueUserLoginAccepted(clientId, user.characterUid);
+  }
+}
+
+void LoginHandler::HandleUserLogin(
+  const ClientId clientId,
+  const LobbyCommandLogin& login)
+{
+  if (login.loginId.empty() || login.authKey.empty())
+  {
+    spdlog::debug(
+      "LoginHandler::HandleUserLogin - Rejecting login for client {}."
+      " User name or user token empty.",
+      clientId);
+
+    QueueUserLoginRejected(clientId);
     return;
   }
 
-  _dataDirector.GetToken(
-    userName,
-    [userName, authenticationToken, resultCallback = std::move(resultCallback)](
-      auto tokenRecord)
+  if (_clientLogins.contains(clientId))
+  {
+    spdlog::debug(
+      "LoginHandler::HandleUserLogin - Rejecting login for client {} ({})."
+      " User login already queued.",
+      clientId,
+      login.loginId);
+
+    QueueUserLoginRejected(clientId);
+    return;
+  }
+
+  const auto [iterator, inserted] =
+    _clientLogins.try_emplace(clientId, LoginContext{
+      .userName = login.loginId,
+      .userToken = login.authKey});
+  assert(not inserted && "Duplicate client login request.");
+
+  _clientLoginRequestQueue.emplace(clientId);
+}
+
+void LoginHandler::QueueUserLoginAccepted(
+  const ClientId clientId,
+  const data::User& user)
+{
+  _server.QueueCommand<LobbyCommandLoginOK>(
+    clientId,
+    CommandId::LobbyLoginOK,
+    [&user, this]()
     {
-      const auto [userUid, token] = tokenRecord();
+      // Load the character.
+      const auto character = _dataDirector.GetCharacter(user.characterUid);
+      assert(character.IsAvailable());
 
-      // If the tokens do not match reject the login.
-      if (authenticationToken != token)
-      {
-        spdlog::info(
-          "User '{}' ({}) authentication rejected.",
-          userName,
-          userUid);
+      // Load the equipment.
+      const auto characterEquipment = _dataDirector.GetItems(character.characterEquipment);
+      const auto horseEquipment = _dataDirector.GetItems(character.characterEquipment);
+      assert(characterEquipment.IsAvailable() && horseEquipment.IsAvailable());
 
-        resultCallback(Result{
-          .verdict = Result::Verdict::Rejected});
-        return;
-      }
+      // Load the horses.
+      const auto horses = _dataDirector.GetHorses(character.horses);
+      assert(horses.IsAvailable());
 
-      spdlog::info(
-        "User '{}' ({}) authentication accepted.",
-        userName,
-        userUid);
-      resultCallback(Result{
-        .verdict = Result::Verdict::Accepted,
-        .userUid = userUid});
-    },
-    [userName, resultCallback = std::move(resultCallback)]()
-    {
-      spdlog::error(
-        "User '{}' couldn't authenticate due to error",
-        userName);
+      // Load the ranch
+      const auto ranch = _dataDirector.GetRanch(character.ranchUid);
+      assert(ranch.IsAvailable());
 
-      resultCallback(Result{
-        .verdict = Result::Verdict::Rejected});
+      // Transform the server data to alicia protocol data.
+      return LobbyCommandLoginOK{
+      };
     });
 }
 
+void LoginHandler::QueueUserLoginRejected(ClientId clientId)
+{
+  _server.QueueCommand<LobbyCommandLoginCancel>(
+    clientId,
+    CommandId::LobbyLoginCancel,
+    []()
+    {
+      return LobbyCommandLoginCancel{
+        .reason = LoginCancelReason::InvalidUser};
+    });
 }
+
+} // namespace alicia
 
 

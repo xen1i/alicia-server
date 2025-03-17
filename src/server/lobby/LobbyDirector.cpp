@@ -21,13 +21,20 @@ namespace alicia
 
 LobbyDirector::LobbyDirector(DataDirector& dataDirector, Settings::LobbySettings settings)
     : _settings(std::move(settings))
-    , _dataDirector(dataDirector)
-    , _loginHandler(dataDirector)
     , _server("Lobby")
+    , _dataDirector(dataDirector)
+    , _loginHandler(dataDirector, _server)
 {
   _server.RegisterCommandHandler<LobbyCommandLogin>(
     CommandId::LobbyLogin,
-    [this](ClientId clientId, const auto& message) { HandleUserLogin(clientId, message); });
+    [this](ClientId clientId, const auto& message)
+    {
+      assert(message.constant0 == 50
+        && message.constant1 == 281
+        && "Game version mismatch");
+
+      _loginHandler.HandleUserLogin(clientId, message);
+    });
 
   _server.RegisterCommandHandler<LobbyCommandCreateNicknameOK>(
     CommandId::LobbyCreateNicknameOK,
@@ -100,69 +107,22 @@ LobbyDirector::LobbyDirector(DataDirector& dataDirector, Settings::LobbySettings
   _server.Host(_settings.address, _settings.port);
 }
 
-void LobbyDirector::HandleUserLogin(
-  const ClientId clientId,
-const LobbyCommandLogin& login)
+void LobbyDirector::Tick()
 {
-  assert(login.constant0 == 50 && login.constant1 == 281 && "Game version mismatch");
-
-  _loginHandler.Authenticate(
-    login.loginId,
-    login.authKey,
-    [this, clientId](LoginHandler::Result result)
-    {
-      ProcessUserLoginResult(clientId, result);
-    });
-}
-
-void LobbyDirector::ProcessUserLoginResult(
-  const ClientId clientId,
-  const LoginHandler::Result result)
-{
-  if (result.verdict == LoginHandler::Result::Verdict::Rejected)
-  {
-    QueueUserLoginRejected(clientId);
-    return;
-  }
-
-  assert(result.userUid != 0);
-  _dataDirector.GetUser(
-    result.userUid,
-    [this, clientId](auto user)
-    {
-      //QueueUserLoginAccepted(clientId);
-    },
-    [this, clientId]()
-    {
-      QueueUserLoginRejected(clientId);
-    });
+  _loginHandler.Tick();
 }
 
 void LobbyDirector::QueueUserLoginAccepted(
   const ClientId clientId,
   const uint32_t userUid)
 {
-  _server.QueueCommand<LobbyCommandLoginOK>(
-    clientId,
-    CommandId::LobbyLoginOK,
-    []()
-    {
-      // Transform the server data to alicia protocol data.
-      return LobbyCommandLoginOK{};
-    });
+
 }
 
 void LobbyDirector::QueueUserLoginRejected(
   const ClientId clientId)
 {
-  _server.QueueCommand<LobbyCommandLoginCancel>(
-    clientId,
-    CommandId::LobbyLoginCancel,
-    []()
-    {
-      return LobbyCommandLoginCancel{
-        .reason = LoginCancelReason::InvalidUser};
-    });
+
 }
 
 void LobbyDirector::HandleCreateNicknameOK(
@@ -195,6 +155,14 @@ void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
+  _dataDirector.GetUserInventory([](const auto& itemsView)
+  {
+    const auto items = itemsView.Get();
+    _queuedInventoryResponses.emplace_back(InventoryResponse{
+    .message = LobbyCommandShowInventoryOK {
+      .horses = {},
+      .items = {}}});
+  });
 }
 
 void LobbyDirector::HandleAchievementCompleteList(
