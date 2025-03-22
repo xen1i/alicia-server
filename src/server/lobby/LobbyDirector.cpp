@@ -25,6 +25,7 @@ LobbyDirector::LobbyDirector(DataDirector& dataDirector, Settings::LobbySettings
     , _dataDirector(dataDirector)
     , _loginHandler(dataDirector, _server)
 {
+  // LobbyCommandLogin
   _server.RegisterCommandHandler<LobbyCommandLogin>(
     CommandId::LobbyLogin,
     [this](ClientId clientId, const auto& message)
@@ -110,19 +111,6 @@ LobbyDirector::LobbyDirector(DataDirector& dataDirector, Settings::LobbySettings
 void LobbyDirector::Tick()
 {
   _loginHandler.Tick();
-}
-
-void LobbyDirector::QueueUserLoginAccepted(
-  const ClientId clientId,
-  const uint32_t userUid)
-{
-
-}
-
-void LobbyDirector::QueueUserLoginRejected(
-  const ClientId clientId)
-{
-
 }
 
 void LobbyDirector::HandleCreateNicknameOK(

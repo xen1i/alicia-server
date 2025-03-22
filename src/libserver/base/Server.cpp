@@ -47,14 +47,15 @@ Client::Client(
 
 void Client::Begin()
 {
-  _processIo = true;
+  _shouldRun = true;
   _beginHandler();
+
   ReadLoop();
 }
 
 void Client::End()
 {
-  _processIo = false;
+  _shouldRun = false;
 
   try
   {
@@ -73,7 +74,7 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
 {
   // ToDo: Write & send timing.
   // ToDo: Write & send batching.
-  if (!_processIo)
+  if (not _shouldRun)
   {
     return;
   }
@@ -104,11 +105,11 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
       }
       catch (const std::exception& x)
       {
-        End();
         spdlog::error(
           "Error in the client write loop: {}",
           x.what());
-        _socket.close();
+
+        End();
       }
     });
 }
@@ -117,7 +118,7 @@ void Client::ReadLoop() noexcept
 {
   // ToDo: Read & receive timing.
   // ToDo: Read & receive batching.
-  if (!_processIo)
+  if (!_shouldRun)
   {
     return;
   }
@@ -166,8 +167,10 @@ Server::Server(
 {
 }
 
-void Server::Host(const asio::ip::address& address, uint16_t port)
+void Server::Begin(const asio::ip::address& address, uint16_t port)
 {
+  _shouldRun = true;
+
   const asio::ip::tcp::endpoint server_endpoint(address, port);
 
   _acceptor.open(server_endpoint.protocol());
@@ -178,6 +181,19 @@ void Server::Host(const asio::ip::address& address, uint16_t port)
   AcceptLoop();
 
   _io_ctx.run();
+}
+
+void Server::End()
+{
+  _shouldRun = false;
+
+  // Disconnect all the clients.
+  for (auto& client : _clients)
+  {
+    client.second.End();
+  }
+
+  _acceptor.close();
 }
 
 Client& Server::GetClient(ClientId clientId)
@@ -193,6 +209,11 @@ Client& Server::GetClient(ClientId clientId)
 
 void Server::AcceptLoop() noexcept
 {
+  if (not _shouldRun)
+  {
+    return;
+  }
+
   _acceptor.async_accept(
     [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
     {
@@ -208,6 +229,7 @@ void Server::AcceptLoop() noexcept
 
         // Sequential Id.
         const ClientId clientId = _client_id++;
+
         // Create the client.
         const auto [itr, emplaced] = _clients.try_emplace(
           clientId,

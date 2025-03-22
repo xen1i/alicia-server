@@ -185,47 +185,79 @@ struct User
 
 } // namespace data
 
-class DataDirector
+//! Data record with access mutex.
+template<typename T>
+struct Record
 {
-public:
-  template<typename T>
+  //! Whether the record is available.
+  std::atomic_bool available{false};
+  //! An access mutex.
+  std::mutex accessMutex{};
+  //! Value.
+  T value{};
+
+  //! Data record view.
   struct View
   {
-    explicit View(T& value)
-      : _value(value)
+    //! Constructor for non-empty view.
+    //! @param record The associated record.
+    explicit View(Record* record)
+        : _record(record)
+        , _lock(_record->accessMutex, std::defer_lock)
     {
     }
 
+    View()
+      : _record(nullptr)
+    {
+    }
+
+    //! Deleted copy constructor.
     View(const View&) = delete;
+    //! Deleted copy assignment operator.
     void operator=(const View&) = delete;
 
-    View(View&& other)
-      : _value(other._value)
-      , _lock(std::move(other._lock))
+    //! Move constructor.
+    View(View&& other) noexcept
+        : _record(other._record)
+        , _lock(std::move(other._lock))
     {
     }
+    //! Move assignment operator.
     View& operator=(View&& other) noexcept
     {
-      _value = other._value;
+      _record = other._record;
       _lock = std::move(other._lock);
       return *this;
     }
 
-    bool IsAvailable()
-    {
-      return _value.available;
-    }
+    //! Returns whether the value is available.
+    //! @returns `true` if the value is available, otherwise returns `false`.
+    bool IsAvailable() { return _record && _record.available; }
 
+    //! Returns the reference to the value.
+    //! @returns Value.
     T& operator()()
     {
-      return _value;
+      assert(_record != nullptr && "Accessing null record");
+      _lock.lock();
+      return _record->value;
     }
 
   private:
-    T& _value;
-    std::unique_lock<std::mutex> _lock;
+    Record* _record;
+    std::unique_lock<std::mutex> _lock{};
   };
 
+  View& GetView()
+  {
+    return View(this);
+  }
+};
+
+class DataDirector
+{
+public:
   //!
   explicit DataDirector(
     Settings::DataSource settings = {});
@@ -234,24 +266,17 @@ public:
   void EstablishConnection();
 
   //! Neviem este
-  std::future<data::User> GetUser(std::string const &name);
+  Record<data::User>::View GetUser(std::string const &name);
 
   //! Ani tu este neviem
-  std::future<data::Character> GetCharacter(DatumUid uid);
-private:
-  template<typename T>
-  struct Record
-  {
-    bool available{false};
-    std::mutex mutex;
-    T value;
-  };
+  Record<data::Character>::View GetCharacter(DatumUid uid);
 
+private:
   //! username, promise
-  std::unordered_map<std::string, std::promise<data::User>> _users;
+  std::unordered_map<std::string, Record<data::User>> _users;
 
   //! uid, promise
-  std::unordered_map<DatumUid, std::promise<data::Character>> _characters;
+  std::unordered_map<DatumUid, Record<data::Character>> _characters;
 
   //!
   Settings::DataSource _settings;

@@ -53,27 +53,6 @@ protected:
   std::atomic<bool> _shouldRun;
 };
 
-class Scheduler
-{
-public:
-  void SubmitToMain(
-    const Task& task)
-  {
-    _mainTaskLoop.Queue(task);
-  }
-
-  void SubmitToWorker(
-    const Task& task)
-  {
-    _workerTaskPool.Queue(task);
-  }
-
-private:
-  TaskLoop _mainTaskLoop;
-  TaskLoop _workerTaskPool;
-  std::array<std::thread, 4> _pool;
-};
-
 } // namespace server
 
 #endif // SERVER_SCHEDULER_HPP

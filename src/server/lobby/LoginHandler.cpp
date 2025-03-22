@@ -23,11 +23,11 @@ void LoginHandler::Tick()
     const ClientId clientId = _clientLoginRequestQueue.front();
 
     assert(_clientLogins.contains(clientId));
-    const LoginContext& loginContext = _clientLogins[clientId];
+    LoginContext& loginContext = _clientLogins[clientId];
 
     // Get the user credentials.
-    const auto user = _dataDirector.GetUser(loginContext.userName);
-    if (not user)
+    auto user = _dataDirector.GetUser(loginContext.userName);
+    if (not user.IsAvailable())
     {
       continue;
     }
@@ -36,13 +36,14 @@ void LoginHandler::Tick()
 
     // If the provided user token does not match the one stored
     // then reject the login.
-    if (loginContext.userToken != user.token)
+    if (loginContext.userToken != user().token)
     {
       QueueUserLoginRejected(clientId);
     }
     else
     {
-      // Queue the response.
+      loginContext.user = std::move(user);
+      // Queue the processing of the response.
       _clientLoginResponseQueue.emplace(clientId);
     }
 
@@ -55,11 +56,14 @@ void LoginHandler::Tick()
     const ClientId clientId = _clientLoginResponseQueue.front();
 
     assert(_clientLogins.contains(clientId));
-    const LoginContext& loginContext = _clientLogins[clientId];
+    LoginContext& loginContext = _clientLogins[clientId];
+
+    auto& user = loginContext.user;
+    assert(user.IsAvailable() && "User must be available.");
 
     // Load the character.
-    const auto character = _dataDirector.GetCharacter(user.characterUid);
-    if (not character)
+    auto character = _dataDirector.GetCharacter(user().characterUid);
+    if (not character.IsAvailable())
     {
       continue;
     }
@@ -88,6 +92,7 @@ void LoginHandler::HandleUserLogin(
   const ClientId clientId,
   const LobbyCommandLogin& login)
 {
+  // Validate the command fields.
   if (login.loginId.empty() || login.authKey.empty())
   {
     spdlog::debug(
@@ -99,6 +104,7 @@ void LoginHandler::HandleUserLogin(
     return;
   }
 
+  // The login request must be unique for the client.
   if (_clientLogins.contains(clientId))
   {
     spdlog::debug(
@@ -111,11 +117,12 @@ void LoginHandler::HandleUserLogin(
     return;
   }
 
+  // Queue the login.
   const auto [iterator, inserted] =
     _clientLogins.try_emplace(clientId, LoginContext{
       .userName = login.loginId,
       .userToken = login.authKey});
-  assert(not inserted && "Duplicate client login request.");
+  assert(inserted && "Duplicate client login request.");
 
   _clientLoginRequestQueue.emplace(clientId);
 }
@@ -130,20 +137,20 @@ void LoginHandler::QueueUserLoginAccepted(
     [&user, this]()
     {
       // Load the character.
-      const auto character = _dataDirector.GetCharacter(user.characterUid);
+      auto character = _dataDirector.GetCharacter(user.characterUid);
       assert(character.IsAvailable());
 
       // Load the equipment.
-      const auto characterEquipment = _dataDirector.GetItems(character.characterEquipment);
-      const auto horseEquipment = _dataDirector.GetItems(character.characterEquipment);
+      auto characterEquipment = _dataDirector.GetItems(character().characterEquipment);
+      auto horseEquipment = _dataDirector.GetItems(character().characterEquipment);
       assert(characterEquipment.IsAvailable() && horseEquipment.IsAvailable());
 
       // Load the horses.
-      const auto horses = _dataDirector.GetHorses(character.horses);
+      auto horses = _dataDirector.GetHorses(character().horses);
       assert(horses.IsAvailable());
 
       // Load the ranch
-      const auto ranch = _dataDirector.GetRanch(character.ranchUid);
+      auto ranch = _dataDirector.GetRanch(character().ranchUid);
       assert(ranch.IsAvailable());
 
       // Transform the server data to alicia protocol data.

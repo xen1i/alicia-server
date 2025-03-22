@@ -31,19 +31,10 @@ public:
 private:
   void Tick();
 
-  //! Handles the user login command.
-  //! @param clientId ID of the client.
-  //! @param login Login command.
-  void HandleUserLogin(
-    ClientId clientId,
-    const LobbyCommandLogin& login);
-
   //!
   void HandleCreateNicknameOK(
     ClientId clientId,
     const LobbyCommandCreateNicknameOK& createNickname);
-  void ProcessCreateNicknameResult();
-
 
   //!
   void HandleEnterChannel(

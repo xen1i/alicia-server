@@ -36,7 +36,7 @@ private:
     std::string userName;
     std::string userToken;
 
-    DatumUid userUid;
+    Record<data::User>::View user;
   };
 
   std::unordered_map<ClientId, LoginContext> _clientLogins;

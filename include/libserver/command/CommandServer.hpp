@@ -55,7 +55,8 @@ class CommandServer
 {
 public:
   //! Default constructor;
-  CommandServer(std::string name);
+  explicit CommandServer(std::string name);
+  ~CommandServer();
 
   //! Hosts the command server on the specified interface with the provided port.
   //! Runs the processing loop and blocks until exception or stopped.
@@ -131,6 +132,7 @@ private:
   std::unordered_map<ClientId, CommandClient> _clients{};
 
   Server _server;
+  std::thread _serverThread;
 };
 
 } // namespace alicia

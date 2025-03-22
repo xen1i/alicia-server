@@ -75,7 +75,7 @@ private:
   void ReadLoop() noexcept;
 
   //! Indicates whether the client should process I/O.
-  std::atomic<bool> _processIo = false;
+  std::atomic<bool> _shouldRun = false;
 
   //! A read buffer.
   asio::streambuf _readBuffer{};
@@ -116,13 +116,17 @@ public:
     ClientReadHandler clientReadHandler,
     ClientWriteHandler clientWriteHandler) noexcept;
 
-  //! Hosts the server.
+  //! Begins the server on the current thread.
+  //! Blocks the current thread until stopped.
   //!
-  //! @param interface Address of the interface to bind to.
+  //! @param address Address of the interface to bind to.
   //! @param port Port to bind to.
-  void Host(
+  void Begin(
     const asio::ip::address& address,
     uint16_t port);
+
+  //! Ends the server thread.
+  void End();
 
   //! Get client.
   Client& GetClient(ClientId clientId);
@@ -138,6 +142,9 @@ private:
   ClientReadHandler _clientReadHandler;
   //! A client write handler.
   ClientWriteHandler _clientWriteHandler;
+
+  //! A flag indicating whether the server should run.
+  std::atomic<bool> _shouldRun = false;
 
   asio::io_context _io_ctx;
   asio::ip::tcp::acceptor _acceptor;

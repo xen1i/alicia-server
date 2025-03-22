@@ -137,29 +137,23 @@ int32_t CommandClient::GetRollingCodeInt() const
 }
 
 CommandServer::CommandServer(std::string name)
-  : _server(
-    [this](ClientId clientId)
-    {
-      HandleClientConnect(clientId);
-    },
-    [this](ClientId clientId)
-    {
-      HandleClientDisconnect(clientId);
-    },
-    [this](
-      ClientId clientId,
-      asio::streambuf& readBuffer)
-    {
-      HandleClientRead(clientId, readBuffer);
-    },
-    [this](
-      ClientId clientId,
-      asio::streambuf& writeBuffer)
-    {
-      HandleClientWrite(clientId, writeBuffer);
-    })
+    : _server(
+        [this](ClientId clientId) { HandleClientConnect(clientId); },
+        [this](ClientId clientId) { HandleClientDisconnect(clientId); },
+        [this](ClientId clientId, asio::streambuf& readBuffer)
+        { HandleClientRead(clientId, readBuffer); },
+        [this](ClientId clientId, asio::streambuf& writeBuffer)
+        { HandleClientWrite(clientId, writeBuffer); })
 {
   _name = std::move(name);
+}
+CommandServer::~CommandServer()
+{
+  if (_serverThread.joinable())
+  {
+    _server.End();
+    _serverThread.join();
+  }
 }
 
 void CommandServer::Host(
@@ -167,7 +161,10 @@ void CommandServer::Host(
   uint16_t port)
 {
   spdlog::debug("{} server hosted on {}:{}", this->_name, address.to_string(), port);
-  _server.Host(address, port);
+  _serverThread = std::thread([&]()
+  {
+    _server.Begin(address, port);
+  });
 }
 
 void CommandServer::RegisterCommandHandler(
