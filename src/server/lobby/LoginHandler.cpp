@@ -61,24 +61,42 @@ void LoginHandler::Tick()
     auto user = _dataDirector.GetUser(loginContext.userName);
     assert(user.IsAvailable() && "User must be available.");
 
-    // Preload the character for the response handler.
+    // Load the character.
     auto character = _dataDirector.GetCharacter(user().characterUid);
     if (not character.IsAvailable())
     {
       continue;
     }
 
-    // Load the equipment.
-    // const auto characterEquipment = _dataDirector.GetItems(user().characterUid);
-    // const auto horseEquipment = _dataDirector.GetItems(user().characterUid);
+    const auto areDataAvailable = []<typename T>(const std::vector<T>& data)
+    {
+      for (const auto& datum : data)
+      {
+        if (not datum.IsAvailable())
+        {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    // Load the character equipment.
+    const auto characterEquipment = _dataDirector.GetItems(
+      character().characterEquipment);
+    // Load the horse equipment.
+    const auto horseEquipment = _dataDirector.GetItems(
+      character().horseEquipment);
     // Load the horses.
-    const auto horses = _dataDirector.GetHorses(user().characterUid);
+    const auto horses = _dataDirector.GetHorses(
+      character().horses);
+
     // Load the ranch.
     const auto ranch = _dataDirector.GetRanch(character().ranchUid);
 
-    if (/*not characterEquipment.IsAvailable() ||
-      not horseEquipment.IsAvailable() ||*/
-      not horses.IsAvailable() ||
+    if (not areDataAvailable(characterEquipment) ||
+      not areDataAvailable(horseEquipment) ||
+      not areDataAvailable(horses) ||
       not ranch.IsAvailable())
     {
       continue;
@@ -145,13 +163,13 @@ void LoginHandler::QueueUserLoginAccepted(
       assert(character.IsAvailable() && "Character must be available.");
 
       // Load the equipment.
-      // auto characterEquipment = _dataDirector.GetItems(user.characterUid);
-      // auto horseEquipment = _dataDirector.GetItems(user.characterUid);
-      // assert(characterEquipment.IsAvailable() && horseEquipment.IsAvailable());
+      auto characterEquipment = _dataDirector.GetItems(
+        character().characterEquipment);
+      auto horseEquipment = _dataDirector.GetItems(
+        character().horseEquipment);
 
       // Load the horses.
-      auto horses = _dataDirector.GetHorses(user().characterUid);
-      assert(horses.IsAvailable());
+      auto horses = _dataDirector.GetHorses(character().horses);
 
       // Load the ranch
       auto ranch = _dataDirector.GetRanch(character().ranchUid);

@@ -295,6 +295,12 @@ public:
   //! @returns View of the character record.
   Record<data::Character>::View GetCharacter(DatumUid characterUid);
 
+  void PreloadItems(const std::span<DatumUid>& itemUids);
+  //! Get the ranch record.
+  //! @param itemUids Uids of the items.
+  //! @returns View of the horse record.
+  std::vector<Record<data::Item>::View> GetItems(const std::span<DatumUid>& itemUids);
+
   void PreloadHorse(DatumUid horseUid);
   //! Get the ranch record.
   //! @param horseUid Uid of the horse.
@@ -307,9 +313,9 @@ public:
   //! @returns View of the character record.
   Record<data::Ranch>::View GetRanch(DatumUid ranchUid);
 
-  void PreloadHorses();
+  void PreloadHorses(const std::span<DatumUid>& horseUids);
   //!
-  Record<data::Horse>::View GetHorses(DatumUid characterUid);
+  std::vector<Record<data::Horse>::View> GetHorses(const std::span<DatumUid>& horseUids);
 
 private:
   //!
@@ -318,6 +324,9 @@ private:
   //!
   std::unordered_map<
     DatumUid, Record<data::Character>> _characters;
+  //!
+  std::unordered_map<
+    DatumUid, Record<data::Item>> _items;
   //!
   std::unordered_map<
     DatumUid, Record<data::Ranch>> _ranches;

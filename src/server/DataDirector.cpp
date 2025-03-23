@@ -6,11 +6,16 @@
 
 namespace
 {
-
 //!
 const std::string QueryUserRecordStatementId = "queryUserRecord";
 //!
 const std::string QueryCharacterRecordStatementId = "queryCharacterRecord";
+//!
+const std::string QueryCharacterEquipmentListStatementId = "queryUserCharacterItems";
+//!
+const std::string QueryCharacterHorseEquipmentListStatementId = "queryUserHorseItems";
+//!
+const std::string QueryCharacterHorseListStatementId = "queryUserHorses";
 //!
 const std::string QueryHorseRecordStatementId = "queryHorseRecord";
 //!
@@ -36,33 +41,57 @@ void ComposeUserFromResult(
 
 //! Composes character from result.
 //! @param record Character record.
-//! @param result Result to compose from.
+//! @param characterResult Result to compose from.
+//! @param characterEquipmentResult Result of character equipment to compose from.
+//! @param horseEquipmentResult Result of horse equipment to compose from.
+//! @param horsesResult Result of horses to compose from.
 void ComposeCharacterFromResult(
   alicia::Record<alicia::data::Character>& record,
-  const pqxx::row& result)
+  const pqxx::row& characterResult,
+  const pqxx::result& characterEquipmentResult,
+  const pqxx::result& horseEquipmentResult,
+  const pqxx::result& horsesResult)
 {
-  record.Mutation([&result](auto& character)
+  record.Mutation([&](auto& character)
     {
       character =  alicia::data::Character{
-        .name = result["name"].as<std::string>({}),
-        .status = result["status"].as<std::string>({}),
-        .level = result["level"].as<uint16_t>(0),
-        .carrots = result["carrots"].as<int32_t>(0),
-        .cash = result["cash"].as<int32_t>(0),
-        .ageGroup = static_cast<alicia::data::Character::AgeGroup>(result["ageGroup"].as<uint32_t>(
+        .name = characterResult["name"].as<std::string>({}),
+        .status = characterResult["status"].as<std::string>({}),
+        .level = characterResult["level"].as<uint16_t>(0),
+        .carrots = characterResult["carrots"].as<int32_t>(0),
+        .cash = characterResult["cash"].as<int32_t>(0),
+        .ageGroup = static_cast<alicia::data::Character::AgeGroup>(characterResult["ageGroup"].as<uint32_t>(
             static_cast<uint32_t>(alicia::data::Character::AgeGroup::Kid))),
-        .gender = static_cast<alicia::data::Character::Gender>(result["gender"].as<uint32_t>(
+        .gender = static_cast<alicia::data::Character::Gender>(characterResult["gender"].as<uint32_t>(
             static_cast<uint32_t>(alicia::data::Character::Gender::Unspecified))),
         .appearance = {
-          .charId = result["charId"].as<uint8_t>(0),
-          .mouthSerialId = result["mouthSerialId"].as<uint8_t>(0),
-          .faceSerialId = result["faceSerialId"].as<uint8_t>(0),
-          .headVolume = result["headVolume"].as<uint16_t>(0),
-          .height = result["height"].as<uint16_t>(0),
-          .thighVolume = result["thighVolume"].as<uint16_t>(0),
-          .legVolume = result["legVolume"].as<uint16_t>(0),},
-      .mountUid = result["mountUid"].as<alicia::DatumUid>({0}),
-      .ranchUid = result["ranchUid"].as<alicia::DatumUid>({0}),};
+          .charId = characterResult["charId"].as<uint8_t>(0),
+          .mouthSerialId = characterResult["mouthSerialId"].as<uint8_t>(0),
+          .faceSerialId = characterResult["faceSerialId"].as<uint8_t>(0),
+          .headVolume = characterResult["headVolume"].as<uint16_t>(0),
+          .height = characterResult["height"].as<uint16_t>(0),
+          .thighVolume = characterResult["thighVolume"].as<uint16_t>(0),
+          .legVolume = characterResult["legVolume"].as<uint16_t>(0),},
+      .mountUid = characterResult["mountUid"].as<alicia::DatumUid>({0}),
+      .ranchUid = characterResult["ranchUid"].as<alicia::DatumUid>({0}),};
+
+      for (auto characterEquipment : characterEquipmentResult)
+      {
+        character.characterEquipment.emplace_back(
+          characterEquipment["uid"].as<alicia::DatumUid>());
+      }
+
+      for (auto horseEquipment : horseEquipmentResult)
+      {
+        character.horseEquipment.emplace_back(
+          horseEquipment["uid"].as<alicia::DatumUid>());
+      }
+
+      for (auto horse : horsesResult)
+      {
+        character.horses.emplace_back(
+          horse["uid"].as<alicia::DatumUid>());
+      }
     });
 }
 
@@ -157,16 +186,48 @@ void DataDirector::EstablishConnection()
 
     // User record query.
     _connection->prepare(
-      QueryUserRecordStatementId, "SELECT * FROM data.user WHERE name=$1");
+      QueryUserRecordStatementId,
+      "SELECT * FROM data.user "
+      "WHERE name=$1");
+
     // Character record query.
     _connection->prepare(
-      QueryCharacterRecordStatementId, "SELECT * FROM data.character WHERE uid=$1");
+      QueryCharacterRecordStatementId,
+      "SELECT * FROM data.character "
+      "WHERE uid=$1");
+
+    // Character equipment items query.
+    _connection->prepare(
+      QueryCharacterEquipmentListStatementId,
+      "SELECT uid FROM data.item "
+      "WHERE character_uid=$1 AND slot=CharacterEquipment");
+
+    // Character horse equipment query.
+    _connection->prepare(
+      QueryCharacterHorseEquipmentListStatementId,
+      "SELECT uid FROM data.item "
+      "WHERE character_uid=$1 AND slot=HorseEquipment");
+
+    // Character horse list query.
+    _connection->prepare(
+      QueryCharacterHorseListStatementId,
+      "SELECT uid FROM data.horse "
+      "WHERE character_uid=$1");
+
     // Horse record query.
-    _connection->prepare(QueryHorseRecordStatementId, "SELECT * FROM data.horse WHERE uid=$1");
+    _connection->prepare(QueryHorseRecordStatementId,
+      "SELECT * FROM data.horse "
+      "WHERE uid=$1");
+
     // Ranch record query.
-    _connection->prepare(QueryRanchRecordStatementId, "SELECT * FROM data.ranch WHERE uid=$1");
+    _connection->prepare(QueryRanchRecordStatementId,
+      "SELECT * FROM data.ranch "
+      "WHERE uid=$1");
+
     // Item record query.
-    _connection->prepare(QueryItemRecordStatementId, "SELECT * FROM data.item WHERE uid=$1");
+    _connection->prepare(QueryItemRecordStatementId,
+      "SELECT * FROM data.item "
+      "WHERE uid=$1");
 
     spdlog::info(
       "Initialized the data source with the connection string '{}'", _settings.connectionString);
@@ -225,12 +286,25 @@ void DataDirector::PreloadCharacter(DatumUid characterUid)
       {
         pqxx::work query(*_connection);
 
-        // Query for the character.
-        const auto result = query.exec_prepared1(QueryUserRecordStatementId, characterUid);
+        const auto characterResult = query.exec_prepared1(
+          QueryCharacterRecordStatementId, characterUid);
+
+        const auto characterEquipmentList = query.exec_prepared(
+          QueryCharacterEquipmentListStatementId, characterUid);
+        const auto horseEquipmentList = query.exec_prepared(
+          QueryCharacterHorseEquipmentListStatementId, characterUid);
+
+        const auto horseList = query.exec_prepared(
+          QueryCharacterHorseListStatementId, characterUid);
 
         assert(_characters.contains(characterUid) && "Record must exist");
         auto& record = _characters[characterUid];
-        ComposeCharacterFromResult(record, result);
+        ComposeCharacterFromResult(
+          record,
+          characterResult,
+          characterEquipmentList,
+          horseEquipmentList,
+          horseList);
       }
       catch (const std::exception& x)
       {
@@ -248,6 +322,77 @@ Record<data::Character>::View DataDirector::GetCharacter(DatumUid characterUid)
     PreloadCharacter(characterUid);
 
   return std::move(iterator->second.GetView());
+}
+
+void DataDirector::PreloadItems(
+  const std::span<DatumUid>& itemUids)
+{
+  _taskLoop.Queue(
+    [this, itemUids]()
+    {
+      try
+      {
+        pqxx::work query(*_connection);
+
+        const std::string itemList = [&itemUids]()
+        {
+          std::string list;
+          for (auto it = itemUids.begin(); it != itemUids.end();)
+          {
+            list += fmt::format("{}", *it);
+            ++it;
+
+            if (it != itemUids.end())
+              list += ", ";
+          }
+
+          return list;
+        }();
+
+        // Query for the character.
+        const auto result = query.exec(std::format(
+          "SELECT * FROM data.item "
+          "WHERE uid in ({})",
+          itemList));
+
+        for (const auto& itemResult : result)
+        {
+          const auto itemUid = itemResult["uid"].as<DatumUid>(
+            InvalidDatumUid);
+          assert(itemUid != InvalidDatumUid && "Data invalid");
+
+          assert(_items.contains(itemUid) && "Record must exist");
+          ComposeItemFromResult(_items[itemUid], itemResult);
+        }
+      }
+      catch (const std::exception& x)
+      {
+        spdlog::error("DataDirector error: {}", x.what());
+      }
+    });
+}
+
+std::vector<Record<data::Item>::View> DataDirector::GetItems(
+  const std::span<DatumUid>& itemUids)
+{
+  std::vector<Record<data::Item>::View> items;
+  std::vector<DatumUid> itemsToPreload;
+
+  for (const auto& itemUid : itemUids)
+  {
+    const auto [iterator, inserted] = _items.try_emplace(itemUid);
+
+    // The item was just inserted, queue the preload.
+    if (inserted)
+      itemsToPreload.emplace_back(itemUid);
+
+    items.emplace_back() = std::move(iterator->second.GetView());
+  }
+
+  if (not itemsToPreload.empty())
+    PreloadItems(std::span(itemsToPreload.begin(), itemsToPreload.end()));
+
+  return items;
 }
 
 void DataDirector::PreloadHorse(
@@ -322,10 +467,75 @@ Record<data::Ranch>::View DataDirector::GetRanch(const DatumUid ranchUid)
   return std::move(iterator->second.GetView());
 }
 
-void DataDirector::PreloadHorses() {}
-Record<data::Horse>::View DataDirector::GetHorses(DatumUid characterUid)
+void DataDirector::PreloadHorses(
+  const std::span<DatumUid>& horseUids)
 {
-  return {};
+  _taskLoop.Queue(
+    [this, horseUids]()
+    {
+      try
+      {
+        pqxx::work query(*_connection);
+
+        const std::string horseList = [&horseUids]()
+        {
+          std::string list;
+          for (auto it = horseUids.begin(); it != horseUids.end();)
+          {
+            list += fmt::format("{}", *it);
+            ++it;
+
+            if (it != horseUids.end())
+              list += ", ";
+          }
+
+          return list;
+        }();
+
+        // Query for the horses.
+        const auto result = query.exec(std::format(
+          "SELECT * FROM data.horse "
+          "WHERE uid in ({})",
+          horseList));
+
+        for (const auto& horseResult : result)
+        {
+          const auto horseUid = horseResult["uid"].as<DatumUid>(
+            InvalidDatumUid);
+          assert(horseUid != InvalidDatumUid && "Data invalid");
+
+          assert(_horses.contains(horseUid) && "Record must exist");
+          ComposeHorseFromResult(_horses[horseUid], horseResult);
+        }
+      }
+      catch (const std::exception& x)
+      {
+        spdlog::error("DataDirector error: {}", x.what());
+      }
+    });
+}
+
+std::vector<Record<data::Horse>::View> DataDirector::GetHorses(
+  const std::span<DatumUid>& horseUids)
+{
+  std::vector<Record<data::Horse>::View> horses;
+  std::vector<DatumUid> horsesToPreload;
+
+  for (const auto& horseUid : horseUids)
+  {
+    const auto [iterator, inserted] = _horses.try_emplace(horseUid);
+
+    // The horse was just inserted, queue the preload.
+    if (inserted)
+      horsesToPreload.emplace_back(horseUid);
+
+    horses.emplace_back() = std::move(iterator->second.GetView());
+  }
+
+  if (not horsesToPreload.empty())
+    PreloadHorses(std::span(horsesToPreload.begin(), horsesToPreload.end()));
+
+  return horses;
 }
 
 } // namespace alicia
