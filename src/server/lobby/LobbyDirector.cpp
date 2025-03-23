@@ -143,14 +143,14 @@ void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
-  _dataDirector.GetUserInventory([](const auto& itemsView)
-  {
-    const auto items = itemsView.Get();
-    _queuedInventoryResponses.emplace_back(InventoryResponse{
-    .message = LobbyCommandShowInventoryOK {
-      .horses = {},
-      .items = {}}});
-  });
+  // _dataDirector.GetUserInventory([](const auto& itemsView)
+  // {
+  //   const auto items = itemsView.Get();
+  //   _queuedInventoryResponses.emplace_back(InventoryResponse{
+  //   .message = LobbyCommandShowInventoryOK {
+  //     .horses = {},
+  //     .items = {}}});
+  // });
 }
 
 void LobbyDirector::HandleAchievementCompleteList(

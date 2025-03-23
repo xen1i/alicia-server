@@ -30,12 +30,21 @@ namespace data
 //! Item.
 struct Item
 {
+  enum class Slot
+  {
+    Character,
+    Horse,
+    Storage,
+  };
+
   //! A unique identifier.
   uint32_t uid{};
   //! A type identifier.
   uint32_t tid{};
   //! Amount of an item.
   uint32_t count{};
+
+  Slot slot{Slot::Storage};
 };
 
 //! Character.
@@ -88,17 +97,17 @@ struct Character
     uint16_t legVolume{};
   } appearance{};
 
-  //! TODO in db
-  std::vector<Item> characterEquipment;
   //!
-  std::vector<Item> horseEquipment;
+  std::vector<DatumUid> characterEquipment;
+  //!
+  std::vector<DatumUid> horseEquipment;
 
   //!
   DatumUid mountUid{};
   //!
   DatumUid ranchUid{};
 
-  //! TODO in db
+  //!
   std::vector<DatumUid> horses{};
 };
 
@@ -172,7 +181,7 @@ struct Horse
 //! Ranch
 struct Ranch
 {
-  std::string ranchName;
+  std::string name;
 };
 
 //! User
@@ -195,6 +204,12 @@ struct Record
   std::mutex accessMutex{};
   //! Value.
   T value{};
+
+  void Mutation(const std::function<void(T&)> mutation)
+  {
+    std::scoped_lock recordLock(accessMutex);
+    mutation(value);
+  }
 
   //! Data record view.
   struct View
@@ -233,7 +248,10 @@ struct Record
 
     //! Returns whether the value is available.
     //! @returns `true` if the value is available, otherwise returns `false`.
-    bool IsAvailable() { return _record && _record.available; }
+    [[nodiscard]] bool IsAvailable() const
+    {
+      return _record && _record->available;
+    }
 
     //! Returns the reference to the value.
     //! @returns Value.
@@ -249,7 +267,7 @@ struct Record
     std::unique_lock<std::mutex> _lock{};
   };
 
-  View& GetView()
+  View GetView()
   {
     return View(this);
   }
@@ -265,18 +283,47 @@ public:
   //! Establishes connection with the data source.
   void EstablishConnection();
 
-  //! Neviem este
+  void PreloadUser(const std::string& name);
+  //! Get the user record.
+  //! @param name Name of the use.
+  //! @returns View of the user record.
   Record<data::User>::View GetUser(std::string const &name);
 
-  //! Ani tu este neviem
-  Record<data::Character>::View GetCharacter(DatumUid uid);
+  void PreloadCharacter(DatumUid characterUid);
+  //! Get the character record.
+  //! @param characterUid Uid of the character.
+  //! @returns View of the character record.
+  Record<data::Character>::View GetCharacter(DatumUid characterUid);
+
+  void PreloadHorse(DatumUid horseUid);
+  //! Get the ranch record.
+  //! @param horseUid Uid of the horse.
+  //! @returns View of the horse record.
+  Record<data::Horse>::View GetHorse(DatumUid horseUid);
+
+  void PreloadRanch(DatumUid ranchUid);
+  //! Get the ranch record.
+  //! @param ranchUid Uid of the ranch.
+  //! @returns View of the character record.
+  Record<data::Ranch>::View GetRanch(DatumUid ranchUid);
+
+  void PreloadHorses();
+  //!
+  Record<data::Horse>::View GetHorses(DatumUid characterUid);
 
 private:
-  //! username, promise
-  std::unordered_map<std::string, Record<data::User>> _users;
-
-  //! uid, promise
-  std::unordered_map<DatumUid, Record<data::Character>> _characters;
+  //!
+  std::unordered_map<
+    std::string, Record<data::User>> _users;
+  //!
+  std::unordered_map<
+    DatumUid, Record<data::Character>> _characters;
+  //!
+  std::unordered_map<
+    DatumUid, Record<data::Ranch>> _ranches;
+  //!
+  std::unordered_map<
+    DatumUid, Record<data::Horse>> _horses;
 
   //!
   Settings::DataSource _settings;

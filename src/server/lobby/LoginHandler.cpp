@@ -22,8 +22,9 @@ void LoginHandler::Tick()
   {
     const ClientId clientId = _clientLoginRequestQueue.front();
 
+    // Queued login must have a login context.
     assert(_clientLogins.contains(clientId));
-    LoginContext& loginContext = _clientLogins[clientId];
+    const auto& loginContext = _clientLogins[clientId];
 
     // Get the user credentials.
     auto user = _dataDirector.GetUser(loginContext.userName);
@@ -42,7 +43,6 @@ void LoginHandler::Tick()
     }
     else
     {
-      loginContext.user = std::move(user);
       // Queue the processing of the response.
       _clientLoginResponseQueue.emplace(clientId);
     }
@@ -56,12 +56,12 @@ void LoginHandler::Tick()
     const ClientId clientId = _clientLoginResponseQueue.front();
 
     assert(_clientLogins.contains(clientId));
-    LoginContext& loginContext = _clientLogins[clientId];
+    const auto& loginContext = _clientLogins[clientId];
 
-    auto& user = loginContext.user;
+    auto user = _dataDirector.GetUser(loginContext.userName);
     assert(user.IsAvailable() && "User must be available.");
 
-    // Load the character.
+    // Preload the character for the response handler.
     auto character = _dataDirector.GetCharacter(user().characterUid);
     if (not character.IsAvailable())
     {
@@ -69,22 +69,22 @@ void LoginHandler::Tick()
     }
 
     // Load the equipment.
-    const auto characterEquipment = _dataDirector.GetItems(character.characterEquipment);
-    const auto horseEquipment = _dataDirector.GetItems(character.characterEquipment);
+    // const auto characterEquipment = _dataDirector.GetItems(user().characterUid);
+    // const auto horseEquipment = _dataDirector.GetItems(user().characterUid);
     // Load the horses.
-    const auto horses = _dataDirector.GetHorses(character.horses);
-    // Load the ranch
-    const auto ranch = _dataDirector.GetRanch(character.ranchUid);
+    const auto horses = _dataDirector.GetHorses(user().characterUid);
+    // Load the ranch.
+    const auto ranch = _dataDirector.GetRanch(character().ranchUid);
 
-    if (not characterEquipment ||
-      not horseEquipment ||
-      not horses ||
-      not ranch)
+    if (/*not characterEquipment.IsAvailable() ||
+      not horseEquipment.IsAvailable() ||*/
+      not horses.IsAvailable() ||
+      not ranch.IsAvailable())
     {
       continue;
     }
 
-    QueueUserLoginAccepted(clientId, user.characterUid);
+    QueueUserLoginAccepted(clientId, loginContext.userName);
   }
 }
 
@@ -129,24 +129,28 @@ void LoginHandler::HandleUserLogin(
 
 void LoginHandler::QueueUserLoginAccepted(
   const ClientId clientId,
-  const data::User& user)
+  const std::string& userName)
 {
   _server.QueueCommand<LobbyCommandLoginOK>(
     clientId,
     CommandId::LobbyLoginOK,
-    [&user, this]()
+    [userName, this]()
     {
+      // Get the user.
+      auto user = _dataDirector.GetUser(userName);
+      assert(user.IsAvailable() && "User must be available.");
+
       // Load the character.
-      auto character = _dataDirector.GetCharacter(user.characterUid);
-      assert(character.IsAvailable());
+      auto character = _dataDirector.GetCharacter(user().characterUid);
+      assert(character.IsAvailable() && "Character must be available.");
 
       // Load the equipment.
-      auto characterEquipment = _dataDirector.GetItems(character().characterEquipment);
-      auto horseEquipment = _dataDirector.GetItems(character().characterEquipment);
-      assert(characterEquipment.IsAvailable() && horseEquipment.IsAvailable());
+      // auto characterEquipment = _dataDirector.GetItems(user.characterUid);
+      // auto horseEquipment = _dataDirector.GetItems(user.characterUid);
+      // assert(characterEquipment.IsAvailable() && horseEquipment.IsAvailable());
 
       // Load the horses.
-      auto horses = _dataDirector.GetHorses(character().horses);
+      auto horses = _dataDirector.GetHorses(user().characterUid);
       assert(horses.IsAvailable());
 
       // Load the ranch

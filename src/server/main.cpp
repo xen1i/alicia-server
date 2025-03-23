@@ -18,10 +18,7 @@
 namespace
 {
 
-std::unique_ptr<server::Scheduler<
-  server::BlockingExecutor>> g_dataScheduler;
 std::unique_ptr<alicia::DataDirector> g_dataDirector;
-
 std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
@@ -65,9 +62,6 @@ int main()
     // Data director.
     g_dataDirector = std::make_unique<alicia::DataDirector>(
       settings._dataSourceSettings);
-
-    g_dataScheduler = std::make_unique<server::Scheduler<
-      server::BlockingExecutor>>();
   });
 
   const std::jthread lobbyThread([&settings]()
