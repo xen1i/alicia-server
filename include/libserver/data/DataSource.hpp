@@ -6,6 +6,7 @@
 #define DATASOURCE_HPP
 
 #include "server/Settings.hpp"
+#include "libserver/data/DataDefinitions.hpp"
 
 namespace soa
 {
@@ -14,7 +15,8 @@ namespace soa
 class DataSource
 {
 public:
-
+  virtual void RetrieveUser(const data::User&) = 0;
+  virtual void StoreUser(const data::User&) = 0;
 };
 
 

@@ -246,23 +246,7 @@ void DataDirector::PreloadUser(const std::string& name)
   _taskLoop.Queue(
     [this, name]()
     {
-      try
-      {
-        pqxx::work query(*_connection);
 
-        // Query for the user.
-        const auto result = query.exec_prepared1(
-         QueryUserRecordStatementId, name);
-
-        assert(_users.contains(name) && "Record must exist");
-        auto& record = _users[name];
-        ComposeUserFromResult(record, result);
-        record.available = true;
-      }
-      catch (const std::exception& x)
-      {
-       spdlog::error("DataDirector error: {}", x.what());
-      }
     });
 }
 

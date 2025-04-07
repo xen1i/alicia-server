@@ -10,6 +10,7 @@
 #include "DataStorage.hpp"
 
 #include <queue>
+#include <unordered_set>
 
 namespace soa
 {
@@ -17,7 +18,12 @@ namespace soa
 class DataDirector
 {
 public:
-  void Tick();
+  void Tick()
+  {
+    _dataSource.Submit((work) -> {
+
+    });
+  }
 
   bool SynchronizeUser(const std::string& username) noexcept
   {

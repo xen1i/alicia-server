@@ -26,6 +26,21 @@ struct Field
   {
   }
 
+  Field(const Field& field) = delete;
+
+  Field(Field&& field) noexcept
+    : _modified(field.IsModified())
+    , _value(field._value)
+  {
+  }
+
+  Field& operator=(Field&& field) noexcept   {
+    _modified = field.IsModified();
+    _value = std::move(field._value);
+
+    return *this;
+  }
+
   //! Constructs field with an initialized value.
   Field()
     : _value()
@@ -37,7 +52,7 @@ struct Field
   {
   }
 
-  bool IsModified() const noexcept
+  [[nodiscard]] bool IsModified() const noexcept
   {
     return _modified;
   }
@@ -88,6 +103,8 @@ constexpr Tid InvalidTid = 0;
 //! User
 struct User
 {
+  //! An UID of the user.
+  dao::Field<Uid> uid;
   //! A name of the user.
   dao::Field<std::string> name{};
   //! An authorization token of the user.
