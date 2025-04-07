@@ -32,8 +32,8 @@ struct Item
 {
   enum class Slot
   {
-    Character,
-    Horse,
+    CharacterEquipment,
+    HorseEquipment,
     Storage,
   };
 
