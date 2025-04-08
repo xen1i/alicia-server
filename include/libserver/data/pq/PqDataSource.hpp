@@ -11,15 +11,22 @@
 
 namespace soa
 {
+
 class PqDataSource
   : public DataSource
 {
 public:
-  void RetrieveUser(const data::User&) override;
+  //! Establishes the connection to the data source.
+  void Establish(const std::string& url);
+  //! Returns whether the connection is fine.
+  //! @returns `true` if the connection is fine, `false` otherwise.
+  bool IsConnectionFine();
+
+  void RetrieveUser(data::User&) override;
   void StoreUser(const data::User&) override;
 
 private:
-  pqxx::connection _connection;
+  std::unique_ptr<pqxx::connection> _connection;
 };
 
 }

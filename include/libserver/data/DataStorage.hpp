@@ -19,74 +19,64 @@ template<typename Key, typename Data>
 class DataStorage
 {
 public:
-  void CreateRecord(const Key& key, std::function<Data()> supplier)
+  using DataSourceRetrieveListener = std::function<void(Data& data)>;
+  using DataSourceStoreListener = std::function<void(Data& data)>;
+
+  DataStorage(
+    const DataSourceRetrieveListener& data_source_retrieve_listener,
+    const DataSourceStoreListener& data_source_store_listener)
+      : _dataSourceRetrieveListener(data_source_retrieve_listener)
+      , _dataSourceStoreListener(data_source_store_listener)
   {
-    auto& record = _records[key];
-    record.value = supplier();
   }
 
-  void UpdateRecord(const Key& key, std::function<void(Data&)> supplier)
+  bool IsAvailable(const Key& key)
   {
-    auto& record = _records[key];
-    supplier(record.value);
+    return _records[key].available;
   }
 
-  void DeleteRecord(const Key& key)
-  {
-    _records.erase(key);
-  }
-
-  Data* Get(const Key& key)
+  Data& Get(const Key& key)
   {
     auto [recordIter, created] = _records.try_emplace(key);
     auto& record = recordIter->second;
 
-    if (not record.synchronized)
-      return nullptr;
-    return &record.value;
+    if (created)
+      _retrieveQueue.insert(key);
+
+    return record.value;
   }
 
   void Tick()
   {
-    for (const auto& recordKey : _recordsToStore)
+    for (const auto& key : _retrieveQueue)
     {
-      auto& record = _records[recordKey];
-      if (_recordStoreListener(recordKey, record))
-      {
-        record.synchronized = true;
-        record.storePending = false;
-      }
+      auto& userRecord = _records[key];
+      _dataSourceRetrieveListener(userRecord.value);
+      userRecord.available = true;
     }
-    _recordsToStore.clear();
+    _retrieveQueue.clear();
 
-    for (const auto& recordKey : _recordsToRetrieve)
+    for (const auto& key : _storeQueue)
     {
-      Record& record = _records[recordKey];
-      if (_recordRetrieveListener(recordKey, record))
-      {
-        record.synchronized = true;
-        record.retrievePending = false;
-      }
+      _dataSourceStoreListener(Get(key));
     }
-    _recordsToRetrieve.clear();
+    _storeQueue.clear();
   }
 
 private:
   struct Record
   {
-    //! A flag indicating whether the record is modified.
-    std::atomic_bool modified{false};
-    //! A flag indicating whether the record is synchronized.
-    std::atomic_bool synchronized{false};
-    //! An access mutex.
+    std::atomic_bool available{false};
     std::mutex mutex;
-
     Data value;
   };
 
+  std::unordered_set<Key> _retrieveQueue;
+  std::unordered_set<Key> _storeQueue;
   std::unordered_map<Key, Record> _records{};
-  std::unordered_set<Key> _recordsToRetrieve{};
-  std::unordered_set<Key> _recordsToStore{};
+
+  DataSourceRetrieveListener _dataSourceRetrieveListener;
+  DataSourceStoreListener _dataSourceStoreListener;
 };
 
 } // namespace soa

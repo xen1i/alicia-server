@@ -65,9 +65,9 @@ void ComposeCharacterFromResult(
         .gender = static_cast<alicia::data::Character::Gender>(characterResult["gender"].as<uint32_t>(
             static_cast<uint32_t>(alicia::data::Character::Gender::Unspecified))),
         .appearance = {
-          .charId = characterResult["charId"].as<uint8_t>(0),
-          .mouthSerialId = characterResult["mouthSerialId"].as<uint8_t>(0),
-          .faceSerialId = characterResult["faceSerialId"].as<uint8_t>(0),
+          .charId = characterResult["charId"].as<uint32_t>(0),
+          .mouthSerialId = characterResult["mouthSerialId"].as<uint32_t>(0),
+          .faceSerialId = characterResult["faceSerialId"].as<uint32_t>(0),
           .headVolume = characterResult["headVolume"].as<uint16_t>(0),
           .height = characterResult["height"].as<uint16_t>(0),
           .thighVolume = characterResult["thighVolume"].as<uint16_t>(0),
@@ -109,30 +109,30 @@ void ComposeHorseFromResult(
       .tid = result["tid"].as<uint32_t>(0),
       .name = result["name"].as<std::string>({}),
       .appearance = {
-        .skinId = result["skinId"].as<uint8_t>(0),
-        .maneId = result["maneId"].as<uint8_t>(0),
-        .tailId = result["tailId"].as<uint8_t>(0),
-        .faceId = result["faceId"].as<uint8_t>(0),
-        .scale = result["scale"].as<uint8_t>(0),
-        .legLength = result["legLength"].as<uint8_t>(0),
-        .legVolume = result["legVolume"].as<uint8_t>(0),
-        .bodyLength = result["bodyLength"].as<uint8_t>(0),
-        .bodyVolume = result["bodyVolume"].as<uint8_t>(0),},
+        .skinId = result["skinId"].as<uint32_t>(0),
+        .maneId = result["maneId"].as<uint32_t>(0),
+        .tailId = result["tailId"].as<uint32_t>(0),
+        .faceId = result["faceId"].as<uint32_t>(0),
+        .scale = result["scale"].as<uint32_t>(0),
+        .legLength = result["legLength"].as<uint32_t>(0),
+        .legVolume = result["legVolume"].as<uint32_t>(0),
+        .bodyLength = result["bodyLength"].as<uint32_t>(0),
+        .bodyVolume = result["bodyVolume"].as<uint32_t>(0),},
       .stats = {
-        .agility = result["agility"].as<uint8_t>(0),
-        .spirit = result["spirit"].as<uint8_t>(0),
-        .speed = result["speed"].as<uint8_t>(0),
-        .strength = result["strength"].as<uint8_t>(0),
-        .ambition = result["ambition"].as<uint8_t>(0),},
+        .agility = result["agility"].as<uint32_t>(0),
+        .spirit = result["spirit"].as<uint32_t>(0),
+        .speed = result["speed"].as<uint32_t>(0),
+        .strength = result["strength"].as<uint32_t>(0),
+        .ambition = result["ambition"].as<uint32_t>(0),},
       .rating = result["rating"].as<uint32_t>(0),
-      .clazz = result["class"].as<uint8_t>(0),
-      .grade = result["grade"].as<uint8_t>(0),
+      .clazz = result["class"].as<uint32_t>(0),
+      .grade = result["grade"].as<uint32_t>(0),
       .growthPoints = result["growthPoints"].as<uint16_t>(0),
       .mastery = {
-        .magic = result["magic"].as<uint8_t>(0),
-        .jumping = result["jumping"].as<uint8_t>(0),
-        .sliding = result["sliding"].as<uint8_t>(0),
-        .gliding = result["gliding"].as<uint8_t>(0),},};
+        .magic = result["magic"].as<uint32_t>(0),
+        .jumping = result["jumping"].as<uint32_t>(0),
+        .sliding = result["sliding"].as<uint32_t>(0),
+        .gliding = result["gliding"].as<uint32_t>(0),},};
   });
 }
 

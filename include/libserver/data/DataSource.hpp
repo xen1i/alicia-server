@@ -15,8 +15,14 @@ namespace soa
 class DataSource
 {
 public:
-  virtual void RetrieveUser(const data::User&) = 0;
-  virtual void StoreUser(const data::User&) = 0;
+  //! Default destructor.
+  virtual ~DataSource() = default;
+  //! Retrieves the user from the data source.
+  //! @param user User to retrieve.
+  virtual void RetrieveUser(data::User& user) = 0;
+  //! Stores the user on the data source.
+  //! @param user User to store.
+  virtual void StoreUser(const data::User& user) = 0;
 };
 
 

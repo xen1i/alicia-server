@@ -6,11 +6,8 @@
 #define DATADIRECTOR_HPP
 
 #include "DataDefinitions.hpp"
-#include "DataSource.hpp"
 #include "DataStorage.hpp"
-
-#include <queue>
-#include <unordered_set>
+#include "pq/PqDataSource.hpp"
 
 namespace soa
 {
@@ -18,36 +15,18 @@ namespace soa
 class DataDirector
 {
 public:
-  void Tick()
-  {
-    _dataSource.Submit((work) -> {
+  //! Default constructor.
+  //! @param url pq url
+  explicit DataDirector(const std::string& url);
+  //! Ticks the data director.
+  void Tick();
 
-    });
-  }
-
-  bool SynchronizeUser(const std::string& username) noexcept
-  {
-    return false;
-  }
-
-  bool IsUserSynchronized(const std::string& username) noexcept
-  {
-    auto* userRecord = _users.Get(username);
-    return userRecord != nullptr;
-  }
-
-  data::User& GetUser(const std::string& username)
-  {
-    auto* userRecord = _users.Get(username);
-    if (userRecord == nullptr)
-      throw std::runtime_error("User not available");
-
-    return *userRecord;
-  }
+  bool IsUserAvailable(const std::string& name);
+  data::User& GetUser(const std::string& name);
 
 private:
-  DataSource _dataSource;
-  DataStorage<std::string, data::User> _users;
+  PqDataSource _dataSource;
+  DataStorage<std::string, data::User> _userStorage;
 };
 
 }

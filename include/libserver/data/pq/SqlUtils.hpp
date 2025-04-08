@@ -12,11 +12,6 @@
 namespace soa
 {
 
-struct SqlDecomposer
-{
-
-};
-
 template<typename T>
 class SqlComposer
 {
@@ -24,11 +19,11 @@ public:
   using PresencePredicate = std::function<bool(const T&)>;
   using ValueSupplier = std::function<std::string(const T&)>;
 
-  //! Adds parameter
+  //! Adds a field.
   //! @param name Name of the parameter.
   //! @param valuePredicate Predicate indicating whether the parameter should be present.
   //! @param valueSupplier Value supplier.
-  SqlComposer& Parameter(
+  SqlComposer& Field(
     const std::string& name,
     PresencePredicate valuePredicate,
     ValueSupplier valueSupplier)
@@ -36,27 +31,10 @@ public:
     _parameters[name] = Value{
       .isPresent = std::move(valuePredicate),
       .get = std::move(valueSupplier)};
-
     return *this;
   }
 
-  //! Adds condition
-  //! @param name Name of the condition.
-  //! @param valuePredicate Predicate indicating whether the condition should be present.
-  //! @param valueSupplier Value supplier.
-  SqlComposer& Condition(
-    const std::string& name,
-    PresencePredicate valuePredicate,
-    ValueSupplier valueSupplier)
-  {
-    _conditions[name] = Value{
-      .isPresent = std::move(valuePredicate),
-      .get = std::move(valueSupplier)};
-
-    return *this;
-  }
-
-  std::string BuildInsert(
+  std::string ComposeUpsert(
     const T& value,
     const std::string& table)
   {
@@ -92,20 +70,11 @@ public:
       {
         return std::format("{} = {}", name, value);
       });
-    const std::string sqlConditions = GenerateFormattedSql(
-      value,
-      _conditions,
-      [](const auto& name, const auto& value)
-      {
-        return std::format("{} = {}", name, value);
-      });
 
     const std::string sql = std::format(
-      "UPDATE {} SET {}{}",
+      "UPDATE {} SET {}",
       table,
-      sqlParameters,
-      sqlConditions.empty()
-        ? "" : std::format(" WHERE {}", sqlConditions));
+      sqlParameters);
 
     return sql;
   }
@@ -147,7 +116,6 @@ private:
   }
 
   std::unordered_map<std::string, Value> _parameters;
-  std::unordered_map<std::string, Value> _conditions;
 };
 
 } // namespace soa

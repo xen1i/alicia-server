@@ -11,77 +11,34 @@ namespace soa
 namespace
 {
 
-const SqlDecomposer<data::User> userSqlDecomposer = []
-{
-  SqlDecomposer<data::User> decomposer;
-  decomposer
-    .Field(
-      "uid",
-      [](const auto& user, const auto& result)
-      {
-        user.uid = result.as<data::Uid>(data::InvalidUid);
-      })
-    .Field(
-      "name",
-      [](const auto& user, const auto& result)
-      {
-        user.name = result.as<std::string>({});
-      })
-    .Field(
-      "token",
-      [](const auto& user, const auto& result)
-      {
-        user.token = result.as<std::string>({});
-      })
-    .Field(
-      "characterUid",
-      [](const auto& user, const auto& result)
-      {
-        user.characterUid = result.as<data::Uid>(data::InvalidUid);
-      });
-
-  return decomposer;
-}();
-
-const SqlComposer<data::User> userSqlComposer = []()
-{
-  SqlComposer<data::User> composer;
-  composer
-    .Parameter(
-      "uid",
-      [&](const auto& user) { return user.uid.IsModified(); },
-      [&](const auto& user) { return std::format("{}", user.uid()); })
-    .Parameter(
-      "token",
-      [&](const auto& user) { return false; },
-      [&](const auto& user) { return user.token(); })
-    .Parameter(
-      "characterUid",
-      [&](const auto& user) { return false; },
-      [&](const auto& user) { return std::format("{}", user.characterUid()); })
-    .Condition(
-      "name",
-      [&](const auto& user) { return true; },
-      [&](const auto& user) { return user.name(); });
-
-  return composer;
-}();
+constexpr std::string UserTableName = "data.users";
 
 } // namespace
+
+void PqDataSource::Establish(const std::string& url)
+{
+  _connection = std::make_unique<pqxx::connection>(url);
+}
+
+bool PqDataSource::IsConnectionFine()
+{
+  return _connection and _connection->is_open();
+};
 
 void PqDataSource::RetrieveUser(data::User& user)
 {
   try
   {
-    pqxx::work query(_connection);
+    pqxx::work query(*_connection);
 
     const auto result = query.exec_params1(
-      "SELECT (username, token, characterUid) "
-      "FROM data.users "
-      "WHERE username=$1",
-      user.name());
+      "select (uid, token, characterUid) "
+      "from $1 where name=$2",
+      pqxx::params(UserTableName, user.name()));
 
-    userSqlDecomposer.Decompose(result, user);
+    user.uid = result["uid"].as<data::Uid>(data::InvalidUid);
+    user.token = result["token"].as<std::string>({});
+    user.characterUid = result["characterUid"].as<data::Uid>(data::InvalidUid);
   }
   catch (const std::exception& x)
   {
@@ -93,11 +50,14 @@ void PqDataSource::StoreUser(const data::User& user)
 {
   try
   {
-    pqxx::work query(_connection);
+    pqxx::work query(*_connection);
 
     const auto result = query.exec_params0(
-      userSqlComposer.ComposeUpsert();
-
+      "insert into $1 (token, characterUid) VALUES ($2, $3)",
+      pqxx::params(
+        UserTableName,
+        user.token(),
+        user.characterUid()));
   }
   catch (const std::exception& x)
   {
