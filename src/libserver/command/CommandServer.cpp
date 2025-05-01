@@ -140,13 +140,12 @@ CommandServer::CommandServer(std::string name)
     : _server(
         [this](ClientId clientId) { HandleClientConnect(clientId); },
         [this](ClientId clientId) { HandleClientDisconnect(clientId); },
-        [this](ClientId clientId, asio::streambuf& readBuffer)
-        { HandleClientRead(clientId, readBuffer); },
-        [this](ClientId clientId, asio::streambuf& writeBuffer)
-        { HandleClientWrite(clientId, writeBuffer); })
+        [this](ClientId clientId, asio::streambuf& readBuffer) { HandleClientRead(clientId, readBuffer); },
+        [this](ClientId clientId, asio::streambuf& writeBuffer) { HandleClientWrite(clientId, writeBuffer); })
 {
   _name = std::move(name);
 }
+
 CommandServer::~CommandServer()
 {
   if (_serverThread.joinable())
@@ -161,10 +160,7 @@ void CommandServer::Host(
   uint16_t port)
 {
   spdlog::debug("{} server hosted on {}:{}", this->_name, address.to_string(), port);
-  _serverThread = std::thread([&]()
-  {
-    _server.Begin(address, port);
-  });
+  _server.Begin(address, port);
 }
 
 void CommandServer::RegisterCommandHandler(

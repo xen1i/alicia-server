@@ -55,7 +55,7 @@ struct Character
   //!
   std::string status;
   //!
-  uint16_t level{};
+  uint32_t level{};
   //!
   int32_t carrots{};
   //!
@@ -82,19 +82,19 @@ struct Character
   struct Appearance
   {
     //!
-    uint8_t charId{};
+    uint32_t charId{};
     //! FaceId
-    uint8_t mouthSerialId{};
+    uint32_t mouthSerialId{};
     //! EyeId
-    uint8_t faceSerialId{};
+    uint32_t faceSerialId{};
     //! FigFace
-    uint16_t headVolume{};
+    uint32_t headVolume{};
     //! FigTall
-    uint16_t height{};
+    uint32_t height{};
     //! FigVolume
-    uint16_t thighVolume{};
+    uint32_t thighVolume{};
     //! FigShape
-    uint16_t legVolume{};
+    uint32_t legVolume{};
   } appearance{};
 
   //!
@@ -125,23 +125,23 @@ struct Horse
   struct Appearance
   {
     //!
-    uint8_t skinId{};
+    uint32_t skinId{};
     //!
-    uint8_t maneId{};
+    uint32_t maneId{};
     //!
-    uint8_t tailId{};
+    uint32_t tailId{};
     //!
-    uint8_t faceId{};
+    uint32_t faceId{};
     //!
-    uint8_t scale{};
+    uint32_t scale{};
     //!
-    uint8_t legLength{};
+    uint32_t legLength{};
     //!
-    uint8_t legVolume{};
+    uint32_t legVolume{};
     //!
-    uint8_t bodyLength{};
+    uint32_t bodyLength{};
     //!
-    uint8_t bodyVolume{};
+    uint32_t bodyVolume{};
   } appearance{};
 
   //!
@@ -162,11 +162,11 @@ struct Horse
   //!
   uint32_t rating{};
   //!
-  uint8_t clazz{};
+  uint32_t clazz{};
   //!
-  uint8_t grade{};
+  uint32_t grade{};
   //!
-  uint16_t growthPoints{};
+  uint32_t growthPoints{};
 
   struct Mastery
   {

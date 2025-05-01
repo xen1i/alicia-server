@@ -28,14 +28,16 @@ std::unique_ptr<alicia::RaceDirector> g_raceDirector;
 int main()
 {
   // Daily file sink.
-  const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/log.log", 0, 0);
+  const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+    "logs/log.log", 0, 0);
 
   // Console sink.
-  const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  const auto consoleSink = std::make_shared<
+    spdlog::sinks::stdout_color_sink_mt>();
 
   // Initialize the application logger with file sink and console sink.
   auto applicationLogger = std::make_shared<spdlog::logger>(
-    "abc",
+    "server",
     spdlog::sinks_init_list{fileSink, consoleSink});
 
   applicationLogger->set_level(spdlog::level::debug);
@@ -49,13 +51,6 @@ int main()
   // Parsing settings file
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json5");
-
-  //
-  // LobbyThread
-  //  -> Loops DataTaskLoop
-  //  LobbyNetworkThread
-  //    -> Loops asio
-  //
 
   const std::jthread dataThread([&settings]()
   {
