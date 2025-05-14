@@ -1,6 +1,9 @@
 # Alicia Server
 Server, yippie!
 
+## Community
+If you're a programmer [join the dedicated developer](https://discord.gg/bP4pNWvVHM) community on Discord.
+
 ## Requirements
 
 - Git
