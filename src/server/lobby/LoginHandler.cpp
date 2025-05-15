@@ -9,7 +9,9 @@
 namespace alicia
 {
 
-LoginHandler::LoginHandler(DataDirector& dataDirector, CommandServer& server)
+LoginHandler::LoginHandler(
+  soa::DataDirector& dataDirector,
+  CommandServer& server)
   : _server(server)
   , _dataDirector(dataDirector)
 {
@@ -27,8 +29,9 @@ void LoginHandler::Tick()
     const auto& loginContext = _clientLogins[clientId];
 
     // Get the user credentials.
-    auto user = _dataDirector.GetUser(loginContext.userName);
-    if (not user.IsAvailable())
+    auto& user = _dataDirector.GetUserStorage().Get(
+      loginContext.userName);
+    if (user.uid() == soa::data::InvalidUid)
     {
       continue;
     }
@@ -37,7 +40,7 @@ void LoginHandler::Tick()
 
     // If the provided user token does not match the one stored
     // then reject the login.
-    if (loginContext.userToken != user().token)
+    if (loginContext.userToken != user.token())
     {
       QueueUserLoginRejected(clientId);
     }
@@ -58,8 +61,10 @@ void LoginHandler::Tick()
     assert(_clientLogins.contains(clientId));
     const auto& loginContext = _clientLogins[clientId];
 
-    auto user = _dataDirector.GetUser(loginContext.userName);
-    assert(user.IsAvailable() && "User must be available.");
+    const auto& user = _dataDirector.GetUserStorage().Get(
+      loginContext.userName);
+    assert(user.uid() != soa::data::InvalidUid
+      && "User must be available");
 
     // Load the character.
     auto character = _dataDirector.GetCharacter(user().characterUid);
@@ -155,8 +160,9 @@ void LoginHandler::QueueUserLoginAccepted(
     [userName, this]()
     {
       // Get the user.
-      auto user = _dataDirector.GetUser(userName);
-      assert(user.IsAvailable() && "User must be available.");
+      const auto& user = _dataDirector.GetUserStorage().Get(userName);
+      assert(user.uid() != soa::data::InvalidUid
+        && "User must be available.");
 
       // Load the character.
       auto character = _dataDirector.GetCharacter(user().characterUid);

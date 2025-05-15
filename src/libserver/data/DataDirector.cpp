@@ -7,38 +7,37 @@
 namespace soa
 {
 
-DataDirector::DataDirector(const std::string& url)
-  : _userStorage(
-    [this](data::User& user)
-    {
-      _dataSource.RetrieveUser(user);
-    },
-    [this](const data::User& user)
-    {
-      _dataSource.StoreUser(user);
-    })
+DataDirector::DataDirector()
+    : _userStorage(
+        [&](auto& user) { _dataSource->StoreUser(user); },
+        [&](auto& user) { _dataSource->RetrieveUser(user); })
+    , _characterStorage(
+        [&](auto& user) { _dataSource->StoreCharacter(user); },
+        [&](auto& user) { _dataSource->RetrieveCharacter(user); })
 {
-  _dataSource.Establish(url);
+  _dataSource = std::make_unique<FileDataSource>();
+  _dataSource->Initialize("./");
+}
+
+DataDirector::~DataDirector()
+{
+  _dataSource->Terminate();
 }
 
 void DataDirector::Tick()
 {
-  if (not _dataSource.IsConnectionFine())
-  {
-    spdlog::error("Data source connection dropped.");
-  }
-
   _userStorage.Tick();
+  _characterStorage.Tick();
 }
 
-bool DataDirector::IsUserAvailable(const std::string& name)
+DataDirector::UserStorage& DataDirector::GetUserStorage()
 {
-  return _userStorage.IsAvailable(name);
+  return _userStorage;
 }
 
-data::User& DataDirector::GetUser(const std::string& name)
+DataDirector::CharacterStorage& DataDirector::GetCharacterStorage()
 {
-  return _userStorage.Get(name);
+  return _characterStorage;
 }
 
 } // namespace soa

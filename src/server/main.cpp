@@ -12,13 +12,12 @@
 #include <spdlog/spdlog.h>
 
 #include <memory>
-#include <server/Scheduler.hpp>
 #include <thread>
 
 namespace
 {
 
-std::unique_ptr<alicia::DataDirector> g_dataDirector;
+std::unique_ptr<soa::DataDirector> g_dataDirector;
 std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
@@ -57,6 +56,29 @@ int main()
     // Data director.
     g_dataDirector = std::make_unique<alicia::DataDirector>(
       settings._dataSourceSettings);
+
+    using clock = std::chrono::steady_clock;
+
+    clock::time_point lastTick;
+    constexpr uint64_t ticksPerSecond = 50;
+    constexpr uint64_t millisPerTick = 1000u / ticksPerSecond;
+
+    while (true)
+    {
+      // Time delta between ticks [ms].
+      const auto tickDelta = std::chrono::duration_cast<
+        std::chrono::milliseconds>(clock::now() - lastTick);
+
+      if (tickDelta.count() < millisPerTick)
+      {
+        const auto sleepMs = millisPerTick - tickDelta.count();
+        std::this_thread::sleep_for(
+          std::chrono::milliseconds(sleepMs));
+        continue;
+      }
+
+      g_dataDirector->Tick();
+    }
   });
 
   const std::jthread lobbyThread([&settings]()

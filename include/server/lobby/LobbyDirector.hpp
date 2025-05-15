@@ -6,9 +6,9 @@
 #define LOBBYDIRECTOR_HPP
 
 #include "LoginHandler.hpp"
-#include "server/DataDirector.hpp"
 #include "server/Settings.hpp"
 
+#include "libserver/data/DataDirector.hpp"
 #include "libserver/command/CommandServer.hpp"
 
 namespace alicia
@@ -19,7 +19,7 @@ class LobbyDirector final
 public:
   //!
   explicit LobbyDirector(
-    DataDirector& dataDirector,
+    soa::DataDirector& dataDirector,
     Settings::LobbySettings settings = {});
 
   LobbyDirector(const LobbyDirector&) = delete;
@@ -113,12 +113,12 @@ private:
   CommandServer _server;
 
   //!
-  DataDirector& _dataDirector;
+  soa::DataDirector& _dataDirector;
   //!
   LoginHandler _loginHandler;
 
   //!
-  std::unordered_map<ClientId, DatumUid> _clientCharacters;
+  std::unordered_map<ClientId, soa::data::Uid> _clientCharacters;
 };
 
 }

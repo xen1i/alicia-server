@@ -48,6 +48,7 @@ public:
 
   void Tick()
   {
+    // Perform retrieve operations.
     for (const auto& key : _retrieveQueue)
     {
       auto& userRecord = _records[key];
@@ -56,6 +57,7 @@ public:
     }
     _retrieveQueue.clear();
 
+    // Perform store operations.
     for (const auto& key : _storeQueue)
     {
       _dataSourceStoreListener(Get(key));

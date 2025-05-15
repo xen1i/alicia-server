@@ -5,12 +5,11 @@
 #ifndef RANCHDIRECTOR_HPP
 #define RANCHDIRECTOR_HPP
 
-#include "server/DataDirector.hpp"
 #include "server/Settings.hpp"
+#include "server/tracker/WorldTracker.hpp"
 
+#include "libserver/data/DataDirector.hpp"
 #include "libserver/command/CommandServer.hpp"
-
-#include <server/tracker/WorldTracker.hpp>
 
 namespace alicia
 {
@@ -20,7 +19,7 @@ class RanchDirector
 public:
   //!
   explicit RanchDirector(
-    DataDirector& dataDirector,
+    soa::DataDirector& dataDirector,
     Settings::RanchSettings settings = {});
 
 private:
@@ -83,18 +82,18 @@ private:
   //!
   Settings::RanchSettings _settings;
   //!
-  DataDirector& _dataDirector;
+  soa::DataDirector& _dataDirector;
   //!
   CommandServer _server;
 
   //!
-  std::unordered_map<ClientId, DatumUid> _clientCharacters;
+  std::unordered_map<ClientId, soa::data::Uid> _clientCharacters;
 
   struct RanchInstance
   {
     WorldTracker _worldTracker;
   };
-  std::unordered_map<DatumUid, RanchInstance> _ranches;
+  std::unordered_map<soa::data::Uid, RanchInstance> _ranches;
 };
 
 }

@@ -5,7 +5,7 @@
 #ifndef LOGINHANDLER_HPP
 #define LOGINHANDLER_HPP
 
-#include "server/DataDirector.hpp"
+#include "libserver/data/DataDirector.hpp"
 #include "libserver/command/CommandServer.hpp"
 
 namespace alicia
@@ -16,7 +16,7 @@ class LoginHandler
 {
 public:
   LoginHandler(
-    DataDirector& dataDirector,
+    soa::DataDirector& dataDirector,
     CommandServer& server);
 
   void Tick();
@@ -33,7 +33,7 @@ private:
     std::string userName;
     std::string userToken;
 
-    Record<data::User>::View user;
+    soa::data::User& user;
   };
 
   void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
@@ -46,7 +46,7 @@ private:
   //!
   CommandServer& _server;
   //!
-  DataDirector& _dataDirector;
+  soa::DataDirector& _dataDirector;
 };
 
 } // namespace alicia

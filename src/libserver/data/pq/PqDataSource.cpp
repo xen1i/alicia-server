@@ -3,7 +3,6 @@
 //
 
 #include "libserver/data/pq/PqDataSource.hpp"
-#include "libserver/data/pq/SqlUtils.hpp"
 
 namespace soa
 {
@@ -11,7 +10,7 @@ namespace soa
 namespace
 {
 
-constexpr std::string UserTableName = "data.users";
+constexpr std::string_view UserTableName = "data.users";
 
 } // namespace
 
@@ -36,9 +35,12 @@ void PqDataSource::RetrieveUser(data::User& user)
       "from $1 where name=$2",
       pqxx::params(UserTableName, user.name()));
 
-    user.uid = result["uid"].as<data::Uid>(data::InvalidUid);
-    user.token = result["token"].as<std::string>({});
-    user.characterUid = result["characterUid"].as<data::Uid>(data::InvalidUid);
+    if (user.uid.IsModified())
+      user.uid = result["uid"].as<data::Uid>(data::InvalidUid);
+    if (user.token.IsModified())
+      user.token = result["token"].as<std::string>({});
+    if (user.characterUid.IsModified())
+      user.characterUid = result["characterUid"].as<data::Uid>(data::InvalidUid);
   }
   catch (const std::exception& x)
   {

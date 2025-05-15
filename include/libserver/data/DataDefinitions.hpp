@@ -134,6 +134,33 @@ struct Item
   dao::Field<Slot> slot{Slot::Storage};
 };
 
+//! User
+struct Character
+{
+  //! An UID of the character.
+  dao::Field<Uid> uid;
+  //! A name of the character.
+  dao::Field<std::string> name{};
+
+  struct Parts
+  {
+    //! An ID of the character model.
+    dao::Field<uint32_t> modelId{0u};
+    //! An ID of the mouth part.
+    dao::Field<uint32_t> mouthId{0u};
+    //! An ID of the face part.
+    dao::Field<uint32_t> faceId{0u};
+  } parts{};
+
+  struct Appearance
+  {
+    dao::Field<uint32_t> headSize{0u};
+    dao::Field<uint32_t> height{0u};
+    dao::Field<uint32_t> thighVolume{0u};
+    dao::Field<uint32_t> legVolume{0u};
+  } appearance{};
+};
+
 } // namespace data
 
 } // namespace soa

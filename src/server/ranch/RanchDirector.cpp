@@ -9,7 +9,9 @@
 namespace alicia
 {
 
-RanchDirector::RanchDirector(DataDirector& dataDirector, Settings::RanchSettings settings)
+RanchDirector::RanchDirector(
+  soa::DataDirector& dataDirector,
+  Settings::RanchSettings settings)
     : _settings(std::move(settings))
     , _dataDirector(dataDirector)
     , _server("Ranch")

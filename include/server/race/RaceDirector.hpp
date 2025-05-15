@@ -5,9 +5,9 @@
 #ifndef RACEDIRECTOR_HPP
 #define RACEDIRECTOR_HPP
 
-#include "server/DataDirector.hpp"
 #include "server/Settings.hpp"
 
+#include "libserver/data/DataDirector.hpp"
 #include "libserver/command/CommandServer.hpp"
 
 namespace alicia
@@ -18,7 +18,7 @@ class RaceDirector
 public:
   //!
   RaceDirector(
-      DataDirector& dataDirector,
+      soa::DataDirector& dataDirector,
       Settings::RaceSettings settings = {});
 
 private:
@@ -26,18 +26,18 @@ private:
   //!
   Settings::RaceSettings _settings;
   //!
-  DataDirector& _dataDirector;
+  soa::DataDirector& _dataDirector;
   //!
   CommandServer _server;
 
   //!
-  std::unordered_map<ClientId, DatumUid> _clientCharacters;
+  std::unordered_map<ClientId, soa::data::Uid> _clientCharacters;
 
   struct RoomInstance
   {
     // Add race-specific data here
   };
-  std::unordered_map<DatumUid, RoomInstance> _rooms;
+  std::unordered_map<soa::data::Uid, RoomInstance> _rooms;
 };
 
 }

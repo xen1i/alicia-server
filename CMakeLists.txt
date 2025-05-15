@@ -5,7 +5,7 @@ project(alicia-server
 
 option(BUILD_TESTS "Build tests" ON)
 
-find_package(Boost CONFIG)
+find_package(Boost 1.80.0 MODULE)
 
 add_subdirectory(3rd-party SYSTEM)
 
@@ -18,7 +18,6 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         include/libserver/data/DataDefinitions.hpp
         include/libserver/data/DataStorage.hpp
-        src/libserver/Alicia.cpp
         src/libserver/Util.cpp
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
@@ -27,10 +26,11 @@ add_library(alicia-libserver STATIC
         src/libserver/command/proto/LobbyMessageDefines.cpp
         src/libserver/command/proto/RaceMessageDefines.cpp
         src/libserver/command/proto/RanchMessageDefines.cpp
-        src/libserver/data/DataSource.cpp
         src/libserver/data/DataDirector.cpp
         src/libserver/data/pq/PqDataSource.cpp
-        src/libserver/data/pq/SqlUtils.cpp)
+        src/libserver/data/pq/SqlUtils.cpp
+        src/libserver/data/file/FileDataSource.cpp
+        src/libserver/data/file/FileDataSource.cpp)
 
 target_include_directories(alicia-libserver
         PUBLIC include/)
@@ -42,7 +42,6 @@ add_executable(alicia-server
         src/server/main.cpp
         src/server/Settings.cpp
         src/server/Scheduler.cpp
-        src/server/DataDirector.cpp
         src/server/tracker/WorldTracker.cpp
         src/server/lobby/LobbyDirector.cpp
         src/server/lobby/LoginHandler.cpp

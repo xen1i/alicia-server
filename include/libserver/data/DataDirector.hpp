@@ -7,7 +7,9 @@
 
 #include "DataDefinitions.hpp"
 #include "DataStorage.hpp"
+
 #include "pq/PqDataSource.hpp"
+#include "file/FileDataSource.hpp"
 
 namespace soa
 {
@@ -15,18 +17,25 @@ namespace soa
 class DataDirector
 {
 public:
+  using UserStorage = DataStorage<std::string, data::User>;
+  using CharacterStorage = DataStorage<std::string, data::Character>;
+
   //! Default constructor.
   //! @param url pq url
-  explicit DataDirector(const std::string& url);
+  explicit DataDirector();
+  ~DataDirector();
+
   //! Ticks the data director.
   void Tick();
 
-  bool IsUserAvailable(const std::string& name);
-  data::User& GetUser(const std::string& name);
+  UserStorage& GetUserStorage();
+  CharacterStorage& GetCharacterStorage();
 
 private:
-  PqDataSource _dataSource;
+  std::unique_ptr<FileDataSource> _dataSource;
+
   DataStorage<std::string, data::User> _userStorage;
+  DataStorage<std::string, data::Character> _characterStorage;
 };
 
 }

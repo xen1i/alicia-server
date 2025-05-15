@@ -7,6 +7,7 @@
 
 #include <libserver/data/DataDefinitions.hpp>
 #include <libserver/data/DataSource.hpp>
+
 #include <pqxx/pqxx>
 
 namespace soa

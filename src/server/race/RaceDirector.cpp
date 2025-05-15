@@ -9,7 +9,7 @@ namespace alicia
 {
 
 RaceDirector::RaceDirector(
-    DataDirector& dataDirector,
+    soa::DataDirector& dataDirector,
     Settings::RaceSettings settings)
     : _settings(std::move(settings))
     , _dataDirector(dataDirector)

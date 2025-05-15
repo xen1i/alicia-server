@@ -3,7 +3,6 @@
 //
 
 #include "server/lobby/LobbyDirector.hpp"
-#include "server/DataDirector.hpp"
 
 #include <random>
 
@@ -19,7 +18,9 @@ std::random_device rd;
 namespace alicia
 {
 
-LobbyDirector::LobbyDirector(DataDirector& dataDirector, Settings::LobbySettings settings)
+LobbyDirector::LobbyDirector(
+  soa::DataDirector& dataDirector,
+  Settings::LobbySettings settings)
     : _settings(std::move(settings))
     , _server("Lobby")
     , _dataDirector(dataDirector)
