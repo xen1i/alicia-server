@@ -32,8 +32,6 @@ private:
     ClientId clientId;
     std::string userName;
     std::string userToken;
-
-    soa::data::User& user;
   };
 
   void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);

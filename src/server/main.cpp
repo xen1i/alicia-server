@@ -22,6 +22,44 @@ std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
 
+void TickLoop(
+  const uint64_t ticksPerSecond,
+  const std::function<void(void)>& task)
+{
+  using Clock = std::chrono::steady_clock;
+
+  Clock::time_point lastTick;
+  const uint64_t millisPerTick = 1000ull / ticksPerSecond;
+
+  while (true)
+  {
+    const auto timeNow = Clock::now();
+    // Time delta between ticks [ms].
+    const auto tickDelta = std::chrono::duration_cast<
+      std::chrono::milliseconds>(timeNow - lastTick);
+
+    if (tickDelta < std::chrono::milliseconds(millisPerTick))
+    {
+      const auto sleepMs = millisPerTick - tickDelta.count();
+      std::this_thread::sleep_for(
+        std::chrono::milliseconds(sleepMs));
+      continue;
+    }
+
+    lastTick = timeNow;
+
+    try
+    {
+      task();
+    }
+    catch (const std::exception& x)
+    {
+      spdlog::error("Exception in tick loop: {}", x.what());
+      break;
+    }
+  }
+}
+
 } // namespace
 
 int main()
@@ -51,34 +89,15 @@ int main()
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json5");
 
-  const std::jthread dataThread([&settings]()
+  const std::jthread dataThread([]()
   {
     // Data director.
-    g_dataDirector = std::make_unique<alicia::DataDirector>(
-      settings._dataSourceSettings);
+    g_dataDirector = std::make_unique<soa::DataDirector>();
 
-    using clock = std::chrono::steady_clock;
-
-    clock::time_point lastTick;
-    constexpr uint64_t ticksPerSecond = 50;
-    constexpr uint64_t millisPerTick = 1000u / ticksPerSecond;
-
-    while (true)
+    TickLoop(50, []()
     {
-      // Time delta between ticks [ms].
-      const auto tickDelta = std::chrono::duration_cast<
-        std::chrono::milliseconds>(clock::now() - lastTick);
-
-      if (tickDelta.count() < millisPerTick)
-      {
-        const auto sleepMs = millisPerTick - tickDelta.count();
-        std::this_thread::sleep_for(
-          std::chrono::milliseconds(sleepMs));
-        continue;
-      }
-
       g_dataDirector->Tick();
-    }
+    });
   });
 
   const std::jthread lobbyThread([&settings]()
@@ -87,6 +106,11 @@ int main()
     g_lobbyDirector = std::make_unique<alicia::LobbyDirector>(
       *g_dataDirector,
       settings._lobbySettings);
+
+    TickLoop(50, []()
+    {
+      g_lobbyDirector->Tick();
+    });
   });
 
   const std::jthread ranchThread([&settings]()

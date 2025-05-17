@@ -28,9 +28,9 @@ public:
   LobbyDirector(LobbyDirector&&) = delete;
   LobbyDirector& operator=(LobbyDirector&&) = delete;
 
-private:
   void Tick();
 
+private:
   //!
   void HandleCreateNicknameOK(
     ClientId clientId,

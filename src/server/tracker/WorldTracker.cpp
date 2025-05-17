@@ -7,13 +7,13 @@
 namespace alicia
 {
 
-EntityId WorldTracker::AddCharacter(DatumUid character)
+EntityId WorldTracker::AddCharacter(soa::data::Uid character)
 {
   _characters[character] = _nextEntityId;
   return _nextEntityId++;
 }
 
-EntityId WorldTracker::GetCharacterEntityId(DatumUid character)
+EntityId WorldTracker::GetCharacterEntityId(soa::data::Uid character)
 {
   const auto itr = _characters.find(character);
   if (itr == _characters.cend())
@@ -21,13 +21,13 @@ EntityId WorldTracker::GetCharacterEntityId(DatumUid character)
   return itr->second;
 }
 
-EntityId WorldTracker::AddMount(DatumUid mount)
+EntityId WorldTracker::AddMount(soa::data::Uid mount)
 {
   _mounts[mount] = _nextEntityId;
   return _nextEntityId++;
 }
 
-EntityId WorldTracker::GetMountEntityId(DatumUid mount)
+EntityId WorldTracker::GetMountEntityId(soa::data::Uid mount)
 {
   const auto itr = _mounts.find(mount);
   if (itr == _mounts.cend())

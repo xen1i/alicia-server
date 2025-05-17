@@ -16,7 +16,7 @@ std::filesystem::path ProduceDataPath(
   return root / filename / ".json";
 }
 
-}
+} // namespace anon
 
 void soa::FileDataSource::Initialize(const std::filesystem::path& path)
 {
@@ -36,8 +36,7 @@ void soa::FileDataSource::Initialize(const std::filesystem::path& path)
   }
 
   const auto meta = nlohmann::json::parse(metaFile);
-  _sequentialUserId = meta["sequentialUserId"].get<uint32_t>();
-  _sequentialCharacterId = meta["sequentialCharacterId"].get<uint32_t>();
+  _sequentialUid = meta["sequentialUid"].get<uint32_t>();
 }
 
 void soa::FileDataSource::Terminate()
@@ -52,8 +51,7 @@ void soa::FileDataSource::Terminate()
   }
 
   nlohmann::json meta;
-  meta["sequentialUserId"] = _sequentialUserId;
-  meta["sequentialCharacterId"] = _sequentialCharacterId;
+  meta["sequentialUid"] = _sequentialUid;
 
   metaFile << meta.dump(2);
 }
@@ -86,16 +84,6 @@ void soa::FileDataSource::StoreUser(const data::User& user)
   json["characterUid"] = user.characterUid();
 
   file << json.dump(2);
-}
-
-void soa::FileDataSource::RetrieveItem(data::Item& item)
-{
-
-}
-
-void soa::FileDataSource::StoreItem(const data::Item& item)
-{
-
 }
 
 void soa::FileDataSource::RetrieveCharacter(data::Character& character)
@@ -149,4 +137,34 @@ void soa::FileDataSource::StoreCharacter(const data::Character& character)
   json["appearance"] = appearance;
 
   file << json.dump(2);
+}
+
+void soa::FileDataSource::RetrieveItem(data::Item& item)
+{
+
+}
+
+void soa::FileDataSource::StoreItem(const data::Item& item)
+{
+
+}
+
+void soa::FileDataSource::RetrieveHorse(data::Horse& horse)
+{
+
+}
+
+void soa::FileDataSource::StoreHorse(const data::Horse& horse)
+{
+
+}
+
+void soa::FileDataSource::RetrieveRanch(data::Ranch& ranch)
+{
+
+}
+
+void soa::FileDataSource::StoreRanch(const data::Ranch& ranch)
+{
+
 }

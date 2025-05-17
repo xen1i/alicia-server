@@ -23,31 +23,33 @@ void LoginHandler::Tick()
   while (not _clientLoginRequestQueue.empty())
   {
     const ClientId clientId = _clientLoginRequestQueue.front();
-
-    // Queued login must have a login context.
-    assert(_clientLogins.contains(clientId));
     const auto& loginContext = _clientLogins[clientId];
 
-    // Get the user credentials.
-    auto& user = _dataDirector.GetUserStorage().Get(
+    // Load the user.
+    auto user = _dataDirector.GetUsers().Get(
       loginContext.userName);
-    if (user.uid() == soa::data::InvalidUid)
+    if (not user)
     {
       continue;
     }
 
     _clientLoginRequestQueue.pop();
 
-    // If the provided user token does not match the one stored
-    // then reject the login.
-    if (loginContext.userToken != user.token())
+    bool isAuthenticated = false;
+    user->Immutable([&isAuthenticated, &loginContext](auto& user)
     {
-      QueueUserLoginRejected(clientId);
-    }
-    else
+      isAuthenticated = user.token() == loginContext.userToken;
+    });
+
+    // If the user succeeds in authentication queue user for further processing.
+    if (isAuthenticated)
     {
       // Queue the processing of the response.
       _clientLoginResponseQueue.emplace(clientId);
+    }
+    else
+    {
+      QueueUserLoginRejected(clientId);
     }
 
     // Only one user login per tick.
@@ -57,52 +59,32 @@ void LoginHandler::Tick()
   while (not _clientLoginResponseQueue.empty())
   {
     const ClientId clientId = _clientLoginResponseQueue.front();
-
-    assert(_clientLogins.contains(clientId));
     const auto& loginContext = _clientLogins[clientId];
 
-    const auto& user = _dataDirector.GetUserStorage().Get(
-      loginContext.userName);
-    assert(user.uid() != soa::data::InvalidUid
-      && "User must be available");
-
     // Load the character.
-    auto character = _dataDirector.GetCharacter(user().characterUid);
-    if (not character.IsAvailable())
+
+    auto user = *_dataDirector.GetUsers().Get(loginContext.userName);
+    auto character = _dataDirector.GetCharacters().Get(user().characterUid());
+    if (not character)
     {
       continue;
     }
 
-    const auto areDataAvailable = []<typename T>(const std::vector<T>& data)
-    {
-      for (const auto& datum : data)
-      {
-        if (not datum.IsAvailable())
-        {
-          return false;
-        }
-      }
+    // Load the character's equipment, horses and ranch.
 
-      return true;
-    };
+    const auto characterEquipment = _dataDirector.GetItems().Get(
+      (*character)().characterEquipment());
+    const auto horseEquipment = _dataDirector.GetItems().Get(
+      (*character)().horseEquipment());
 
-    // Load the character equipment.
-    const auto characterEquipment = _dataDirector.GetItems(
-      character().characterEquipment);
-    // Load the horse equipment.
-    const auto horseEquipment = _dataDirector.GetItems(
-      character().horseEquipment);
-    // Load the horses.
-    const auto horses = _dataDirector.GetHorses(
-      character().horses);
+    const auto horses = _dataDirector.GetHorses().Get((*character)().horses());
 
-    // Load the ranch.
-    const auto ranch = _dataDirector.GetRanch(character().ranchUid);
+    const auto ranch = _dataDirector.GetRanches().Get((*character)().ranchUid());
 
-    if (not areDataAvailable(characterEquipment) ||
-      not areDataAvailable(horseEquipment) ||
-      not areDataAvailable(horses) ||
-      not ranch.IsAvailable())
+    if (not characterEquipment
+      || not horseEquipment
+      || not horses
+      || not ranch)
     {
       continue;
     }
@@ -159,27 +141,18 @@ void LoginHandler::QueueUserLoginAccepted(
     CommandId::LobbyLoginOK,
     [userName, this]()
     {
-      // Get the user.
-      const auto& user = _dataDirector.GetUserStorage().Get(userName);
-      assert(user.uid() != soa::data::InvalidUid
-        && "User must be available.");
+      auto user = *_dataDirector.GetUsers().Get(userName);
+      auto character = *_dataDirector.GetCharacters().Get(user().characterUid());
 
-      // Load the character.
-      auto character = _dataDirector.GetCharacter(user().characterUid);
-      assert(character.IsAvailable() && "Character must be available.");
+      auto characterEquipment = *_dataDirector.GetItems().Get(
+        character().characterEquipment());
+      auto horseEquipment = *_dataDirector.GetItems().Get(
+        character().horseEquipment());
 
-      // Load the equipment.
-      auto characterEquipment = _dataDirector.GetItems(
-        character().characterEquipment);
-      auto horseEquipment = _dataDirector.GetItems(
-        character().horseEquipment);
+      auto horses = *_dataDirector.GetHorses().Get(character().horses());
 
-      // Load the horses.
-      auto horses = _dataDirector.GetHorses(character().horses);
+      auto ranch = *_dataDirector.GetRanches().Get(character().ranchUid());
 
-      // Load the ranch
-      auto ranch = _dataDirector.GetRanch(character().ranchUid);
-      assert(ranch.IsAvailable());
 
       // Transform the server data to alicia protocol data.
       return LobbyCommandLoginOK{

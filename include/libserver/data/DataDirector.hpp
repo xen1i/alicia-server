@@ -18,24 +18,32 @@ class DataDirector
 {
 public:
   using UserStorage = DataStorage<std::string, data::User>;
-  using CharacterStorage = DataStorage<std::string, data::Character>;
+  using CharacterStorage = DataStorage<data::Uid, data::Character>;
+  using ItemStorage = DataStorage<data::Uid, data::Item>;
+  using HorseStorage = DataStorage<data::Uid, data::Horse>;
+  using RanchStorage = DataStorage<data::Uid, data::Ranch>;
 
   //! Default constructor.
-  //! @param url pq url
   explicit DataDirector();
   ~DataDirector();
 
   //! Ticks the data director.
   void Tick();
 
-  UserStorage& GetUserStorage();
-  CharacterStorage& GetCharacterStorage();
+  UserStorage& GetUsers();
+  CharacterStorage& GetCharacters();
+  ItemStorage& GetItems();
+  HorseStorage& GetHorses();
+  RanchStorage& GetRanches();
 
 private:
   std::unique_ptr<FileDataSource> _dataSource;
 
-  DataStorage<std::string, data::User> _userStorage;
-  DataStorage<std::string, data::Character> _characterStorage;
+  UserStorage _userStorage;
+  CharacterStorage _characterStorage;
+  HorseStorage _horseStorage;
+  RanchStorage _ranchStorage;
+  ItemStorage _itemStorage;
 };
 
 }

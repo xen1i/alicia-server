@@ -5,7 +5,7 @@
 #ifndef WORLDTRACKER_HPP
 #define WORLDTRACKER_HPP
 
-#include "server/DataDirector.hpp"
+#include "libserver/data/DataDefinitions.hpp"
 
 #include <unordered_map>
 
@@ -22,16 +22,16 @@ class WorldTracker
 {
 public:
   //! An entity map.
-  using EntityMap = std::unordered_map<DatumUid, uint16_t>;
+  using EntityMap = std::unordered_map<soa::data::Uid, uint16_t>;
 
   //!
-  EntityId AddCharacter(DatumUid character);
+  EntityId AddCharacter(soa::data::Uid character);
   //!
-  [[nodiscard]] EntityId GetCharacterEntityId(DatumUid character);
+  [[nodiscard]] EntityId GetCharacterEntityId(soa::data::Uid character);
   //!
-  EntityId AddMount(DatumUid mount);
+  EntityId AddMount(soa::data::Uid mount);
   //!
-  [[nodiscard]] EntityId GetMountEntityId(DatumUid mount);
+  [[nodiscard]] EntityId GetMountEntityId(soa::data::Uid mount);
 
   //!
   [[nodiscard]] const EntityMap& GetMountEntities();

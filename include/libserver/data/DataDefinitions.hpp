@@ -159,6 +159,23 @@ struct Character
     dao::Field<uint32_t> thighVolume{0u};
     dao::Field<uint32_t> legVolume{0u};
   } appearance{};
+
+  dao::Field<std::vector<Uid>> characterEquipment;
+  dao::Field<std::vector<Uid>> horseEquipment;
+
+  dao::Field<std::vector<Uid>> horses;
+
+  dao::Field<Uid> ranchUid;
+};
+
+struct Horse
+{
+  dao::Field<std::string> name;
+};
+
+struct Ranch
+{
+  dao::Field<std::string> name;
 };
 
 } // namespace data
