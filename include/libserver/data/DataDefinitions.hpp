@@ -104,7 +104,7 @@ constexpr Tid InvalidTid = 0;
 struct User
 {
   //! An UID of the user.
-  dao::Field<Uid> uid;
+  dao::Field<Uid> uid{InvalidUid};
   //! A name of the user.
   dao::Field<std::string> name{};
   //! An authorization token of the user.
@@ -138,7 +138,7 @@ struct Item
 struct Character
 {
   //! An UID of the character.
-  dao::Field<Uid> uid;
+  dao::Field<Uid> uid{InvalidUid};
   //! A name of the character.
   dao::Field<std::string> name{};
 
@@ -165,17 +165,17 @@ struct Character
 
   dao::Field<std::vector<Uid>> horses;
 
-  dao::Field<Uid> ranchUid;
+  dao::Field<Uid> ranchUid{InvalidUid};
 };
 
 struct Horse
 {
-  dao::Field<std::string> name;
+  dao::Field<std::string> name{};
 };
 
 struct Ranch
 {
-  dao::Field<std::string> name;
+  dao::Field<std::string> name{};
 };
 
 } // namespace data

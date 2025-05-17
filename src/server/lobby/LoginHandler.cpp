@@ -153,7 +153,6 @@ void LoginHandler::QueueUserLoginAccepted(
 
       auto ranch = *_dataDirector.GetRanches().Get(character().ranchUid());
 
-
       // Transform the server data to alicia protocol data.
       return LobbyCommandLoginOK{
       };
