@@ -136,39 +136,43 @@ int32_t CommandClient::GetRollingCodeInt() const
   return *reinterpret_cast<const int32_t*>(_rollingCode.data());
 }
 
-CommandServer::CommandServer(std::string name)
-    : _server(
-        [this](ClientId clientId) { HandleClientConnect(clientId); },
-        [this](ClientId clientId) { HandleClientDisconnect(clientId); },
-        [this](ClientId clientId, asio::streambuf& readBuffer) { HandleClientRead(clientId, readBuffer); },
-        [this](ClientId clientId, asio::streambuf& writeBuffer) { HandleClientWrite(clientId, writeBuffer); })
+CommandServer::CommandServer()
+  : _server(
+      [this](ClientId clientId)
+      {
+        HandleClientConnect(clientId);
+      },
+      [this](ClientId clientId)
+      {
+        HandleClientDisconnect(clientId);
+      },
+      [this](ClientId clientId, asio::streambuf& readBuffer)
+      {
+        HandleClientRead(clientId, readBuffer);
+      },
+      [this](ClientId clientId, asio::streambuf& writeBuffer)
+      {
+        HandleClientWrite(clientId, writeBuffer);
+      })
 {
-  _name = std::move(name);
 }
 
 CommandServer::~CommandServer()
 {
+  _server.End();
   if (_serverThread.joinable())
   {
-    _server.End();
     _serverThread.join();
   }
 }
 
-void CommandServer::Host(
-  const asio::ip::address& address,
-  uint16_t port)
+void CommandServer::Host(const asio::ip::address& address, uint16_t port)
 {
-  _serverThread = std::thread([this, address, port]()
-  {
-    spdlog::debug(
-      "{} server hosted on {}:{}",
-      this->_name,
-      address.to_string(),
-      port);
-
-    _server.Begin(address, port);
-  });
+  _serverThread = std::thread(
+    [this, address, port]()
+    {
+      _server.Begin(address, port);
+    });
 }
 
 void CommandServer::RegisterCommandHandler(
@@ -235,12 +239,10 @@ void CommandServer::QueueCommand(ClientId client, CommandId command, CommandSupp
 
 void CommandServer::HandleClientConnect(ClientId clientId)
 {
-  spdlog::info("Client {} connected to {}", clientId, _name);
 }
 
 void CommandServer::HandleClientDisconnect(ClientId clientId)
 {
-  spdlog::info("Client {} disconnected from {}", clientId, _name);
 }
 
 void CommandServer::HandleClientRead(

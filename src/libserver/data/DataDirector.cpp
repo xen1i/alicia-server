@@ -58,9 +58,20 @@ DataDirector::DataDirector()
   _dataSource->Initialize(".");
 }
 
-DataDirector::~DataDirector()
+DataDirector::~DataDirector() { _dataSource->Terminate(); }
+
+void DataDirector::Initialize()
 {
-  _dataSource->Terminate();
+
+}
+
+void DataDirector::Terminate()
+{
+  _userStorage.Terminate();
+  _characterStorage.Terminate();
+  _itemStorage.Terminate();
+  _horseStorage.Terminate();
+  _ranchStorage.Terminate();
 }
 
 void DataDirector::Tick()

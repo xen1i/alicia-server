@@ -18,11 +18,9 @@ std::random_device rd;
 namespace alicia
 {
 
-LobbyDirector::LobbyDirector(
-  soa::DataDirector& dataDirector,
-  Settings::LobbySettings settings)
+LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySettings settings)
     : _settings(std::move(settings))
-    , _server("Lobby")
+    , _server()
     , _dataDirector(dataDirector)
     , _loginHandler(*this, _server)
 {
@@ -31,9 +29,7 @@ LobbyDirector::LobbyDirector(
     CommandId::LobbyLogin,
     [this](ClientId clientId, const auto& message)
     {
-      assert(message.constant0 == 50
-        && message.constant1 == 281
-        && "Game version mismatch");
+      assert(message.constant0 == 50 && message.constant1 == 281 && "Game version mismatch");
 
       _clientCharacters[clientId] = message.loginId;
       _loginHandler.HandleUserLogin(clientId, message);
@@ -97,20 +93,35 @@ LobbyDirector::LobbyDirector(
   _server.RegisterCommandHandler<LobbyCommandInquiryTreecash>(
     CommandId::LobbyInquiryTreecash,
     [this](ClientId clientId, const auto& message) { HandleInquiryTreecash(clientId, message); });
+}
 
+void LobbyDirector::Initialize()
+{
   spdlog::debug(
-    "Advertising ranch server on {}:{}",
+    "Lobby is advertising ranch server on {}:{}",
     _settings.ranchAdvAddress.to_string(),
     _settings.ranchAdvPort);
   spdlog::debug(
-    "Advertising messenger server on {}:{}",
+    "Lobby is advertising messenger server on {}:{}",
     _settings.messengerAdvAddress.to_string(),
     _settings.messengerAdvPort);
+
+  spdlog::debug(
+    "Lobby server listening on {}:{}",
+    _settings.address.to_string(),
+    _settings.port);
 
   _server.Host(_settings.address, _settings.port);
 }
 
-void LobbyDirector::Tick() { _loginHandler.Tick(); }
+void LobbyDirector::Terminate()
+{
+}
+
+void LobbyDirector::Tick()
+{
+  _loginHandler.Tick();
+}
 
 soa::DataDirector& LobbyDirector::GetDataDirector()
 {

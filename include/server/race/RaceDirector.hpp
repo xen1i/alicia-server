@@ -21,6 +21,10 @@ public:
       soa::DataDirector& dataDirector,
       Settings::RaceSettings settings = {});
 
+  void Initialize();
+  void Terminate();
+  void Tick();
+
 private:
 
   //!

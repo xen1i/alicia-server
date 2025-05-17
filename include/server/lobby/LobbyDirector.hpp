@@ -28,6 +28,8 @@ public:
   LobbyDirector(LobbyDirector&&) = delete;
   LobbyDirector& operator=(LobbyDirector&&) = delete;
 
+  void Initialize();
+  void Terminate();
   void Tick();
   soa::DataDirector& GetDataDirector();
   Settings::LobbySettings& GetSettings();

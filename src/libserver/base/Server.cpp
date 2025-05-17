@@ -169,8 +169,6 @@ Server::Server(
 
 void Server::Begin(const asio::ip::address& address, uint16_t port)
 {
-  _shouldRun = true;
-
   const asio::ip::tcp::endpoint server_endpoint(address, port);
 
   _acceptor.open(server_endpoint.protocol());
@@ -185,8 +183,6 @@ void Server::Begin(const asio::ip::address& address, uint16_t port)
 
 void Server::End()
 {
-  _shouldRun = false;
-
   // Disconnect all the clients.
   for (auto& client : _clients)
   {
@@ -209,11 +205,6 @@ Client& Server::GetClient(ClientId clientId)
 
 void Server::AcceptLoop() noexcept
 {
-  if (not _shouldRun)
-  {
-    return;
-  }
-
   _acceptor.async_accept(
     [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
     {

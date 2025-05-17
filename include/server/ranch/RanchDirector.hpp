@@ -22,6 +22,10 @@ public:
     soa::DataDirector& dataDirector,
     Settings::RanchSettings settings = {});
 
+  void Initialize();
+  void Terminate();
+  void Tick();
+
 private:
   //!
   void HandleEnterRanch(

@@ -27,6 +27,9 @@ public:
   explicit DataDirector();
   ~DataDirector();
 
+  void Initialize();
+  void Terminate();
+
   //! Ticks the data director.
   void Tick();
 

@@ -5,33 +5,42 @@
 #include "server/ranch/RanchDirector.hpp"
 #include "server/Settings.hpp"
 
-#include <libserver/base/Server.hpp>
-
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 #include <memory>
+#include <iostream>
 #include <thread>
+
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 namespace
 {
+
+using Clock = std::chrono::steady_clock;
+
+std::atomic_bool shouldRun = true;
+
+std::shared_ptr<spdlog::logger> g_logger;
 
 std::unique_ptr<soa::DataDirector> g_dataDirector;
 std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 std::unique_ptr<alicia::RaceDirector> g_raceDirector;
 
+Clock::time_point serverStartupTime;
+
 void TickLoop(
   const uint64_t ticksPerSecond,
   const std::function<void(void)>& task)
 {
-  using Clock = std::chrono::steady_clock;
-
   Clock::time_point lastTick;
   const uint64_t millisPerTick = 1000ull / ticksPerSecond;
 
-  while (true)
+  while (shouldRun)
   {
     const auto timeNow = Clock::now();
     // Time delta between ticks [ms].
@@ -48,22 +57,56 @@ void TickLoop(
 
     lastTick = timeNow;
 
-    //try
+    try
     {
       task();
     }
-    //catch (const std::exception& x)
-    //{
-    //  spdlog::error("Exception in tick loop: {}", x.what());
-    //  break;
-    //}
+    catch (const std::exception& x)
+    {
+      spdlog::error("Exception in tick loop: {}", x.what());
+      break;
+    }
   }
 }
 
+#ifdef WIN32
+
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+  switch (fdwCtrlType)
+  {
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+    {
+      spdlog::debug("Handling user exit");
+      shouldRun = false;
+      return TRUE;
+    }
+
+    default:
+      return FALSE;
+  }
+}
+
+#endif
+
 } // namespace
+
+void quit()
+{
+  spdlog::info("Server shutting down");
+  shouldRun = false;
+}
 
 int main()
 {
+#ifdef WIN32
+  // Register the control handler.
+  SetConsoleCtrlHandler(CtrlHandler, TRUE);
+#endif
+
+  serverStartupTime = std::chrono::steady_clock::now();
+
   // Daily file sink.
   const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
     "logs/log.log", 0, 0);
@@ -73,15 +116,15 @@ int main()
     spdlog::sinks::stdout_color_sink_mt>();
 
   // Initialize the application logger with file sink and console sink.
-  auto applicationLogger = std::make_shared<spdlog::logger>(
+  g_logger = std::make_shared<spdlog::logger>(
     "server",
     spdlog::sinks_init_list{fileSink, consoleSink});
 
-  applicationLogger->set_level(spdlog::level::debug);
-  applicationLogger->set_pattern("%H:%M:%S:%e [%^%l%$] [Thread %t] %v");
+  g_logger->set_level(spdlog::level::debug);
+  g_logger->set_pattern("%H:%M:%S:%e [%^%l%$] [Thread %t] %v");
 
   // Set is as the default logger for the application.
-  spdlog::set_default_logger(applicationLogger);
+  spdlog::set_default_logger(g_logger);
 
   spdlog::info("Running Alicia server v{}.", alicia::BuildVersion);
 
@@ -92,49 +135,81 @@ int main()
   // Data director.
   g_dataDirector = std::make_unique<soa::DataDirector>();
 
+  // Lobby director.
+  g_lobbyDirector = std::make_unique<alicia::LobbyDirector>(
+    *g_dataDirector,
+    settings._lobbySettings);
+  // Ranch director.
+  g_ranchDirector = std::make_unique<alicia::RanchDirector>(
+    *g_dataDirector,
+    settings._ranchSettings);
+  // Race director.
+  g_raceDirector = std::make_unique<alicia::RaceDirector>(
+    *g_dataDirector,
+    settings._raceSettings);
+
   const std::jthread dataThread([]()
   {
+    g_dataDirector->Initialize();
     TickLoop(50, []()
     {
       g_dataDirector->Tick();
     });
+    g_dataDirector->Terminate();
   });
 
   const std::jthread lobbyThread([&settings]()
   {
-    // Lobby director.
-    g_lobbyDirector = std::make_unique<alicia::LobbyDirector>(
-      *g_dataDirector,
-      settings._lobbySettings);
-
+    g_lobbyDirector->Initialize();
     TickLoop(50, []()
     {
       g_lobbyDirector->Tick();
     });
+    g_lobbyDirector->Terminate();
   });
 
   const std::jthread ranchThread([&settings]()
   {
-    // Ranch director.
-    g_ranchDirector = std::make_unique<alicia::RanchDirector>(
-      *g_dataDirector,
-      settings._ranchSettings);
+    g_ranchDirector->Initialize();
+    TickLoop(50, []()
+    {
+      g_ranchDirector->Tick();
+    });
+    g_ranchDirector->Terminate();
   });
 
   const std::jthread raceThread([&settings]()
   {
-    // Race director.
-    g_raceDirector = std::make_unique<alicia::RaceDirector>(
-      *g_dataDirector,
-      settings._raceSettings);
+    g_raceDirector->Initialize();
+    TickLoop(50, []()
+    {
+      g_raceDirector->Tick();
+    });
+    g_raceDirector->Terminate();
   });
 
   const std::jthread messengerThread([&settings]()
   {
     // TODO: Messenger
-    alicia::CommandServer messengerServer("Messenger");
-    messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
+    alicia::CommandServer messengerServer;
+    //messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
   });
+
+  spdlog::info(
+    "Server started up in {}ms",
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+      Clock::now() - serverStartupTime).count());
+
+  while(shouldRun)
+  {
+    std::string command;
+    std::getline(std::cin, command);
+
+    if (command == "exit")
+    {
+      shouldRun = false;
+    }
+  }
 
   return 0;
 }

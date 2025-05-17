@@ -114,6 +114,24 @@ public:
   {
   }
 
+  void Initialize()
+  {
+
+  }
+
+  void Terminate()
+  {
+    _storeQueue.clear();
+    _retrieveQueue.clear();
+
+    for (auto& entry : _entries)
+    {
+      _dataSourceStoreListener(entry.first, entry.second.value);
+    }
+
+    _entries.clear();
+  }
+
   //! Whether data record is available.
   //! @param key Key of the datum.
   //! @returns `true` if datum is available, `false` otherwise.

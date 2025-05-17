@@ -9,12 +9,10 @@
 namespace alicia
 {
 
-RanchDirector::RanchDirector(
-  soa::DataDirector& dataDirector,
-  Settings::RanchSettings settings)
+RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSettings settings)
     : _settings(std::move(settings))
     , _dataDirector(dataDirector)
-    , _server("Ranch")
+    , _server()
 {
   _ranches[100] = RanchInstance{};
 
@@ -67,9 +65,26 @@ RanchDirector::RanchDirector(
   _server.RegisterCommandHandler<RanchCommandRequestStorage>(
     CommandId::RanchRequestStorage,
     [this](ClientId clientId, auto& command) { HandleRequestStorage(clientId, command); });
+}
+
+void RanchDirector::Initialize()
+{
+  spdlog::debug(
+    "Ranch server listening on {}:{}",
+    _settings.address.to_string(),
+    _settings.port);
 
   // Host the server.
   _server.Host(_settings.address, _settings.port);
+}
+void RanchDirector::Terminate()
+{
+
+}
+
+void RanchDirector::Tick()
+{
+
 }
 
 void RanchDirector::HandleEnterRanch(ClientId clientId, const RanchCommandEnterRanch& enterRanch) {}

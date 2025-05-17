@@ -55,7 +55,7 @@ class CommandServer
 {
 public:
   //! Default constructor;
-  explicit CommandServer(std::string name);
+  explicit CommandServer();
   ~CommandServer();
 
   //! Hosts the command server on the specified interface with the provided port.
@@ -125,8 +125,6 @@ private:
   void HandleClientWrite(
     ClientId clientId,
     asio::streambuf& writeBuffer);
-
-  std::string _name;
 
   std::unordered_map<CommandId, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
