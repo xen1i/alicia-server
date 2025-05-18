@@ -78,7 +78,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
     {
-      spdlog::debug("Handling user exit");
+      spdlog::debug("Shutting down because of CTRL+C");
       shouldRun = false;
       return TRUE;
     }
@@ -91,12 +91,6 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 #endif
 
 } // namespace
-
-void quit()
-{
-  spdlog::info("Server shutting down");
-  shouldRun = false;
-}
 
 int main()
 {
@@ -158,7 +152,7 @@ int main()
     g_dataDirector->Terminate();
   });
 
-  const std::jthread lobbyThread([&settings]()
+  const std::jthread lobbyThread([]()
   {
     g_lobbyDirector->Initialize();
     TickLoop(50, []()
@@ -168,7 +162,7 @@ int main()
     g_lobbyDirector->Terminate();
   });
 
-  const std::jthread ranchThread([&settings]()
+  const std::jthread ranchThread([]()
   {
     g_ranchDirector->Initialize();
     TickLoop(50, []()
@@ -178,7 +172,7 @@ int main()
     g_ranchDirector->Terminate();
   });
 
-  const std::jthread raceThread([&settings]()
+  const std::jthread raceThread([]()
   {
     g_raceDirector->Initialize();
     TickLoop(50, []()
@@ -188,7 +182,7 @@ int main()
     g_raceDirector->Terminate();
   });
 
-  const std::jthread messengerThread([&settings]()
+  const std::jthread messengerThread([]()
   {
     // TODO: Messenger
     alicia::CommandServer messengerServer;
@@ -200,14 +194,57 @@ int main()
     std::chrono::duration_cast<std::chrono::milliseconds>(
       Clock::now() - serverStartupTime).count());
 
-  while(shouldRun)
+  while (shouldRun)
   {
-    std::string command;
-    std::getline(std::cin, command);
+    std::string commandLine;
+    std::getline(std::cin, commandLine);
 
-    if (command == "exit")
+    std::vector<std::string> command;
+    size_t position = 0;
+    size_t idx = std::string::npos;
+    while (true)
+    {
+      idx = commandLine.find(' ', position);
+      if (idx == std::string::npos)
+      {
+        command.emplace_back(
+          commandLine.substr(position));
+        break;
+      }
+
+      command.emplace_back(
+        commandLine.substr(position, idx - position));
+      position = idx + 1;
+    }
+
+    if (command[0] == "exit")
     {
       shouldRun = false;
+    }
+    else if (command[0] == "register")
+    {
+      if (command.size() < 3)
+      {
+        printf("Please specify name and token\n");
+        continue;
+      }
+
+      const auto name = command[1];
+      const auto token = command[2];
+
+      auto user = g_dataDirector->GetUsers().Create(name);
+      if (not user)
+      {
+        printf("User already exists.\n");
+        continue;
+      }
+
+      user->Mutable([&name, &token](auto& user)
+      {
+        user.name = name;
+        user.token = token;
+      });
+      printf("Created user %s (token: %s)\n", name.c_str(), token.c_str());
     }
   }
 
