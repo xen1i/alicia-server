@@ -91,7 +91,7 @@ private:
   CommandServer _server;
 
   //!
-  std::unordered_map<ClientId, soa::data::Uid> _clientCharacters;
+  std::unordered_map<ClientId, std::string> _clientUsers;
 
   struct RanchInstance
   {

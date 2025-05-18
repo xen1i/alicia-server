@@ -170,7 +170,41 @@ struct Character
 
 struct Horse
 {
+  dao::Field<Uid> uid{InvalidUid};
+  dao::Field<Uid> tid{InvalidTid};
   dao::Field<std::string> name{};
+
+  struct Parts
+  {
+    dao::Field<uint32_t> skinId{0u};
+    dao::Field<uint32_t> maneId{0u};
+    dao::Field<uint32_t> tailId{0u};
+    dao::Field<uint32_t> faceId{0u};
+  } _parts{};
+
+  struct Appearance
+  {
+    dao::Field<uint32_t> scale{0u};
+    dao::Field<uint32_t> legLength{0u};
+    dao::Field<uint32_t> legVolume{0u};
+    dao::Field<uint32_t> bodyLength{0u};
+    dao::Field<uint32_t> bodyVolume{0u};
+  } _appearance{};
+
+  struct Stats
+  {
+    dao::Field<uint32_t> agility{0u};
+    dao::Field<uint32_t> spirit{0u};
+    dao::Field<uint32_t> speed{0u};
+    dao::Field<uint32_t> strength{0u};
+    dao::Field<uint32_t> ambition{0u};
+  } _stats{};
+
+  dao::Field<uint32_t> rating{0u};
+  dao::Field<uint32_t> clazz{0u};
+  dao::Field<uint32_t> clazzProgress{0u};
+  dao::Field<uint32_t> grade{0u};
+  dao::Field<uint32_t> growthPoints{0u};
 };
 
 struct Ranch
