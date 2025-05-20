@@ -219,7 +219,10 @@ void CommandServer::QueueCommand(ClientId client, CommandId command, CommandSupp
       commandSink.Seek(streamOrigin);
 
       // Write the message magic.
-      const MessageMagic magic{.id = static_cast<uint16_t>(command), .length = payloadSize};
+      const MessageMagic magic{
+        .id = static_cast<uint16_t>(
+          static_cast<uint16_t>(command)),
+        .length = payloadSize};
 
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);

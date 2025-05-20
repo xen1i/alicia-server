@@ -31,8 +31,11 @@ namespace alicia
 //! The extra 4 bytes are reserved for message magic.
 constexpr uint16_t BufferSize = 4096;
 
-//! A constant buffer jumbo for message magic.
-constexpr uint16_t BufferJumbo = 16384;
+//! When switching between scenes due to user interaction,
+//! a client may request blocking until it receives a specific response from the server.
+//! Setting this bit prevents the client from resolving the scene lock when
+//! the message is receieved.
+constexpr uint16_t ResolveSceneLockBit = 1 << 15;
 
 //! XOR code.
 using XorCode = std::array<std::byte, 4>;

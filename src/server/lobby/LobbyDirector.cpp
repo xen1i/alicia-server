@@ -338,18 +338,51 @@ void LobbyDirector::HandleGetMessengerInfo(
   ClientId clientId,
   const LobbyCommandGetMessengerInfo& requestMessengerInfo)
 {
+  LobbyCommandGetMessengerInfoOK response{
+    .code = 0xDEAD,
+    .ip = static_cast<uint32_t>(htonl(_settings.messengerAdvAddress.to_uint())),
+    .port = _settings.messengerAdvPort,
+  };
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyGetMessengerInfoOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 void LobbyDirector::HandleGoodsShopList(
   ClientId clientId,
   const LobbyCommandGoodsShopList& message)
 {
+  LobbyCommandGoodsShopListOK response{
+    .data = message.data};
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyGoodsShopListOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 void LobbyDirector::HandleInquiryTreecash(
   ClientId clientId,
   const LobbyCommandInquiryTreecash& message)
 {
+  LobbyCommandInquiryTreecashOK response{
+    .cash = 1'000};
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyInquiryTreecashOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 void LobbyDirector::HandleGuildPartyList(
@@ -358,54 +391,6 @@ void LobbyDirector::HandleGuildPartyList(
 {
 }
 
-// void LobbyDirector::HandleGetMessengerInfo(
-//   ClientId clientId,
-//   const LobbyCommandGetMessengerInfo& getMessengerInfo)
-// {
-//   _server.QueueCommand(
-//     clientId,
-//     CommandId::LobbyGetMessengerInfoOK,
-//     [&](auto& sink)
-//     {
-//       LobbyCommandGetMessengerInfoOK response{
-//         .code = 0xDEAD, // TODO: Generate and store in the messenger server instance
-//         .ip = static_cast<uint32_t>(htonl(_settings.messengerAdvAddress.to_uint())),
-//         .port = _settings.messengerAdvPort,
-//       };
-//       LobbyCommandGetMessengerInfoOK::Write(response, sink);
-//     });
-// }
-//
-// void LobbyDirector::HandleGoodsShopList(
-//   ClientId clientId,
-//   const LobbyCommandGoodsShopList& message)
-// {
-//   const LobbyCommandGoodsShopListOK response{.data = message.data};
-//
-//   _server.QueueCommand(
-//     clientId,
-//     CommandId::LobbyGoodsShopListOK,
-//     [response](SinkStream& sink)
-//     {
-//       LobbyCommandGoodsShopListOK::Write(response, sink);
-//     });
-// }
-//
-// void LobbyDirector::HandleInquiryTreecash(
-//   ClientId clientId,
-//   const LobbyCommandInquiryTreecash& message)
-// {
-//   const LobbyCommandInquiryTreecashOK response{
-//     .cash = 1000};
-//
-//   _server.QueueCommand(
-//     clientId,
-//     CommandId::LobbyInquiryTreecashOK,
-//     [response](SinkStream& sink)
-//     {
-//       LobbyCommandInquiryTreecashOK::Write(response, sink);
-//     });
-// }
 //
 // void LobbyDirector::HandleGuildPartyList(
 //   ClientId clientId,

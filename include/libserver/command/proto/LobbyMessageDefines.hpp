@@ -897,8 +897,6 @@ struct LobbyCommandGoodsShopListOK
 //! Clientbound shop goods message
 struct LobbyCommandGoodsShopListCancel
 {
-  std::array<uint8_t, 12> data;
-
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
   //! @param buffer Sink buffer.
