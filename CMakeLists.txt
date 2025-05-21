@@ -19,6 +19,7 @@ add_library(alicia-libserver STATIC
         include/libserver/data/DataDefinitions.hpp
         include/libserver/data/DataStorage.hpp
         src/libserver/Util.cpp
+        src/libserver/Stream.cpp
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp

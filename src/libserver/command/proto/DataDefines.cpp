@@ -38,9 +38,6 @@ void Item::Read(Item& item, SourceStream& buffer)
         .Read(item.count);
 }
 
-DEFINE_WRITER_READER(Item, Item::Write, Item::Read)
-
-
 void KeyboardOptions::Option::Write(const Option& option, SinkStream& buffer)
 {
     buffer.Write(option.index)
@@ -54,9 +51,6 @@ void KeyboardOptions::Option::Read(Option& option, SourceStream& buffer)
         .Read(option.type)
         .Read(option.key);
 }
-
-DEFINE_WRITER_READER(KeyboardOptions::Option, KeyboardOptions::Option::Write, KeyboardOptions::Option::Read)
-
 
 void KeyboardOptions::Write(const KeyboardOptions& value, SinkStream& buffer)
 {
@@ -78,9 +72,6 @@ void KeyboardOptions::Read(KeyboardOptions& value, SourceStream& buffer)
     }
 }
 
-DEFINE_WRITER_READER(KeyboardOptions, KeyboardOptions::Write, KeyboardOptions::Read)
-
-
 void MacroOptions::Write(const MacroOptions& value, SinkStream& buffer)
 {
     for (const auto& macro : value.macros)
@@ -97,9 +88,6 @@ void MacroOptions::Read(MacroOptions& value, SourceStream& buffer)
     }
 }
 
-DEFINE_WRITER_READER(MacroOptions, MacroOptions::Write, MacroOptions::Read)
-
-
 void Character::Parts::Write(const Parts& value, SinkStream& buffer)
 {
     buffer.Write(value.charId)
@@ -115,9 +103,6 @@ void Character::Parts::Read(Parts& value, SourceStream& buffer)
         .Read(value.faceSerialId)
         .Read(value.val0);
 }
-
-DEFINE_WRITER_READER(Character::Parts, Character::Parts::Write, Character::Parts::Read)
-
 
 void Character::Appearance::Write(const Appearance& value, SinkStream& buffer)
 {
@@ -139,9 +124,6 @@ void Character::Appearance::Read(Appearance& value, SourceStream& buffer)
         .Read(value.val1);
 }
 
-DEFINE_WRITER_READER(Character::Appearance, Character::Appearance::Write, Character::Appearance::Read)
-
-
 void Character::Write(const Character& value, SinkStream& buffer)
 {
     buffer.Write(value.parts)
@@ -153,9 +135,6 @@ void Character::Read(Character& value, SourceStream& buffer)
     buffer.Read(value.parts)
         .Read(value.appearance);
 }
-
-DEFINE_WRITER_READER(Character, Character::Write, Character::Read)
-
 
 void Horse::Parts::Write(const Parts& value, SinkStream& buffer)
 {
@@ -172,9 +151,6 @@ void Horse::Parts::Read(Parts& value, SourceStream& buffer)
         .Read(value.tailId)
         .Read(value.faceId);
 }
-
-DEFINE_WRITER_READER(Horse, Horse::Write, Horse::Read)
-
 
 void Horse::Appearance::Write(const Appearance& value, SinkStream& buffer)
 {
@@ -194,9 +170,6 @@ void Horse::Appearance::Read(Appearance& value, SourceStream& buffer)
         .Read(value.bodyVolume);
 }
 
-DEFINE_WRITER_READER(Horse::Parts, Horse::Parts::Write, Horse::Parts::Read)
-
-
 void Horse::Stats::Write(const Stats& value, SinkStream& buffer)
 {
     buffer.Write(value.agility)
@@ -215,9 +188,6 @@ void Horse::Stats::Read(Stats& value, SourceStream& buffer)
         .Read(value.ambition);
 }
 
-DEFINE_WRITER_READER(Horse::Appearance, Horse::Appearance::Write, Horse::Appearance::Read)
-
-
 void Horse::Mastery::Write(const Mastery& value, SinkStream& buffer)
 {
     buffer.Write(value.magic)
@@ -233,9 +203,6 @@ void Horse::Mastery::Read(Mastery& value, SourceStream& buffer)
         .Read(value.sliding)
         .Read(value.gliding);
 }
-
-DEFINE_WRITER_READER(Horse::Stats, Horse::Stats::Write, Horse::Stats::Read)
-
 
 void Horse::Write(const Horse& value, SinkStream& buffer)
 {
@@ -347,9 +314,6 @@ void Horse::Read(Horse& value, SourceStream& buffer)
         .Read(value.val17);
 }
 
-DEFINE_WRITER_READER(Horse::Mastery, Horse::Mastery::Write, Horse::Mastery::Read)
-
-
 void Struct5::Write(const Struct5& value, SinkStream& buffer)
 {
     buffer.Write(value.val0)
@@ -372,9 +336,6 @@ void Struct5::Read(Struct5& value, SourceStream& buffer)
         .Read(value.val6);
 }
 
-DEFINE_WRITER_READER(Struct5, Struct5::Write, Struct5::Read)
-
-
 void Struct6::Write(const Struct6& value, SinkStream& buffer)
 {
     buffer.Write(value.mountUid)
@@ -388,9 +349,6 @@ void Struct6::Read(Struct6& value, SourceStream& buffer)
         .Read(value.val1)
         .Read(value.val2);
 }
-
-DEFINE_WRITER_READER(Struct6, Struct6::Write, Struct6::Read)
-
 
 void Struct7::Write(const Struct7& value, SinkStream& buffer)
 {
@@ -408,9 +366,6 @@ void Struct7::Read(Struct7& value, SourceStream& buffer)
         .Read(value.val3);
 }
 
-DEFINE_WRITER_READER(Struct7, Struct7::Write, Struct7::Read)
-
-
 void RanchHorse::Write(const RanchHorse& value, SinkStream& buffer)
 {
     buffer.Write(value.ranchIndex)
@@ -422,9 +377,6 @@ void RanchHorse::Read(RanchHorse& value, SourceStream& buffer)
     buffer.Read(value.ranchIndex)
         .Read(value.horse);
 }
-
-DEFINE_WRITER_READER(RanchHorse, RanchHorse::Write, RanchHorse::Read)
-
 
 void RanchPlayer::Write(const RanchPlayer& value, SinkStream& buffer)
 {
@@ -490,9 +442,6 @@ void RanchPlayer::Read(RanchPlayer& value, SourceStream& buffer)
         .Read(value.unk5);
 }
 
-DEFINE_WRITER_READER(RanchPlayer, RanchPlayer::Write, RanchPlayer::Read)
-
-
 void Quest::Write(const Quest& value, SinkStream& buffer)
 {
     buffer.Write(value.unk0)
@@ -510,8 +459,5 @@ void Quest::Read(Quest& value, SourceStream& buffer)
         .Read(value.unk3)
         .Read(value.unk4);
 }
-
-DEFINE_WRITER_READER(Quest, Quest::Write, Quest::Read)
-
 
 } // namespace alicia
