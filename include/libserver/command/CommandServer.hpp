@@ -120,7 +120,7 @@ private:
   //!
   void HandleClientRead(
     ClientId clientId,
-    asio::streambuf& readBuffer);
+    asio::streambuf& streamBuf);
   //!
   void HandleClientWrite(
     ClientId clientId,
