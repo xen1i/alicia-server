@@ -957,7 +957,7 @@ struct LobbyCommandInquiryTreecashCancel
     LobbyCommandInquiryTreecashCancel& command, SourceStream& buffer);
 };
 
-struct LobbyClientNotify
+struct LobbyCommandClientNotify
 {
   // Scene state
   // 1 - success
@@ -972,13 +972,13 @@ struct LobbyClientNotify
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandInquiryTreecashCancel& command, SinkStream& buffer);
+    const LobbyCommandClientNotify& command, SinkStream& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandInquiryTreecashCancel& command, SourceStream& buffer);
+    LobbyCommandClientNotify& command, SourceStream& buffer);
 };
 
 struct LobbyCommandGuildPartyList

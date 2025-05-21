@@ -889,6 +889,20 @@ void LobbyCommandInquiryTreecashCancel::Read(
   throw std::logic_error("Not implemented.");
 }
 
+void LobbyCommandClientNotify::Write(
+  const LobbyCommandClientNotify& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandClientNotify::Read(
+  LobbyCommandClientNotify& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.val0).Read(command.val1);
+}
+
 void LobbyCommandGuildPartyList::Write(
   const LobbyCommandGuildPartyList& command,
   SinkStream& buffer)

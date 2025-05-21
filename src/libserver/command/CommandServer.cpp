@@ -303,11 +303,12 @@ void CommandServer::HandleClientRead(
   }
 
   // Size of the data portion of the command.
-  const size_t commandDataSize = static_cast<size_t>(magic.length) - commandStream.GetCursor();
+  const size_t commandDataSize = static_cast<size_t>(magic.length) - sizeof(MessageMagic);
+  const size_t availableData = commandStream.Size() - sizeof(MessageMagic);
 
   // If all the required command data are not buffered,
   // wait for them to arrive.
-  if (commandDataSize > readBuffer.in_avail())
+  if (commandDataSize > availableData)
   {
     // Indicate that the bytes read until now
     // shouldn't be consumed, as we expect more data to arrive.

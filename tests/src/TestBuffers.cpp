@@ -32,7 +32,7 @@ struct Datum
 void TestBuffers()
 {
   boost::asio::streambuf buf;
-  auto mutableBuffer = buf.prepare(4092);
+  auto mutableBuffer = buf.prepare(16);
   alicia::SinkStream sink(std::span(
     static_cast<std::byte*>(mutableBuffer.data()),
     mutableBuffer.size()));
@@ -65,6 +65,18 @@ void TestBuffers()
   assert(structToRead.val0 == structToWrite.val0);
   assert(structToRead.val1 == structToWrite.val1);
   assert(source.GetCursor() == 4 * sizeof(uint32_t));
+
+  while(true){
+    auto mutableBuffer2 = buf.prepare(16);
+    alicia::SinkStream sink2(std::span(
+      static_cast<std::byte*>(mutableBuffer2.data()),
+      mutableBuffer2.size()));
+
+    sink2.Write(0x5757'5757);
+    buf.commit(16);
+    buf.consume(16);
+    printf("abc");
+  }
 }
 
 } // namespace anon

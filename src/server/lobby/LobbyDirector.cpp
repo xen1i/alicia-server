@@ -94,6 +94,13 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
   _server.RegisterCommandHandler<LobbyCommandInquiryTreecash>(
     CommandId::LobbyInquiryTreecash,
     [this](ClientId clientId, const auto& message) { HandleInquiryTreecash(clientId, message); });
+
+  _server.RegisterCommandHandler<LobbyCommandClientNotify>(
+    CommandId::LobbyClientNotify,
+    [this](ClientId clientId, const auto& message)
+    {
+      spdlog::warn("Client notification: state[{}], value[{}]", message.val0, message.val1);
+    });
 }
 
 void LobbyDirector::Initialize()

@@ -102,7 +102,7 @@ public:
     QueueCommand(clientId, commandId, [supplier](auto& sink)
     {
       const auto command = supplier();
-      T::Write(command, sink);
+      sink.Write(supplier());
     });
   }
 
