@@ -313,14 +313,13 @@ void CommandServer::HandleClientRead(
     spdlog::warn(
       "Command '{}' (ID: 0x{:x}) waiting on more data(waiting: {}, avail:  {})",
       GetCommandName(commandId),
-      commandId,
-      commandId,
+      magic.id,
       commandDataSize,
       availableData);
+
     // Indicate that the bytes read until now
     // shouldn't be consumed, as we expect more data to arrive.
     consumeBytesOnExit = false;
-
     return;
   }
 
