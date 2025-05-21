@@ -91,12 +91,11 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 }
 #else
 
-void
-handler(int sig, siginfo_t *info, void *ucontext)
+void handler(int sig, siginfo_t *info, void *ucontext)
 {
   if (sig == SIGTERM)
   {
-    spdlog::debug("SIGTERM caught, exiting");
+    spdlog::debug("Shutting down because of SIGTERM");
     shouldRun = false;
   }
 }
@@ -109,15 +108,22 @@ int main()
 {
 #ifdef WIN32
   // Register the control handler.
-  SetConsoleCtrlHandler(CtrlHandler, TRUE);
+  if (SetConsoleCtrlHandler(CtrlHandler, TRUE) == FALSE)
+  {
+    spdlog::error(
+      "Failed to set the console control handler. Windows error: 0x{:x}",
+      GetLastError());
+    return 1;
+  };
 #else
+  // Register the signal action handler.
   struct sigaction act {};
 
   act.sa_flags = SA_SIGINFO;
   act.sa_sigaction = &handler;
   if (sigaction(SIGTERM, &act, nullptr) == -1) {
-    perror("sigaction");
-    exit(EXIT_FAILURE);
+    spdlog::error("Failed to change the signal action handler for SIGTERM");
+    return 1;
   }
 #endif
 

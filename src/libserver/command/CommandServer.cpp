@@ -304,12 +304,19 @@ void CommandServer::HandleClientRead(
 
   // Size of the data portion of the command.
   const size_t commandDataSize = static_cast<size_t>(magic.length) - sizeof(MessageMagic);
-  const size_t availableData = commandStream.Size() - sizeof(MessageMagic);
+  const size_t availableData = readBuffer.in_avail() - sizeof(MessageMagic);
 
   // If all the required command data are not buffered,
   // wait for them to arrive.
   if (commandDataSize > availableData)
   {
+    spdlog::warn(
+      "Command '{}' (ID: 0x{:x}) waiting on more data(waiting: {}, avail:  {})",
+      GetCommandName(commandId),
+      commandId,
+      commandId,
+      commandDataSize,
+      availableData);
     // Indicate that the bytes read until now
     // shouldn't be consumed, as we expect more data to arrive.
     consumeBytesOnExit = false;
