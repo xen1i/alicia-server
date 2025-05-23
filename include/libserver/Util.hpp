@@ -46,6 +46,8 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
 
 asio::ip::address_v4 ResolveHostName(const std::string& host);
 
+std::string GenerateByteDump(const std::span<const std::byte> data);
+
 //! Performs deferred call on destruction.
 struct Deferred final
 {

@@ -5,6 +5,8 @@
 #include "server/ranch/RanchDirector.hpp"
 #include "server/Settings.hpp"
 
+#include "libserver/chatter/ChatterServer.hpp"
+
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -212,9 +214,8 @@ int main()
 
   const std::jthread messengerThread([]()
   {
-    // TODO: Messenger
-    alicia::CommandServer messengerServer;
-    //messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
+    alicia::ChatterServer chatter;
+    chatter.Host();
   });
 
   spdlog::info(

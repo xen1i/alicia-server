@@ -19,6 +19,8 @@
 
 #include "libserver/Util.hpp"
 
+#include <ranges>
+
 #define Int32x32To64(a, b) ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
 namespace alicia
@@ -55,6 +57,32 @@ asio::ip::address_v4 ResolveHostName(const std::string& host)
   }
 
   return {};
+}
+
+std::string GenerateByteDump(const std::span<const std::byte> data)
+{
+  if (data.empty())
+    return "";
+
+  std::string dump;
+
+  for (const auto row : data | std::views::chunk(16))
+  {
+    std::string bytes;
+    std::string ascii;
+    for (const auto& byte : row)
+    {
+      bytes += std::format("{:02X} ",
+        static_cast<uint8_t>(byte));
+      ascii += std::format("{:c}", std::isalnum(static_cast<uint8_t>(byte))
+        ? static_cast<uint8_t>(byte)
+        : '.');
+    }
+
+    dump += std::format("{:<48}\t{:<16}\n", bytes, ascii);
+  }
+
+  return dump;
 }
 
 } // namespace alicia

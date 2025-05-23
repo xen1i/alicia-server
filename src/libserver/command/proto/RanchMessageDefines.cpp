@@ -784,11 +784,24 @@ void RanchCommandRequestStorageOK::Write(
   const RanchCommandRequestStorageOK& command,
   SinkStream& buffer)
 {
-  buffer.Write(command.val0).Write(command.val1).Write(command.val2);
+  buffer.Write(command.val0)
+    .Write(command.val1)
+    .Write(command.val2);
 
-  assert(command.val3.size() == 0);
   buffer.Write(static_cast<uint8_t>(command.val3.size()));
-  // todo: write entries
+  for (const auto& item : command.val3)
+  {
+    buffer.Write(item.uid)
+      .Write(item.val1)
+      .Write(item.val2)
+      .Write(item.val3)
+      .Write(item.val4)
+      .Write(item.val5)
+      .Write(item.val6)
+      .Write(item.val7)
+      .Write(item.val8)
+      .Write(item.val9);
+  }
 }
 
 void RanchCommandRequestStorageOK::Read(RanchCommandRequestStorageOK& command, SourceStream& buffer)

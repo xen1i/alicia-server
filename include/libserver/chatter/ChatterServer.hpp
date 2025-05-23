@@ -20,4 +20,23 @@
 #ifndef CHATTER_SERVER_HPP
 #define CHATTER_SERVER_HPP
 
+#include "libserver/base/Server.hpp"
+
+namespace alicia
+{
+
+class ChatterServer
+{
+public:
+  ChatterServer();
+  ~ChatterServer();
+
+  void Host();
+
+  Server _server;
+  std::thread _serverThread;
+};
+
+}
+
 #endif //CHATTER_SERVER_HPP

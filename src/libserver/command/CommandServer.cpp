@@ -20,6 +20,8 @@
 #include "libserver/command/CommandServer.hpp"
 #include "libserver/Util.hpp"
 
+#include <ranges>
+
 #include <spdlog/spdlog.h>
 
 namespace alicia
@@ -30,9 +32,6 @@ namespace
 
 //! Max size of the command data.
 constexpr std::size_t MaxCommandDataSize = 4092;
-
-//! Flag indicating whether to use the XOR algorithm on recieved data.
-constexpr std::size_t UseXorAlgorithm = true;
 
 //! Max size of the whole command payload.
 //! That is command data size + size of the message magic.
@@ -69,45 +68,6 @@ bool IsMuted(CommandId id)
       || id == CommandId::RanchHeartbeat
       || id == CommandId::RanchSnapshot
       || id == CommandId::RanchSnapshotNotify;
-}
-
-void LogBytes(std::span<std::byte> data)
-{
-  if(data.size() == 0) {
-    return;
-  }
-
-  char rowString[17];
-  memset(rowString, 0, 17);
-
-  int column = 0;
-  for (int i = 0; i < data.size(); ++i) {
-    column = i%16;
-
-    if(i > 0)
-    {
-      switch(column)
-      {
-        case 0:
-          printf("\t%s\n", rowString);
-        memset(rowString, 0, 17);
-        break;
-        case 8:
-          printf(" ");
-        break;
-      }
-    }
-
-    std::byte datum = data[i];
-    if(datum >= std::byte(32) && datum <= std::byte(126)) {
-      rowString[column] = (char)datum;
-    } else {
-      rowString[column] = '.';
-    }
-
-    printf(" %02X", static_cast<unsigned int>(datum));
-  }
-  printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
 }
 
 } // anon namespace
@@ -226,17 +186,6 @@ void CommandServer::QueueCommand(ClientId client, CommandId command, CommandSupp
 
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);
-
-      if (!IsMuted(command))
-      {
-        spdlog::debug(
-          "Sent to client {} command '{}' (0x{:X}), Data Size: {}",
-          client,
-          GetCommandName(command),
-          magic.id,
-          payloadSize);
-        LogBytes({(std::byte*)mutableBuffer.data() + 4, payloadSize});
-      }
     });
 }
 
@@ -375,16 +324,23 @@ void CommandServer::HandleClientRead(
 
       if(!IsMuted(commandId))
       {
-        spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
+        spdlog::debug("Processed data for command message '{}' (0x{:X}),\n\n"
+          "XOR code: {:#X},\n"
+          "Command data size: {} (padding: {}),\n"
+          "Actual command data size: {}\n"
+          "Processed data dump: \n\n{}\n",
           GetCommandName(commandId),
           magic.id,
           code,
           commandDataSize,
           padding,
-          actualCommandDataSize);
-
-        LogBytes({commandDataBuffer.data(), commandDataSize});
+          actualCommandDataSize,
+          GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
       }
+    }
+    else
+    {
+
     }
 
     // Find the handler of the command.
@@ -393,7 +349,7 @@ void CommandServer::HandleClientRead(
     {
       if(!IsMuted(commandId))
       {
-        spdlog::warn("Unhandled command '{}', ID: 0x{:x}, Length: {}",
+        spdlog::warn("Unhandled command message '{}', ID: 0x{:x}, Length: {}",
           GetCommandName(commandId),
           magic.id,
           magic.length);
@@ -413,10 +369,10 @@ void CommandServer::HandleClientRead(
 
       if(!IsMuted(commandId))
       {
-        spdlog::debug("Handled command '{}', ID: 0x{:x}, Length: {}",
-            GetCommandName(commandId),
-            magic.id,
-            magic.length);
+        spdlog::debug("Handled command messsage '{}', ID: 0x{:x}",
+          GetCommandName(commandId),
+          magic.id,
+          magic.length);
       }
     }
   }

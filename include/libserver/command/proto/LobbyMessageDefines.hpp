@@ -163,6 +163,8 @@ struct LobbyCommandLoginOK
   uint32_t val14{};
   Struct5 val15{};
   uint8_t val16{};
+
+  // Something with rental horse
   Struct6 val17{};
 
   uint32_t val18{};

@@ -30,6 +30,7 @@ add_library(alicia-libserver STATIC
         src/libserver/data/DataDirector.cpp
         #src/libserver/data/pq/PqDataSource.cpp
         #src/libserver/data/pq/SqlUtils.cpp
+        src/libserver/chatter/ChatterServer.cpp
         src/libserver/data/file/FileDataSource.cpp
         src/libserver/data/file/FileDataSource.cpp)
 

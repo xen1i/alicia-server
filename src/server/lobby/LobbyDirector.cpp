@@ -99,7 +99,8 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
     CommandId::LobbyClientNotify,
     [this](ClientId clientId, const auto& message)
     {
-      spdlog::warn("Client notification: state[{}], value[{}]", message.val0, message.val1);
+      if (message.val0 != 1)
+        spdlog::error("Client error notification: state[{}], value[{}]", message.val0, message.val1);
     });
 }
 
