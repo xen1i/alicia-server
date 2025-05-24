@@ -1,6 +1,23 @@
 //
 // Created by alborrajo on 30/12/2024.
-//
+/**
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #include "server/race/RaceDirector.hpp"
 #include "spdlog/spdlog.h"
@@ -11,31 +28,35 @@ namespace alicia
 RaceDirector::RaceDirector(
   soa::DataDirector& dataDirector,
   Settings::RaceSettings settings)
-    : _settings(std::move(settings))
-    , _dataDirector(dataDirector)
-    , _server()
+  : _settings(std::move(settings))
+  , _dataDirector(dataDirector)
+  , _server()
 {
   _server.RegisterCommandHandler<RaceCommandEnterRoom>(
     CommandId::RaceEnterRoom,
-    [this](ClientId clientId, const auto& message) {
+    [this](ClientId clientId, const auto& message)
+    {
       HandleEnterRoom(clientId, message);
     });
 
   _server.RegisterCommandHandler<RaceCommandChangeRoomOptions>(
     CommandId::RaceChangeRoomOptions,
-    [this](ClientId clientId, const auto& message) {
+    [this](ClientId clientId, const auto& message)
+    {
       HandleChangeRoomOptions(clientId, message);
     });
 
   _server.RegisterCommandHandler<RaceCommandStartRace>(
     CommandId::RaceStartRace,
-    [this](ClientId clientId, const auto& message) {
+    [this](ClientId clientId, const auto& message)
+    {
       HandleStartRace(clientId, message);
     });
 
   _server.RegisterCommandHandler<UserRaceTimer>(
     CommandId::UserRaceTimer,
-    [this](ClientId clientId, const auto& message) {
+    [this](ClientId clientId, const auto& message)
+    {
       HandleRaceTimer(clientId, message);
     });
 }
@@ -85,7 +106,7 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
   auto mount = _dataDirector.GetMount(character->mountUid);
   auto room = _dataDirector.GetRoom(character->roomUid.value());
 
-  // TODO: Send RaceEnterRoomNotify to all clients in the room  
+  // TODO: Send RaceEnterRoomNotify to all clients in the room
 
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
@@ -223,15 +244,14 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
     CommandId::RaceChangeRoomOptionsNotify,
     [&](auto& sink)
     {
-      RaceCommandChangeRoomOptionsNotify response {
+      RaceCommandChangeRoomOptionsNotify response{
         .optionsBitfield = changeRoomOptions.optionsBitfield,
         .option0 = changeRoomOptions.name,
         .option1 = changeRoomOptions.val_between_name_and_desc,
         .option2 = changeRoomOptions.description,
         .option3 = changeRoomOptions.option3,
         .option4 = changeRoomOptions.map,
-        .option5 = changeRoomOptions.raceStarted
-      };
+        .option5 = changeRoomOptions.raceStarted};
       RaceCommandChangeRoomOptionsNotify::Write(response, sink);
     });
 }
@@ -280,10 +300,9 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
     CommandId::UserRaceTimer,
     [&](auto& sink)
     {
-      UserRaceTimerOK response {
+      UserRaceTimerOK response{
         //.unk0 = raceTimer.timestamp + 1000 * 60,
-        .unk1 = raceTimer.timestamp + 1000 * 60
-      };
+        .unk1 = raceTimer.timestamp + 1000 * 60};
       UserRaceTimerOK::Write(response, sink);
     });
 }

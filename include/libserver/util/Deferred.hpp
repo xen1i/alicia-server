@@ -17,36 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  **/
 
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#ifndef DEFERRED_HPP
+#define DEFERRED_HPP
 
-#include <boost/asio.hpp>
-#include <chrono>
-#include <cstdint>
-#include <format>
 #include <functional>
-#include <span>
 
 namespace alicia
 {
-
-//! Windows file-time represents number of 100 nanosecond intervals since January 1, 1601 (UTC).
-struct WinFileTime
-{
-  uint32_t dwLowDateTime = 0;
-  uint32_t dwHighDateTime = 0;
-};
-
-namespace asio = boost::asio;
-
-//! Converts a time point to the Windows file time.
-//! @param timePoint Point in time.
-//! @return Windows file time representing specified point in time.
-WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint);
-
-asio::ip::address_v4 ResolveHostName(const std::string& host);
-
-std::string GenerateByteDump(const std::span<const std::byte> data);
 
 //! Performs deferred call on destruction.
 struct Deferred final
@@ -57,7 +34,7 @@ struct Deferred final
   //! Construct deferred call that invokes
   //! the provided function on destruction of this object.
   explicit Deferred(Fnc func) noexcept
-      : _func(std::move(func)) {};
+    : _func(std::move(func)) {};
 
   //! Deleted copy constructor.
   Deferred(const Deferred&) noexcept = delete;
@@ -74,4 +51,4 @@ private:
 
 } // namespace alicia
 
-#endif // UTIL_HPP
+#endif // DEFERRED_HPP

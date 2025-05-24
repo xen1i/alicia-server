@@ -1,25 +1,25 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
-#include "libserver/base/Server.hpp"
+#include "libserver/network/Server.hpp"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 namespace alicia
 {
@@ -29,7 +29,7 @@ namespace
 
 constexpr size_t MaxBufferSize = 4092;
 
-} // anon namespace
+} // namespace
 
 Client::Client(
   asio::ip::tcp::socket&& socket,
@@ -62,7 +62,7 @@ void Client::End()
     _socket.shutdown(asio::socket_base::shutdown_both);
     _socket.close();
   }
-  catch(const std::exception& x)
+  catch (const std::exception& x)
   {
     spdlog::error("Couldn't end connection", x.what());
   }
@@ -95,9 +95,7 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
         if (error)
         {
           throw std::runtime_error(
-            fmt::format("Network error (0x{}): {}",
-              error.value(),
-              error.what()));
+            fmt::format("Network error (0x{}): {}", error.value(), error.what()));
         }
 
         // Consume the sent bytes.
@@ -213,9 +211,7 @@ void Server::AcceptLoop() noexcept
         if (error)
         {
           throw std::runtime_error(
-            fmt::format("Network exception (0x{}): {}",
-              error.value(),
-              error.what()));
+            fmt::format("Network exception (0x{}): {}", error.value(), error.what()));
         }
 
         // Sequential Id.

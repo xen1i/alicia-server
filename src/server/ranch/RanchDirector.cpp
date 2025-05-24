@@ -1,6 +1,21 @@
-//
-// Created by alborrajo on 16/11/2024.
-//
+/**
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #include "server/ranch/RanchDirector.hpp"
 
@@ -10,9 +25,9 @@ namespace alicia
 {
 
 RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSettings settings)
-    : _settings(std::move(settings))
-    , _dataDirector(dataDirector)
-    , _server()
+  : _settings(std::move(settings))
+  , _dataDirector(dataDirector)
+  , _server()
 {
   _ranches[100] = RanchInstance{};
 
@@ -21,50 +36,61 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
   // EnterRanch handler
   _server.RegisterCommandHandler<RanchCommandEnterRanch>(
     CommandId::RanchEnterRanch,
-    [this](ClientId clientId, const auto& message) { HandleEnterRanch(clientId, message); });
+    [this](ClientId clientId, const auto& message)
+    { HandleEnterRanch(clientId, message); });
 
   // Snapshot handler
   _server.RegisterCommandHandler<RanchCommandRanchSnapshot>(
     CommandId::RanchSnapshot,
-    [this](ClientId clientId, const auto& message) { HandleSnapshot(clientId, message); });
+    [this](ClientId clientId, const auto& message)
+    { HandleSnapshot(clientId, message); });
 
   // RanchCmdAction handler
   _server.RegisterCommandHandler<RanchCommandRanchCmdAction>(
     CommandId::RanchCmdAction,
-    [this](ClientId clientId, const auto& message) { HandleCmdAction(clientId, message); });
+    [this](ClientId clientId, const auto& message)
+    { HandleCmdAction(clientId, message); });
 
   // RanchStuff handler
   _server.RegisterCommandHandler<RanchCommandRanchStuff>(
     CommandId::RanchStuff,
-    [this](ClientId clientId, const auto& message) { HandleRanchStuff(clientId, message); });
+    [this](ClientId clientId, const auto& message)
+    { HandleRanchStuff(clientId, message); });
 
   _server.RegisterCommandHandler<RanchCommandUpdateBusyState>(
     CommandId::RanchUpdateBusyState,
-    [this](ClientId clientId, auto& command) { HandleUpdateBusyState(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleUpdateBusyState(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandSearchStallion>(
     CommandId::RanchSearchStallion,
-    [this](ClientId clientId, auto& command) { HandleSearchStallion(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleSearchStallion(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandEnterBreedingMarket>(
     CommandId::RanchEnterBreedingMarket,
-    [this](ClientId clientId, auto& command) { HandleEnterBreedingMarket(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleEnterBreedingMarket(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandTryBreeding>(
     CommandId::RanchTryBreeding,
-    [this](ClientId clientId, auto& command) { HandleTryBreeding(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleTryBreeding(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandBreedingWishlist>(
     CommandId::RanchBreedingWishlist,
-    [this](ClientId clientId, auto& command) { HandleBreedingWishlist(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleBreedingWishlist(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandUpdateMountNickname>(
     CommandId::RanchUpdateMountNickname,
-    [this](ClientId clientId, auto& command) { HandleUpdateMountNickname(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleUpdateMountNickname(clientId, command); });
 
   _server.RegisterCommandHandler<RanchCommandRequestStorage>(
     CommandId::RanchRequestStorage,
-    [this](ClientId clientId, auto& command) { HandleRequestStorage(clientId, command); });
+    [this](ClientId clientId, auto& command)
+    { HandleRequestStorage(clientId, command); });
 }
 
 void RanchDirector::Initialize()
@@ -76,7 +102,8 @@ void RanchDirector::Initialize()
 
   _server.RegisterCommandHandler<RanchCommandRequestNpcDressList>(
     CommandId::RanchRequestNpcDressList,
-    [this](ClientId clientId, const auto& message) {
+    [this](ClientId clientId, const auto& message)
+    {
       HandleRequestNpcDressList(clientId, message);
     });
 
@@ -85,12 +112,10 @@ void RanchDirector::Initialize()
 }
 void RanchDirector::Terminate()
 {
-
 }
 
 void RanchDirector::Tick()
 {
-
 }
 
 void RanchDirector::HandleEnterRanch(
@@ -117,8 +142,7 @@ void RanchDirector::HandleEnterRanch(
     .ranchName = "default",
     .unk11 = {
       .unk0 = 1,
-      .unk1 = 1}
-  };
+      .unk1 = 1}};
 
   ranchInstance._worldTracker.AddMount(3);
   ranchInstance._worldTracker.AddMount(2);
@@ -126,70 +150,32 @@ void RanchDirector::HandleEnterRanch(
   // Add the ranch mounts.
   for (auto [mountUid, mountEntityId] : ranchInstance._worldTracker.GetMountEntities())
   {
-    //const auto& mount = _dataDirector.GetHorse(mountUid);
-    response.horses.push_back({
-      .ranchIndex = mountEntityId,
-      .horse = {
-        .uid = 2,
-        .tid = 0x4e21,
-        .name = "default",
-        .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-        .appearance =
-         {.scale = 0x4,
-          .legLength = 0x4,
-          .legVolume = 0x5,
-          .bodyLength = 0x3,
-          .bodyVolume = 0x4},
-        .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 0x13},
-        .rating = 0,
-        .clazz = 0x15,
-        .val0 = 1,
-        .grade = 5,
-        .growthPoints = 2,
-        .vals0 =
-         {
-           .stamina = 0x7d0,
-           .attractiveness = 0x3c,
-           .hunger = 0x21c,
-           .val0 = 0x00,
-           .val1 = 0x03E8,
-           .val2 = 0x00,
-           .val3 = 0x00,
-           .val4 = 0x00,
-           .val5 = 0x03E8,
-           .val6 = 0x1E,
-           .val7 = 0x0A,
-           .val8 = 0x0A,
-           .val9 = 0x0A,
-           .val10 = 0x00,
-         },
-        .vals1 =
-         {.val0 = 0x00,
-          .val1 = 0x00,
-          .val2 = 0xb8a167e4,
-          .val3 = 0x02,
-          .val4 = 0x00,
-          .classProgression = 0x32e7d,
-          .val5 = 0x00,
-          .potentialLevel = 0x40,
-          .hasPotential = 0x1,
-          .potentialValue = 0x64,
-          .val9 = 0x00,
-          .luck = 0x05,
-          .hasLuck = 0x00,
-          .val12 = 0x00,
-          .fatigue = 0x00,
-          .val14 = 0x00,
-          .emblem = 0xA},
-        .mastery =
-         {
-           .magic = 0x1fe,
-           .jumping = 0x421,
-           .sliding = 0x5f8,
-           .gliding = 0xcfa4,
-         },
-        .val16 = 0xb8a167e4,
-        .val17 = 0}});
+    // const auto& mount = _dataDirector.GetHorse(mountUid);
+    response.horses.push_back({.ranchIndex = mountEntityId, .horse = {.uid = 2, .tid = 0x4e21, .name = "default", .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3}, .appearance = {.scale = 0x4, .legLength = 0x4, .legVolume = 0x5, .bodyLength = 0x3, .bodyVolume = 0x4}, .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 0x13}, .rating = 0, .clazz = 0x15, .val0 = 1, .grade = 5, .growthPoints = 2, .vals0 = {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .stamina = 0x7d0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .attractiveness = 0x3c,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .hunger = 0x21c,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val0 = 0x00,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val1 = 0x03E8,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val2 = 0x00,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val3 = 0x00,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val4 = 0x00,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val5 = 0x03E8,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val6 = 0x1E,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val7 = 0x0A,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val8 = 0x0A,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val9 = 0x0A,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val10 = 0x00,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          },
+                                                                      .vals1 = {.val0 = 0x00, .val1 = 0x00, .val2 = 0xb8a167e4, .val3 = 0x02, .val4 = 0x00, .classProgression = 0x32e7d, .val5 = 0x00, .potentialLevel = 0x40, .hasPotential = 0x1, .potentialValue = 0x64, .val9 = 0x00, .luck = 0x05, .hasLuck = 0x00, .val12 = 0x00, .fatigue = 0x00, .val14 = 0x00, .emblem = 0xA},
+                                                                      .mastery = {
+                                                                        .magic = 0x1fe,
+                                                                        .jumping = 0x421,
+                                                                        .sliding = 0x5f8,
+                                                                        .gliding = 0xcfa4,
+                                                                      },
+                                                                      .val16 = 0xb8a167e4,
+                                                                      .val17 = 0}});
   }
 
   // Add the ranch players.
@@ -198,7 +184,7 @@ void RanchDirector::HandleEnterRanch(
     const RanchPlayer ranchPlayer{
       .userUid = characterUid,
       .name = "ranch player",
-      .gender = Gender::Unspecified ,
+      .gender = Gender::Unspecified,
       .unk0 = 1,
       .unk1 = 1,
       .description = "this is a ranch player",
@@ -210,18 +196,17 @@ void RanchDirector::HandleEnterRanch(
         .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
         .appearance =
           {.scale = 0x4,
-            .legLength = 0x4,
-            .legVolume = 0x5,
-            .bodyLength = 0x3,
-            .bodyVolume = 0x4},
+           .legLength = 0x4,
+           .legVolume = 0x5,
+           .bodyLength = 0x3,
+           .bodyVolume = 0x4},
         .stats =
           {
             .agility = 9,
             .spirit = 9,
             .speed = 9,
             .strength = 9,
-            .ambition = 0x13
-          },
+            .ambition = 0x13},
         .rating = 0,
         .clazz = 0x15,
         .val0 = 1,
@@ -262,8 +247,7 @@ void RanchDirector::HandleEnterRanch(
             .val12 = 0x00,
             .fatigue = 0x00,
             .val14 = 0x00,
-            .emblem = 0x01
-          },
+            .emblem = 0x01},
         .mastery =
           {
             .magic = 0x1fe,
@@ -272,15 +256,11 @@ void RanchDirector::HandleEnterRanch(
             .gliding = 0xcfa4,
           },
         .val16 = 0xb8a167e4,
-        .val17 = 0x186A0
-      },
+        .val17 = 0x186A0},
       .characterEquipment = {},
-      .playerRelatedThing = {
-        .val1 = 1
-      },
+      .playerRelatedThing = {.val1 = 1},
       .ranchIndex = characterEntityId,
-      .anotherPlayerRelatedThing = {.mountUid = 2, .val1 = 0x12}
-    };
+      .anotherPlayerRelatedThing = {.mountUid = 2, .val1 = 0x12}};
 
     if (enterRanch.characterUid == characterUid)
     {
@@ -452,12 +432,11 @@ void RanchDirector::HandleSearchStallion(
     [command](auto& sink)
     {
       // TODO: Fetch data from DB according to the filters in the request
-      RanchCommandSearchStallionOK response
-      {
+      RanchCommandSearchStallionOK response{
         .unk0 = 0,
         .unk1 = 0,
         .stallions = {
-          RanchCommandSearchStallionOK::Stallion {
+          RanchCommandSearchStallionOK::Stallion{
             .unk0 = "test",
             .unk1 = 0x3004e21,
             .unk2 = 0x4e21,
@@ -472,26 +451,16 @@ void RanchDirector::HandleSearchStallion(
               .spirit = 9,
               .speed = 9,
               .strength = 9,
-              .ambition = 9
-            },
+              .ambition = 9},
             .parts = {
               .skinId = 1,
               .maneId = 4,
               .tailId = 4,
               .faceId = 5,
             },
-            .appearance = {
-              .scale = 4,
-              .legLength = 4,
-              .legVolume = 5,
-              .bodyLength = 3,
-              .bodyVolume = 4
-            },
+            .appearance = {.scale = 4, .legLength = 4, .legVolume = 5, .bodyLength = 3, .bodyVolume = 4},
             .unk11 = 5,
-            .coatBonus = 0
-          }
-        }
-      };
+            .coatBonus = 0}}};
 
       RanchCommandSearchStallionOK::Write(response, sink);
     });
@@ -535,8 +504,7 @@ void RanchDirector::HandleTryBreeding(
     CommandId::RanchTryBreedingOK,
     [&](auto& sink)
     {
-      RanchCommandTryBreedingOK response
-      {
+      RanchCommandTryBreedingOK response{
         .uid = command.unk0, // wild guess
         .tid = command.unk1, // lmao
         .val = 0,
@@ -546,22 +514,9 @@ void RanchDirector::HandleTryBreeding(
           .skinId = 1,
           .maneId = 4,
           .tailId = 4,
-          .faceId = 5
-        },
-        .appearance = {
-          .scale = 4,
-          .legLength = 4,
-          .legVolume = 5,
-          .bodyLength = 3,
-          .bodyVolume = 4
-        },
-        .stats = {
-          .agility = 9,
-          .spirit = 9,
-          .speed = 9,
-          .strength = 9,
-          .ambition = 9
-        },
+          .faceId = 5},
+        .appearance = {.scale = 4, .legLength = 4, .legVolume = 5, .bodyLength = 3, .bodyVolume = 4},
+        .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 9},
         .unk1 = 0,
         .unk2 = 0,
         .unk3 = 0,
@@ -597,13 +552,11 @@ void RanchDirector::HandleUpdateMountNickname(
   const RanchCommandUpdateMountNickname& command)
 {
   // TODO: Actually do something
-  RanchCommandUpdateMountNicknameOK response
-  {
+  RanchCommandUpdateMountNicknameOK response{
     .unk0 = command.unk0,
     .nickname = command.nickname,
     .unk1 = command.unk1,
-    .unk2 = 0
-  };
+    .unk2 = 0};
 
   _server.QueueCommand(
     clientId,
@@ -612,7 +565,6 @@ void RanchDirector::HandleUpdateMountNickname(
     {
       RanchCommandUpdateMountNicknameOK::Write(response, sink);
     });
-  
 }
 
 void RanchDirector::HandleRequestStorage(
@@ -635,11 +587,11 @@ void RanchDirector::HandleRequestStorage(
 
 void RanchDirector::HandleRequestNpcDressList(ClientId clientId, const RanchCommandRequestNpcDressList& requestNpcDressList)
 {
-  RanchCommandRequestNpcDressListOK response {
+  RanchCommandRequestNpcDressListOK response{
     .unk0 = requestNpcDressList.unk0,
     .dressList = {} // TODO: Fetch dress list from somewhere
   };
-  
+
   _server.QueueCommand(
     clientId,
     CommandId::RanchRequestNpcDressListOK,

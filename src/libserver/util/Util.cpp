@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  **/
 
-#include "libserver/Util.hpp"
+#include "libserver/util/Util.hpp"
 
 #include <ranges>
 
@@ -72,11 +72,8 @@ std::string GenerateByteDump(const std::span<const std::byte> data)
     std::string ascii;
     for (const auto& byte : row)
     {
-      bytes += std::format("{:02X} ",
-        static_cast<uint8_t>(byte));
-      ascii += std::format("{:c}", std::isalnum(static_cast<uint8_t>(byte))
-        ? static_cast<uint8_t>(byte)
-        : '.');
+      bytes += std::format("{:02X} ", static_cast<uint8_t>(byte));
+      ascii += std::format("{:c}", std::isalnum(static_cast<uint8_t>(byte)) ? static_cast<uint8_t>(byte) : '.');
     }
 
     dump += std::format("{:<48}\t{:<16}\n", bytes, ascii);

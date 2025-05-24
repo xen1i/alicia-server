@@ -1,6 +1,21 @@
-//
-// Created by maros on 4/6/25.
-//
+/**
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #ifndef DATASTORAGE_HPP
 #define DATASTORAGE_HPP
@@ -9,14 +24,14 @@
 #include <functional>
 #include <shared_mutex>
 #include <span>
+#include <spdlog/spdlog.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <spdlog/spdlog.h>
 
 namespace soa
 {
 
-template<typename Data>
+template <typename Data>
 class Record
 {
 public:
@@ -25,7 +40,8 @@ public:
     , _exclusiveLock(_mutex, std::defer_lock)
     , _sharedLock(_mutex, std::defer_lock)
     , _value(value)
-  {}
+  {
+  }
 
   ~Record()
   {
@@ -34,7 +50,6 @@ public:
     if (_sharedLock.owns_lock())
       _sharedLock.unlock();
   }
-
 
   //! Deleted copy constructor.
   Record(const Record&) = delete;
@@ -45,11 +60,12 @@ public:
   Record(Record&& other)
     : _mutex(other._mutex)
     , _exclusiveLock(
-      std::move(other._exclusiveLock))
+        std::move(other._exclusiveLock))
     , _sharedLock(
-      std::move(other._sharedLock))
+        std::move(other._sharedLock))
     , _value(other._value)
-  {}
+  {
+  }
 
   //! Move assignment.
   void operator=(Record&& other)
@@ -97,7 +113,7 @@ private:
   Data& _value;
 };
 
-template<typename Key, typename Data>
+template <typename Key, typename Data>
 class DataStorage
 {
 public:
@@ -109,14 +125,13 @@ public:
   DataStorage(
     const DataSourceRetrieveListener& data_source_retrieve_listener,
     const DataSourceStoreListener& data_source_store_listener)
-      : _dataSourceRetrieveListener(data_source_retrieve_listener)
-      , _dataSourceStoreListener(data_source_store_listener)
+    : _dataSourceRetrieveListener(data_source_retrieve_listener)
+    , _dataSourceStoreListener(data_source_store_listener)
   {
   }
 
   void Initialize()
   {
-
   }
 
   void Terminate()
@@ -167,7 +182,7 @@ public:
       return std::nullopt;
     }
 
-    return  Record(record.value, record.mutex);
+    return Record(record.value, record.mutex);
   }
 
   std::optional<Record<Data>> Get(const Key& key)
@@ -182,7 +197,7 @@ public:
     }
 
     if (record.available)
-      return  Record(record.value, record.mutex);
+      return Record(record.value, record.mutex);
     return std::nullopt;
   }
 
@@ -192,7 +207,7 @@ public:
       return std::nullopt;
 
     std::vector<Record<Data>> records;
-    for (const auto & key : keys)
+    for (const auto& key : keys)
     {
       records.emplace_back(*Get(key));
     }
@@ -254,4 +269,4 @@ private:
 
 } // namespace soa
 
-#endif //DATASTORAGE_HPP
+#endif // DATASTORAGE_HPP

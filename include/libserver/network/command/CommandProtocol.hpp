@@ -1,27 +1,28 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #ifndef COMMAND_PROTOCOL_HPP
 #define COMMAND_PROTOCOL_HPP
 
-#include "proto/LobbyMessageDefines.hpp"
-#include "proto/RanchMessageDefines.hpp"
+#include <array>
+#include <cstdint>
+#include <string_view>
 
 namespace alicia
 {
@@ -43,13 +44,11 @@ using XorCode = std::array<std::byte, 4>;
 //! A constant 4-byte XOR control value,
 //! with which message bytes are XORed.
 constexpr int32_t XorControl{
-  static_cast<int32_t>(0xA20191CB)
-};
+  static_cast<int32_t>(0xA20191CB)};
 
 //! XOR rolling key algorithm constant
 constexpr int32_t XorMultiplier{
-  0x20080825
-};
+  0x20080825};
 
 //! Message magic with which all messages are prefixed.
 struct MessageMagic
@@ -74,8 +73,7 @@ MessageMagic decode_message_magic(uint32_t value);
 uint32_t encode_message_magic(MessageMagic magic);
 
 //! IDs of the commands in the protocol.
-enum class CommandId
-  : uint16_t
+enum class CommandId : uint16_t
 {
   LobbyLogin = 0x0007,
   LobbyLoginOK = 0x0008,
@@ -187,7 +185,6 @@ enum class CommandId
   RanchRequestNpcDressListCancel = 0x44e,
   RanchRequestNpcDressListOK = 0x44d,
 
-
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,
@@ -214,5 +211,4 @@ std::string_view GetCommandName(CommandId command);
 
 } // namespace alicia
 
-
-#endif //COMMAND_PROTOCOL_HPP
+#endif // COMMAND_PROTOCOL_HPP

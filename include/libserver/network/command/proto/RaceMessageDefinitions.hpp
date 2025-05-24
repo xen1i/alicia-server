@@ -20,11 +20,10 @@
 #ifndef RACE_MESSAGE_DEFINES_HPP
 #define RACE_MESSAGE_DEFINES_HPP
 
-#include "DataDefines.hpp"
-#include "libserver/Util.hpp"
+#include "CommonStructureDefinitions.hpp"
 
-#include <array>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -88,11 +87,11 @@ struct RoomDescription
   std::string description{};
   uint8_t unk1{};
   uint8_t unk2{};
-  uint16_t unk3{}; // map?
-  uint8_t unk4{}; // 0 waiting room, 1 race started?
+  uint16_t unk3{};      // map?
+  uint8_t unk4{};       // 0 waiting room, 1 race started?
   uint16_t missionId{}; // idk but probably important, first value checked in RaceCommandEnterRoomOK handler
   uint8_t unk6{};
-  uint8_t unk7{}; // 0: 3lv, 1: 12lv, 2 and beyond: nothing? 
+  uint8_t unk7{}; // 0: 3lv, 1: 12lv, 2 and beyond: nothing?
 };
 
 struct RaceCommandEnterRoom
@@ -101,15 +100,15 @@ struct RaceCommandEnterRoom
   uint32_t otp{};
   uint32_t characterUid{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(const RaceCommandEnterRoom& command, SinkStream& buffer);
+  //! @param stream Sink stream.
+  static void Write(const RaceCommandEnterRoom& command, SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
-  static void Read(RaceCommandEnterRoom& command, SourceStream& buffer);
+  //! @param stream Source stream.
+  static void Read(RaceCommandEnterRoom& command, SourceStream& stream);
 };
 
 struct RaceCommandEnterRoomOK
@@ -119,7 +118,7 @@ struct RaceCommandEnterRoomOK
   uint8_t unk0{};
   uint32_t unk1{};
   RoomDescription roomDescription{};
-  
+
   uint32_t unk2{};
   uint16_t unk3{};
   uint32_t unk4{};
@@ -143,29 +142,29 @@ struct RaceCommandEnterRoomOK
   uint32_t unk12{};
   uint32_t unk13{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(const RaceCommandEnterRoomOK& command, SinkStream& buffer);
+  //! @param stream Sink stream.
+  static void Write(const RaceCommandEnterRoomOK& command, SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
-  static void Read(RaceCommandEnterRoomOK& command, SourceStream& buffer);
+  //! @param stream Source stream.
+  static void Read(RaceCommandEnterRoomOK& command, SourceStream& stream);
 };
 
 struct RaceCommandEnterRoomCancel
 {
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(const RaceCommandEnterRoomCancel& command, SinkStream& buffer);
+  //! @param stream Sink stream.
+  static void Write(const RaceCommandEnterRoomCancel& command, SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
-  static void Read(RaceCommandEnterRoomCancel& command, SourceStream& buffer);
+  //! @param stream Source stream.
+  static void Read(RaceCommandEnterRoomCancel& command, SourceStream& stream);
 };
 
 struct RaceCommandEnterRoomNotify
@@ -173,17 +172,16 @@ struct RaceCommandEnterRoomNotify
   Racer racer{};
   uint32_t unk0{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(const RaceCommandEnterRoomNotify& command, SinkStream& buffer);
+  //! @param stream Sink stream.
+  static void Write(const RaceCommandEnterRoomNotify& command, SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
-  static void Read(RaceCommandEnterRoomNotify& command, SourceStream& buffer);
+  //! @param stream Source stream.
+  static void Read(RaceCommandEnterRoomNotify& command, SourceStream& stream);
 };
-
 
 struct RaceCommandChangeRoomOptions
 {
@@ -202,17 +200,19 @@ struct RaceCommandChangeRoomOptions
   uint16_t map{};
   uint8_t raceStarted{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
+  //! @param stream Sink stream.
   static void Write(
-    const RaceCommandChangeRoomOptions& command, SinkStream& buffer);
+    const RaceCommandChangeRoomOptions& command,
+    SinkStream& stream);
 
-//! Reader a command from a provided source buffer.
-//! @param command Command.
-//! @param buffer Source buffer.
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
   static void Read(
-    RaceCommandChangeRoomOptions& command, SourceStream& buffer);
+    RaceCommandChangeRoomOptions& command,
+    SourceStream& stream);
 };
 
 struct RaceCommandChangeRoomOptionsNotify
@@ -232,36 +232,39 @@ struct RaceCommandChangeRoomOptionsNotify
   uint16_t option4{};
   uint8_t option5{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
+  //! @param stream Sink stream.
   static void Write(
-    const RaceCommandChangeRoomOptionsNotify& command, SinkStream& buffer);
+    const RaceCommandChangeRoomOptionsNotify& command,
+    SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
+  //! @param stream Source stream.
   static void Read(
-    RaceCommandChangeRoomOptionsNotify& command, SourceStream& buffer);
+    RaceCommandChangeRoomOptionsNotify& command,
+    SourceStream& stream);
 };
-
 
 struct RaceCommandStartRace
 {
   // List size specified with a byte. Max size 10 (potentially)
   std::vector<uint16_t> unk0{};
-  
-  //! Writes the command to a provided sink buffer.
-  //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(
-    const RaceCommandStartRace& command, SinkStream& buffer);
 
-//! Reader a command from a provided source buffer.
-//! @param command Command.
-//! @param buffer Source buffer.
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandStartRace& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
   static void Read(
-    RaceCommandStartRace& command, SourceStream& buffer);
+    RaceCommandStartRace& command,
+    SourceStream& stream);
 };
 
 struct RaceCommandStartRaceNotify
@@ -271,7 +274,7 @@ struct RaceCommandStartRaceNotify
   uint16_t unk2{};
   uint32_t unk3{}; // Room ID?
   uint16_t map{};
-  
+
   // List size specified with a uint8_t. Max size 10
   struct Racer
   {
@@ -306,7 +309,7 @@ struct RaceCommandStartRaceNotify
     uint16_t unk7{};
     uint16_t unk8{};
     uint16_t unk9{};
-    
+
     uint8_t unk10{};
     uint32_t unk11{};
   } unk9{};
@@ -344,71 +347,77 @@ struct RaceCommandStartRaceNotify
   };
   std::vector<Unk18Element> unk18{};
 
-
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
+  //! @param stream Sink stream.
   static void Write(
-    const RaceCommandStartRaceNotify& command, SinkStream& buffer);
+    const RaceCommandStartRaceNotify& command,
+    SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
+  //! @param stream Source stream.
   static void Read(
-    RaceCommandStartRaceNotify& command, SourceStream& buffer);
+    RaceCommandStartRaceNotify& command,
+    SourceStream& stream);
 };
 
 struct RaceCommandStartRaceCancel
 {
   uint8_t reason{};
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
+  //! @param stream Sink stream.
   static void Write(
-    const RaceCommandStartRaceCancel& command, SinkStream& buffer);
+    const RaceCommandStartRaceCancel& command,
+    SinkStream& stream);
 
-  //! Reader a command from a provided source buffer.
+  //! Reader a command from a provided source stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
+  //! @param stream Source stream.
   static void Read(
-    RaceCommandStartRaceCancel& command, SourceStream& buffer);
+    RaceCommandStartRaceCancel& command,
+    SourceStream& stream);
 };
-
 
 struct UserRaceTimer
 {
   uint64_t timestamp{}; // potentially
 
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Sink buffer.
+  //! @param stream Sink stream.
   static void Write(
-    const UserRaceTimer& command, SinkStream& buffer);
+    const UserRaceTimer& command,
+    SinkStream& stream);
 
-//! Reader a command from a provided source buffer.
-//! @param command Command.
-//! @param buffer Source buffer.
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
   static void Read(
-    UserRaceTimer& command, SourceStream& buffer);
+    UserRaceTimer& command,
+    SourceStream& stream);
 };
 
 struct UserRaceTimerOK
 {
   uint64_t unk0{};
   uint64_t unk1{};
-  
-  //! Writes the command to a provided sink buffer.
-  //! @param command Command.
-  //! @param buffer Sink buffer.
-  static void Write(
-    const UserRaceTimerOK& command, SinkStream& buffer);
 
-  //! Reader a command from a provided source buffer.
+  //! Writes the command to a provided sink stream.
   //! @param command Command.
-  //! @param buffer Source buffer.
+  //! @param stream Sink stream.
+  static void Write(
+    const UserRaceTimerOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
   static void Read(
-    UserRaceTimerOK& command, SourceStream& buffer);
+    UserRaceTimerOK& command,
+    SourceStream& stream);
 };
 
 } // namespace alicia

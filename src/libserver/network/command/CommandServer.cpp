@@ -1,24 +1,25 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
-#include "libserver/command/CommandServer.hpp"
-#include "libserver/Util.hpp"
+#include "libserver/network/command/CommandServer.hpp"
+#include "libserver/util/Deferred.hpp"
+#include "libserver/util/Util.hpp"
 
 #include <ranges>
 
@@ -64,13 +65,10 @@ void XorAlgorithm(
 
 bool IsMuted(CommandId id)
 {
-  return id == CommandId::LobbyHeartbeat
-      || id == CommandId::RanchHeartbeat
-      || id == CommandId::RanchSnapshot
-      || id == CommandId::RanchSnapshotNotify;
+  return id == CommandId::LobbyHeartbeat || id == CommandId::RanchHeartbeat || id == CommandId::RanchSnapshot || id == CommandId::RanchSnapshotNotify;
 }
 
-} // anon namespace
+} // namespace
 
 void CommandClient::SetCode(XorCode code)
 {
@@ -202,17 +200,13 @@ void CommandServer::HandleClientRead(
   asio::streambuf& streamBuf)
 {
   const auto buffer = streamBuf.data();
-  SourceStream stream({
-    static_cast<const std::byte*>(buffer.data()),
-    buffer.size()
-  });
+  SourceStream stream({static_cast<const std::byte*>(buffer.data()), buffer.size()});
 
   const Deferred deferredConsume([&]()
-  {
+                                 {
     // Consume the amount of bytes that were
     // read from the command stream.
-    streamBuf.consume(stream.GetCursor());
-  });
+    streamBuf.consume(stream.GetCursor()); });
 
   while (stream.GetCursor() != stream.Size())
   {
@@ -220,13 +214,12 @@ void CommandServer::HandleClientRead(
     bool isCommandBufferedWhole = true;
 
     const Deferred resetStreamCursor([streamOrigin, &stream, &isCommandBufferedWhole]()
-    {
+                                     {
       // If the command was not buffered whole,
       // reset the stream to the cursor before the command was read,
       // so that it may be read when more data arrive.
       if (not isCommandBufferedWhole)
-        stream.Seek(streamOrigin);
-    });
+        stream.Seek(streamOrigin); });
 
     // Read the message magic.
     uint32_t magicValue{};
@@ -241,20 +234,21 @@ void CommandServer::HandleClientRead(
       throw std::runtime_error(
         std::format(
           "Invalid command magic: Bad command ID '{}'.",
-          magic.id).c_str());
+          magic.id)
+          .c_str());
     }
 
     const auto commandId = static_cast<CommandId>(magic.id);
 
     // The provided payload length must be at least the size
     // of the magic itself and smaller than the max command size.
-    if (magic.length < sizeof(MessageMagic)
-      || magic.length > MaxCommandSize)
+    if (magic.length < sizeof(MessageMagic) || magic.length > MaxCommandSize)
     {
       throw std::runtime_error(
         std::format(
           "Invalid command magic: Bad command data size '{}'.",
-          magic.length).c_str());
+          magic.length)
+          .c_str());
     }
 
     // Size of the data portion of the command.
@@ -300,7 +294,8 @@ void CommandServer::HandleClientRead(
           std::format(
             "Malformed command: Bad command data size '{}', padding is {}.",
             magic.length,
-            padding).c_str());
+            padding)
+            .c_str());
       }
 
       const auto actualCommandDataSize = commandDataSize - padding;
@@ -322,37 +317,33 @@ void CommandServer::HandleClientRead(
       commandDataStream = std::move(SourceStream(
         {commandDataBuffer.begin(), actualCommandDataSize}));
 
-      if(!IsMuted(commandId))
+      if (!IsMuted(commandId))
       {
         spdlog::debug("Processed data for command message '{}' (0x{:X}),\n\n"
-          "XOR code: {:#X},\n"
-          "Command data size: {} (padding: {}),\n"
-          "Actual command data size: {}\n"
-          "Processed data dump: \n\n{}\n",
-          GetCommandName(commandId),
-          magic.id,
-          code,
-          commandDataSize,
-          padding,
-          actualCommandDataSize,
-          GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
+                      "XOR code: {:#X},\n"
+                      "Command data size: {} (padding: {}),\n"
+                      "Actual command data size: {}\n"
+                      "Processed data dump: \n\n{}\n",
+                      GetCommandName(commandId),
+                      magic.id,
+                      code,
+                      commandDataSize,
+                      padding,
+                      actualCommandDataSize,
+                      GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
       }
     }
     else
     {
-
     }
 
     // Find the handler of the command.
     const auto handlerIter = _handlers.find(commandId);
     if (handlerIter == _handlers.cend())
     {
-      if(!IsMuted(commandId))
+      if (!IsMuted(commandId))
       {
-        spdlog::warn("Unhandled command message '{}', ID: 0x{:x}, Length: {}",
-          GetCommandName(commandId),
-          magic.id,
-          magic.length);
+        spdlog::warn("Unhandled command message '{}', ID: 0x{:x}, Length: {}", GetCommandName(commandId), magic.id, magic.length);
       }
     }
     else
@@ -367,12 +358,9 @@ void CommandServer::HandleClientRead(
       // There shouldn't be any left-over data in the stream.
       assert(commandDataStream.GetCursor() == commandDataStream.Size());
 
-      if(!IsMuted(commandId))
+      if (!IsMuted(commandId))
       {
-        spdlog::debug("Handled command messsage '{}', ID: 0x{:x}",
-          GetCommandName(commandId),
-          magic.id,
-          magic.length);
+        spdlog::debug("Handled command messsage '{}', ID: 0x{:x}", GetCommandName(commandId), magic.id, magic.length);
       }
     }
   }
@@ -382,7 +370,6 @@ void CommandServer::HandleClientWrite(
   ClientId clientId,
   asio::streambuf& writeBuffer)
 {
-
 }
 
 } // namespace alicia

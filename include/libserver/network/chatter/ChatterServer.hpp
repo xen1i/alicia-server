@@ -17,33 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  **/
 
-#include "libserver/network/command/CommandProtocol.hpp"
+#ifndef CHATTER_SERVER_HPP
+#define CHATTER_SERVER_HPP
 
-#include <cassert>
+#include "libserver/network/Server.hpp"
 
-namespace
+namespace alicia
 {
 
-//! Perform test of magic encoding/decoding.
-void TestMagic()
+class ChatterServer
 {
-  const alicia::MessageMagic magic{
-    .id = 7,
-    .length = 29};
+public:
+  ChatterServer();
+  ~ChatterServer();
 
-  // Test encoding of the magic.
-  const auto encoded_magic = alicia::encode_message_magic(magic);
-  assert(encoded_magic == 0x8D06CD01);
+  void Host();
 
-  // Test decoding of the magic.
-  const auto decoded_magic = alicia::decode_message_magic(encoded_magic);
-  assert(decoded_magic.id == magic.id);
-  assert(decoded_magic.length == magic.length);
-}
+  Server _server;
+  std::thread _serverThread;
+};
 
-} // namespace
+} // namespace alicia
 
-int main()
-{
-  TestMagic();
-}
+#endif // CHATTER_SERVER_HPP

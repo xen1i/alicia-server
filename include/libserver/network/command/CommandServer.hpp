@@ -1,30 +1,31 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #ifndef COMMAND_SERVER_HPP
 #define COMMAND_SERVER_HPP
 
 #include "CommandProtocol.hpp"
-#include "libserver/base/Server.hpp"
+#include "libserver/network/Server.hpp"
+#include "libserver/util/Stream.hpp"
 
-#include <unordered_map>
 #include <queue>
+#include <unordered_map>
 
 namespace alicia
 {
@@ -76,7 +77,7 @@ public:
   //!
   //! @param commandId ID of the command to register the handler for.
   //! @param handler Handler function.
-  template<typename T>
+  template <typename T>
   void RegisterCommandHandler(
     CommandId commandId,
     std::function<void(ClientId clientId, const T&)> handler)
@@ -93,17 +94,16 @@ public:
 
   void SetCode(ClientId client, XorCode code);
 
-  template<typename T>
+  template <typename T>
   void QueueCommand(
     ClientId clientId,
     CommandId commandId,
     std::function<T()> supplier)
   {
     QueueCommand(clientId, commandId, [supplier](auto& sink)
-    {
+                 {
       const auto command = supplier();
-      sink.Write(supplier());
-    });
+      sink.Write(supplier()); });
   }
 
   //!
@@ -135,4 +135,4 @@ private:
 
 } // namespace alicia
 
-#endif //COMMAND_SERVER_HPP
+#endif // COMMAND_SERVER_HPP

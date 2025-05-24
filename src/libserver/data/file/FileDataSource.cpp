@@ -1,3 +1,22 @@
+/**
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
+
 #include "libserver/data/file/FileDataSource.hpp"
 
 #include <fstream>
@@ -16,7 +35,7 @@ std::filesystem::path ProduceDataPath(
   return root / (filename + ".json");
 }
 
-} // namespace anon
+} // namespace
 
 void soa::FileDataSource::Initialize(const std::filesystem::path& path)
 {
@@ -31,7 +50,7 @@ void soa::FileDataSource::Initialize(const std::filesystem::path& path)
   create_directories(_ranchesPath);
   _itemsPath = _path / "items";
   create_directories(_itemsPath);
-  _metaFilePath = _path/ "meta.json";
+  _metaFilePath = _path / "meta.json";
 
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
@@ -162,13 +181,12 @@ void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
   item.tid = json["tid"].get<data::Tid>();
   item.count = json["count"].get<uint32_t>();
   item.slot = static_cast<soa::data::Item::Slot>(json["slot"].get<int32_t>());
-
 }
 
 void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
 {
   const std::filesystem::path userFilePath = ProduceDataPath(
-  _itemsPath, std::format("{}", uid));
+    _itemsPath, std::format("{}", uid));
 
   std::ofstream file(userFilePath);
   if (not file.is_open())
@@ -179,7 +197,7 @@ void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   json["tid"] = item.tid();
   json["count"] = item.count();
   json["slot"] = item.slot();
-  file<<json.dump(2);
+  file << json.dump(2);
 }
 
 void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
@@ -207,7 +225,7 @@ void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
   nlohmann::json json;
   json["name"] = horse.name();
-  file<<json.dump(2);
+  file << json.dump(2);
 }
 
 void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
@@ -227,7 +245,7 @@ void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 void soa::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
 {
   const std::filesystem::path userFilePath = ProduceDataPath(
-  _ranchesPath, std::format("{}", uid));
+    _ranchesPath, std::format("{}", uid));
 
   std::ofstream file(userFilePath);
   if (not file.is_open())
@@ -235,5 +253,5 @@ void soa::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
 
   nlohmann::json json;
   json["name"] = ranch.name();
-  file<<json.dump(2);
+  file << json.dump(2);
 }

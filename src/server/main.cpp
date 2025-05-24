@@ -5,20 +5,20 @@
 #include "server/ranch/RanchDirector.hpp"
 #include "server/Settings.hpp"
 
-#include "libserver/chatter/ChatterServer.hpp"
+#include "libserver/network/chatter/ChatterServer.hpp"
 
 #include <spdlog/sinks/daily_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include <memory>
 #include <iostream>
+#include <memory>
 #include <thread>
 
 #ifdef WIN32
-#include <windows.h>
+  #include <windows.h>
 #else
-#include <signal.h>
+  #include <signal.h>
 #endif
 
 namespace
@@ -81,11 +81,11 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
   {
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
-    {
-      spdlog::debug("Shutting down because of CTRL+C");
-      shouldRun = false;
-      return TRUE;
-    }
+      {
+        spdlog::debug("Shutting down because of CTRL+C");
+        shouldRun = false;
+        return TRUE;
+      }
 
     default:
       return FALSE;
@@ -93,7 +93,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 }
 #else
 
-void handler(int sig, siginfo_t *info, void *ucontext)
+void handler(int sig, siginfo_t* info, void* ucontext)
 {
   if (sig == SIGTERM)
   {
@@ -119,11 +119,12 @@ int main()
   };
 #else
   // Register the signal action handler.
-  struct sigaction act {};
+  struct sigaction act{};
 
   act.sa_flags = SA_SIGINFO;
   act.sa_sigaction = &handler;
-  if (sigaction(SIGTERM, &act, nullptr) == -1) {
+  if (sigaction(SIGTERM, &act, nullptr) == -1)
+  {
     spdlog::error("Failed to change the signal action handler for SIGTERM");
     return 1;
   }
@@ -173,55 +174,51 @@ int main()
     settings._raceSettings);
 
   const std::jthread dataThread([]()
-  {
+                                {
     g_dataDirector->Initialize();
     TickLoop(50, []()
     {
       g_dataDirector->Tick();
     });
-    g_dataDirector->Terminate();
-  });
+    g_dataDirector->Terminate(); });
 
   const std::jthread lobbyThread([]()
-  {
+                                 {
     g_lobbyDirector->Initialize();
     TickLoop(50, []()
     {
       g_lobbyDirector->Tick();
     });
-    g_lobbyDirector->Terminate();
-  });
+    g_lobbyDirector->Terminate(); });
 
   const std::jthread ranchThread([]()
-  {
+                                 {
     g_ranchDirector->Initialize();
     TickLoop(50, []()
     {
       g_ranchDirector->Tick();
     });
-    g_ranchDirector->Terminate();
-  });
+    g_ranchDirector->Terminate(); });
 
   const std::jthread raceThread([]()
-  {
+                                {
     g_raceDirector->Initialize();
     TickLoop(50, []()
     {
       g_raceDirector->Tick();
     });
-    g_raceDirector->Terminate();
-  });
+    g_raceDirector->Terminate(); });
 
   const std::jthread messengerThread([]()
-  {
+                                     {
     alicia::ChatterServer chatter;
-    chatter.Host();
-  });
+    chatter.Host(); });
 
   spdlog::info(
     "Server started up in {}ms",
     std::chrono::duration_cast<std::chrono::milliseconds>(
-      Clock::now() - serverStartupTime).count());
+      Clock::now() - serverStartupTime)
+      .count());
 
   while (shouldRun)
   {
@@ -269,14 +266,12 @@ int main()
       }
 
       user->Mutable([&name, &token](auto& user)
-      {
+                    {
         user.name = name;
-        user.token = token;
-      });
+        user.token = token; });
       printf("Created user %s (token: %s)\n", name.c_str(), token.c_str());
     }
   }
 
   return 0;
 }
-

@@ -1,6 +1,21 @@
-//
-// Created by rgnter on 26/11/2024.
-//
+/**
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #include "server/lobby/LoginHandler.hpp"
 
@@ -40,10 +55,9 @@ void LoginHandler::Tick()
     bool isAuthenticated = false;
     bool hasCharacter = false;
     user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](auto& user)
-    {
+                    {
       isAuthenticated = user.token() == loginContext.userToken;
-      hasCharacter = user.characterUid() != soa::data::InvalidUid;
-    });
+      hasCharacter = user.characterUid() != soa::data::InvalidUid; });
 
     // If the user succeeds in authentication queue user for further processing.
     if (isAuthenticated)
@@ -51,7 +65,9 @@ void LoginHandler::Tick()
       if (not hasCharacter)
       {
         QueueUserCreateNickname(clientId, loginContext.userName);
-      } else {
+      }
+      else
+      {
         // Queue the processing of the response.
         _clientLoginResponseQueue.emplace(clientId);
       }
@@ -91,10 +107,7 @@ void LoginHandler::Tick()
 
       const auto ranch = _dataDirector.GetRanches().Get((*character)().ranchUid());
 
-      if (not characterEquipment
-        || not horseEquipment
-        || not horses
-        || not ranch)
+      if (not characterEquipment || not horseEquipment || not horses || not ranch)
       {
         continue;
       }
@@ -136,9 +149,7 @@ void LoginHandler::HandleUserLogin(
 
   // Queue the login.
   const auto [iterator, inserted] =
-    _clientLogins.try_emplace(clientId, LoginContext{
-      .userName = login.loginId,
-      .userToken = login.authKey});
+    _clientLogins.try_emplace(clientId, LoginContext{.userName = login.loginId, .userToken = login.authKey});
   assert(inserted && "Duplicate client login request.");
 
   _clientLoginRequestQueue.emplace(clientId);
@@ -311,7 +322,7 @@ void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string&
   _server.QueueCommand<LobbyCommandCreateNicknameNotify>(
     clientId,
     CommandId::LobbyCreateNicknameNotify,
-  []()
+    []()
     {
       return LobbyCommandCreateNicknameNotify{};
     });
@@ -330,5 +341,3 @@ void LoginHandler::QueueUserLoginRejected(ClientId clientId)
 }
 
 } // namespace alicia
-
-

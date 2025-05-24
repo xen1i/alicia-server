@@ -20,12 +20,12 @@
 #ifndef DATA_DEFINES_HPP
 #define DATA_DEFINES_HPP
 
+#include "libserver/util/Stream.hpp"
+
 #include <array>
 #include <cstdint>
-#include <vector>
 #include <string>
-
-#include "libserver/Stream.hpp"
+#include <vector>
 
 namespace alicia
 {
@@ -106,7 +106,7 @@ struct Character
   struct Parts
   {
     //!
-    uint8_t charId{ 10 };
+    uint8_t charId{10};
     //! FaceId
     uint8_t mouthSerialId{};
     //! EyeId
@@ -317,7 +317,8 @@ struct Struct7
 };
 
 //!
-struct RanchHorse {
+struct RanchHorse
+{
   uint16_t ranchIndex{};
   Horse horse{};
 
@@ -355,6 +356,7 @@ struct RanchPlayer
   static void Read(RanchPlayer& value, SourceStream& buffer);
 };
 
+//!
 struct Quest
 {
   uint16_t unk0{};
@@ -367,7 +369,9 @@ struct Quest
   static void Read(Quest& value, SourceStream& buffer);
 };
 
-struct RanchUnk11 {
+//!
+struct RanchUnk11
+{
   uint8_t unk0{};
   uint8_t unk1{};
 

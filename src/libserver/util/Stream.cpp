@@ -2,23 +2,23 @@
 // Created by rgnter on 21/05/2025.
 //
 
-#include "libserver/Stream.hpp"
+#include "libserver/util/Stream.hpp"
 
 namespace alicia
 {
 
 SourceStream::SourceStream(Storage buffer)
-    : StreamBase(buffer)
+  : StreamBase(buffer)
 {
 }
 
 SourceStream::SourceStream(nullptr_t)
-    : StreamBase(nullptr)
+  : StreamBase(nullptr)
 {
 }
 
 SourceStream::SourceStream(SourceStream&& rhs) noexcept
-    : StreamBase(rhs._storage)
+  : StreamBase(rhs._storage)
 {
   _cursor = rhs._cursor;
 }
@@ -31,17 +31,17 @@ SourceStream& SourceStream::operator=(SourceStream&& rhs) noexcept
 }
 
 SinkStream::SinkStream(Storage buffer) noexcept
-    : StreamBase(buffer)
+  : StreamBase(buffer)
 {
 }
 
 SinkStream::SinkStream(nullptr_t) noexcept
-    : StreamBase(nullptr)
+  : StreamBase(nullptr)
 {
 }
 
 SinkStream::SinkStream(SinkStream&& rhs) noexcept
-    : StreamBase(rhs._storage)
+  : StreamBase(rhs._storage)
 {
   _cursor = rhs._cursor;
 }
@@ -57,11 +57,7 @@ void SinkStream::Write(const void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
-    throw std::overflow_error(std::format(
-      "Couldn't write {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
-      size,
-      _cursor,
-      _storage.size()));
+    throw std::overflow_error(std::format("Couldn't write {} bytes to the buffer (cursor: {}, available: {}). Not enough space.", size, _cursor, _storage.size()));
   }
 
   // Write the bytes.
@@ -86,11 +82,7 @@ void SourceStream::Read(void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
-    throw std::overflow_error(std::format(
-      "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
-      size,
-      _cursor,
-      _storage.size()));
+    throw std::overflow_error(std::format("Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.", size, _cursor, _storage.size()));
   }
 
   // Read the bytes.

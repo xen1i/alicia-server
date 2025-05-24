@@ -17,33 +17,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  **/
 
-#include "libserver/network/command/CommandProtocol.hpp"
+#ifndef UTIL_HPP
+#define UTIL_HPP
 
-#include <cassert>
+#include <boost/asio.hpp>
+#include <chrono>
+#include <span>
 
-namespace
+namespace alicia
 {
 
-//! Perform test of magic encoding/decoding.
-void TestMagic()
+namespace asio = boost::asio;
+
+//! Windows file-time represents number of 100 nanosecond intervals since January 1, 1601 (UTC).
+struct WinFileTime
 {
-  const alicia::MessageMagic magic{
-    .id = 7,
-    .length = 29};
+  uint32_t dwLowDateTime = 0;
+  uint32_t dwHighDateTime = 0;
+};
 
-  // Test encoding of the magic.
-  const auto encoded_magic = alicia::encode_message_magic(magic);
-  assert(encoded_magic == 0x8D06CD01);
+//! Converts a time point to the Windows file time.
+//! @param timePoint Point in time.
+//! @return Windows file time representing specified point in time.
+WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint);
 
-  // Test decoding of the magic.
-  const auto decoded_magic = alicia::decode_message_magic(encoded_magic);
-  assert(decoded_magic.id == magic.id);
-  assert(decoded_magic.length == magic.length);
-}
+asio::ip::address_v4 ResolveHostName(const std::string& host);
 
-} // namespace
+std::string GenerateByteDump(std::span<const std::byte> data);
 
-int main()
-{
-  TestMagic();
-}
+} // namespace alicia
+
+#endif // UTIL_HPP
