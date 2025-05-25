@@ -40,7 +40,7 @@ public:
     : _storage(storage) {};
 
   //! Empty constructor.
-  explicit StreamBase(nullptr_t) noexcept
+  explicit StreamBase(std::nullptr_t) noexcept
     : _storage() {};
 
   //! Virtual destructor.
@@ -106,7 +106,7 @@ public:
   //! @param buffer Underlying storage buffer.
   explicit SinkStream(Storage buffer) noexcept;
   //! Empty constructor
-  explicit SinkStream(nullptr_t) noexcept;
+  explicit SinkStream(std::nullptr_t) noexcept;
 
   //! Move constructor.
   SinkStream(SinkStream&&) noexcept;
@@ -160,7 +160,7 @@ public:
   //! @param stream Source buffer.
   explicit SourceStream(Storage buffer);
   //! Empty constructor
-  explicit SourceStream(nullptr_t);
+  explicit SourceStream(std::nullptr_t);
 
   //! Move constructor
   SourceStream(SourceStream&& rhs) noexcept;

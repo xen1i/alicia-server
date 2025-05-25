@@ -64,7 +64,7 @@ struct Field
   }
 
   //! Constructs a field with an uninitialized value.
-  explicit Field(nullptr_t t)
+  explicit Field(std::nullptr_t t)
   {
   }
 
