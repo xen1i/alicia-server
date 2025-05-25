@@ -91,6 +91,7 @@ void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
     return;
 
   const auto json = nlohmann::json::parse(file);
+  user.name = json["name"].get<std::string>();
   user.token = json["token"].get<std::string>();
   user.characterUid = json["characterUid"].get<data::Uid>();
 }
@@ -105,10 +106,17 @@ void soa::FileDataSource::StoreUser(std::string name, const data::User& user)
     return;
 
   nlohmann::json json;
+  json["name"] = user.name();
   json["token"] = user.token();
   json["characterUid"] = user.characterUid();
 
   file << json.dump(2);
+}
+
+void soa::FileDataSource::CreateCharacter(data::Character& character)
+{
+  _sequentialUid++;
+  character.uid = _sequentialUid;
 }
 
 void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)

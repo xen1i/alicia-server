@@ -412,4 +412,32 @@ void UserRaceTimerOK::Read(
   throw std::logic_error("Not implemented.");
 }
 
+void RaceCommandLoadingComplete::Write(
+  const RaceCommandLoadingComplete& command,
+  SinkStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void RaceCommandLoadingComplete::Read(
+  RaceCommandLoadingComplete& command,
+  SourceStream& stream)
+{
+  // Empty.
+}
+
+void RaceCommandLoadingCompleteNotify::Write(
+  const RaceCommandLoadingCompleteNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.member0);
+}
+
+void RaceCommandLoadingCompleteNotify::Read(
+  RaceCommandLoadingCompleteNotify& command,
+  SourceStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
 } // namespace alicia

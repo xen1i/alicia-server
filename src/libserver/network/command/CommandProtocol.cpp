@@ -39,7 +39,7 @@ const std::unordered_map<CommandId, std::string_view> commands = {
 
   // CreateNickname
   {CommandId::LobbyCreateNicknameNotify, "LobbyCreateNicknameNotify"},
-  {CommandId::LobbyCreateNicknameOK, "LobbyCreateNicknameOK"},
+  {CommandId::LobbyCreateNickname, "LobbyCreateNicknameOK"},
   {CommandId::LobbyCreateNicknameCancel, "LobbyCreateNicknameCancel"},
 
   // EnterChannel
@@ -158,8 +158,8 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::RaceEnterRoomOK, "RaceEnterRoomOK"},
   {CommandId::RaceEnterRoomCancel, "RaceEnterRoomCancel"},
 
-  {CommandId::RaceChangeRoomOptions, "AcCmdCRChangeRoomOptions"},
-  {CommandId::RaceChangeRoomOptionsNotify, "AcCmdCRChangeRoomOptionsNotify"},
+  {CommandId::RaceChangeRoomOptions, "RaceChangeRoomOptions"},
+  {CommandId::RaceChangeRoomOptionsNotify, "RaceChangeRoomOptionsNotify"},
 
   {CommandId::RaceStartRace, "RaceStartRace"},
   {CommandId::RaceStartRaceNotify, "RaceStartRaceNotify"},
@@ -167,6 +167,9 @@ const std::unordered_map<CommandId, std::string_view> commands = {
 
   {CommandId::UserRaceTimer, "UserRaceTimer"},
   {CommandId::UserRaceTimerOK, "UserRaceTimerOK"},
+
+  {CommandId::RaceLoadingComplete, "RaceLoadingComplete"},
+  {CommandId::RaceLoadingCompleteNotify, "RaceLoadingCompleteNotify"},
 };
 
 } // namespace

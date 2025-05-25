@@ -65,7 +65,10 @@ void XorAlgorithm(
 
 bool IsMuted(CommandId id)
 {
-  return id == CommandId::LobbyHeartbeat || id == CommandId::RanchHeartbeat || id == CommandId::RanchSnapshot || id == CommandId::RanchSnapshotNotify;
+  return id == CommandId::LobbyHeartbeat
+    || id == CommandId::RanchHeartbeat
+    || id == CommandId::RanchSnapshot
+    || id == CommandId::RanchSnapshotNotify;
 }
 
 } // namespace
@@ -184,6 +187,10 @@ void CommandServer::QueueCommand(ClientId client, CommandId command, CommandSupp
 
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);
+
+      spdlog::debug("Sent command message '{}' (0x{:X})",
+        GetCommandName(command),
+        static_cast<uint32_t>(command));
     });
 }
 

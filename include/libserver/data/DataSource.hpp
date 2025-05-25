@@ -41,6 +41,9 @@ public:
   //! @param user User to store.
   virtual void StoreUser(std::string name, const data::User& user) = 0;
 
+  //! Creates
+  virtual void CreateCharacter(data::Character& character) = 0;
+
   //! Retrieves the user from the data source.
   //! @param character Character to retrieve.
   virtual void RetrieveCharacter(data::Uid uid, data::Character& character) = 0;

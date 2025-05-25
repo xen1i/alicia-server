@@ -54,7 +54,7 @@ private:
   //!
   void HandleCreateNicknameOK(
     ClientId clientId,
-    const LobbyCommandCreateNicknameOK& createNickname);
+    const LobbyCommandCreateNickname& createNickname);
 
   //!
   void HandleEnterChannel(

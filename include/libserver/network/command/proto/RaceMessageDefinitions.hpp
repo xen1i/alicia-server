@@ -420,6 +420,42 @@ struct UserRaceTimerOK
     SourceStream& stream);
 };
 
+struct RaceCommandLoadingComplete
+{
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandLoadingComplete& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandLoadingComplete& command,
+    SourceStream& stream);
+};
+
+struct RaceCommandLoadingCompleteNotify
+{
+  uint16_t member0{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandLoadingCompleteNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandLoadingCompleteNotify& command,
+    SourceStream& stream);
+};
+
 } // namespace alicia
 
 #endif // RACE_MESSAGE_DEFINES_HPP

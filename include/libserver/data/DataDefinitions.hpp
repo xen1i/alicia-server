@@ -43,6 +43,8 @@ struct Field
 
   Field(const Field& field) = delete;
 
+  Field& operator=(const Field& field) = delete;
+
   Field(Field&& field) noexcept
     : _modified(field.IsModified())
     , _value(field._value)

@@ -82,7 +82,7 @@ enum class CommandId : uint16_t
   LobbyHeartbeat = 0x12,
 
   LobbyCreateNicknameNotify = 0x6b,
-  LobbyCreateNicknameOK = 0x6c,
+  LobbyCreateNickname = 0x6c,
   LobbyCreateNicknameCancel = 0x6e,
 
   LobbyEnterChannel = 0x2b,
@@ -199,6 +199,9 @@ enum class CommandId : uint16_t
 
   UserRaceTimer = 0x1024,
   UserRaceTimerOK = 0x1025,
+
+  RaceLoadingComplete = 0x1b6,
+  RaceLoadingCompleteNotify = 0x1b7,
 
   Count = 0xFFFF
 };

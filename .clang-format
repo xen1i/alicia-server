@@ -6,7 +6,6 @@ IndentWidth: 2
 PPIndentWidth: 2
 IndentPPDirectives: BeforeHash
 ContinuationIndentWidth: 2
-LambdaBodyIndentation: Signature
 ConstructorInitializerIndentWidth: 2
 IndentCaseBlocks: true
 IndentCaseLabels: true

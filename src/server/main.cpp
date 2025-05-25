@@ -254,22 +254,6 @@ int main()
         printf("Please specify name and token\n");
         continue;
       }
-
-      const auto name = command[1];
-      const auto token = command[2];
-
-      auto user = g_dataDirector->GetUsers().Create(name);
-      if (not user)
-      {
-        printf("User already exists.\n");
-        continue;
-      }
-
-      user->Mutable([&name, &token](auto& user)
-                    {
-        user.name = name;
-        user.token = token; });
-      printf("Created user %s (token: %s)\n", name.c_str(), token.c_str());
     }
   }
 

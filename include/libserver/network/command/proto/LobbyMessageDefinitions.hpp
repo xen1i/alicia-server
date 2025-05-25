@@ -281,7 +281,7 @@ struct LobbyCommandCreateNicknameNotify
 };
 
 //! Serverbound create nickname ok command.
-struct LobbyCommandCreateNicknameOK
+struct LobbyCommandCreateNickname
 {
   std::string nickname{};
   Character character{};
@@ -291,14 +291,14 @@ struct LobbyCommandCreateNicknameOK
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const LobbyCommandCreateNicknameOK& command,
+    const LobbyCommandCreateNickname& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    LobbyCommandCreateNicknameOK& command,
+    LobbyCommandCreateNickname& command,
     SourceStream& stream);
 };
 
@@ -519,9 +519,9 @@ struct LobbyCommandMakeRoom
   uint8_t unk1;
   uint8_t unk2;
   uint16_t missionId;
-  uint8_t unk4;
+  uint8_t unk3;
   uint16_t bitset;
-  uint8_t unk6;
+  uint8_t unk4;
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -541,7 +541,7 @@ struct LobbyCommandMakeRoom
 //! Clientbound make room response.
 struct LobbyCommandMakeRoomOK
 {
-  uint32_t characterUid;
+  uint32_t roomUid;
   uint32_t otp;
   uint32_t ip;
   uint16_t port;

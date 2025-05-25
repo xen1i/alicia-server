@@ -117,7 +117,7 @@ template <typename Key, typename Data>
 class DataStorage
 {
 public:
-  using MultipleKeys = std::span<Key>;
+  using KeySpan = std::span<Key>;
 
   using DataSourceRetrieveListener = std::function<void(const Key& key, Data& data)>;
   using DataSourceStoreListener = std::function<void(const Key& key, Data& data)>;
@@ -150,7 +150,7 @@ public:
   //! Whether data record is available.
   //! @param key Key of the datum.
   //! @returns `true` if datum is available, `false` otherwise.
-  bool IsDatumAvailable(const Key& key)
+  bool IsAvailable(const Key& key)
   {
     const auto iterator = _entries.find(key);
     if (iterator == _entries.cend())
@@ -161,28 +161,29 @@ public:
   //! Whether data records are available.
   //! @param key Keys of the data.
   //! @returns `true` if data are available, `false` otherwise.
-  bool AreDataAvailable(MultipleKeys keys)
+  bool IsAvailable(KeySpan keys)
   {
     for (const auto& key : keys)
     {
-      if (not IsDatumAvailable(key))
+      if (not IsAvailable(key))
         return false;
     }
 
     return true;
   }
 
-  std::optional<Record<Data>> Create(const Key& key)
+  Record<Data> Create(std::function<std::pair<Key, Data>()> supplier)
   {
-    auto [recordIter, created] = _entries.try_emplace(key);
-    auto& record = recordIter->second;
-
+    auto [key, data] = supplier();
+    auto [it, created] = _entries.try_emplace(key);
     if (not created)
-    {
-      return std::nullopt;
-    }
+      throw std::runtime_error("Entry already exists");
 
-    return Record(record.value, record.mutex);
+    auto& entry = it->second;
+    entry.value = std::move(data);
+    entry.available = true;
+
+    return Record(it->second.value, it->second.mutex);
   }
 
   std::optional<Record<Data>> Get(const Key& key)
@@ -201,9 +202,9 @@ public:
     return std::nullopt;
   }
 
-  std::optional<std::vector<Record<Data>>> Get(MultipleKeys keys)
+  std::optional<std::vector<Record<Data>>> Get(KeySpan keys)
   {
-    if (not AreDataAvailable(keys))
+    if (not IsAvailable(keys))
       return std::nullopt;
 
     std::vector<Record<Data>> records;

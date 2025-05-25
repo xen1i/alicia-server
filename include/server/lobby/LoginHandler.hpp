@@ -43,6 +43,10 @@ public:
     ClientId clientId,
     const LobbyCommandLogin& login);
 
+  void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
+  void QueueUserCreateNickname(ClientId clientId, const std::string& userName);
+  void QueueUserLoginRejected(ClientId clientId);
+
 private:
   struct LoginContext
   {
@@ -50,10 +54,6 @@ private:
     std::string userName;
     std::string userToken;
   };
-
-  void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
-  void QueueUserCreateNickname(ClientId clientId, const std::string& userName);
-  void QueueUserLoginRejected(ClientId clientId);
 
   std::unordered_map<ClientId, LoginContext> _clientLogins;
   std::queue<ClientId> _clientLoginRequestQueue;

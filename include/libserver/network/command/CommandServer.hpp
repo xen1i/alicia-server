@@ -100,10 +100,9 @@ public:
     CommandId commandId,
     std::function<T()> supplier)
   {
-    QueueCommand(clientId, commandId, [supplier](auto& sink)
-                 {
-      const auto command = supplier();
-      sink.Write(supplier()); });
+    QueueCommand(clientId, commandId, [supplier](auto& sink){
+      sink.Write(supplier());
+    });
   }
 
   //!

@@ -48,6 +48,16 @@ public:
   //! Ticks the data director.
   void Tick();
 
+  Record<data::Character> CreateCharacter()
+  {
+    return _characterStorage.Create([this]() {
+      data::Character character;
+      _dataSource->CreateCharacter(character);
+
+      return std::make_pair(character.uid(), std::move(character));
+    });
+  }
+
   UserStorage& GetUsers();
   CharacterStorage& GetCharacters();
   ItemStorage& GetItems();
