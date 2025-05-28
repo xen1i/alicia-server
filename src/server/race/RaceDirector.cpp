@@ -114,7 +114,6 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
 {
   assert(enterRoom.otp == 0xBAAD);
 
-
   // TODO: Send RaceEnterRoomNotify to all clients in the room
 
   // Todo: Roll the code for the connecting client.
@@ -232,6 +231,16 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
 
 void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace& startRace)
 {
+  RaceCommandStartRaceCancel response;
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RaceStartRaceCancel,
+    [response]()
+    {
+      return response;
+    });
+
+  /*
   // Start the race or AcCmdRCRoomCountdown
   const RaceCommandStartRaceNotify response {
     .gamemode = 6,
@@ -260,7 +269,7 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
     [response](auto& sink)
     {
       RaceCommandStartRaceNotify::Write(response, sink);
-    });
+    });*/
 }
 
 void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceTimer)

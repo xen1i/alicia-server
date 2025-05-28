@@ -293,8 +293,8 @@ void RaceCommandStartRaceNotify::Write(
     .Write(command.unk3)
     .Write(command.map);
 
-  stream.Write(static_cast<uint8_t>(command.racer.size()));
-  for (const auto& element : command.racer)
+  stream.Write(static_cast<uint8_t>(command.racers.size()));
+  for (const auto& element : command.racers)
   {
     stream.Write(element.oid)
       .Write(element.name)
