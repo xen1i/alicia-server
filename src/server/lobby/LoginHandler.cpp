@@ -43,23 +43,28 @@ void LoginHandler::Tick()
     const auto& loginContext = _clientLogins[clientId];
 
     // Load the user.
-    auto user = _dataDirector.GetUsers().Get(
-      loginContext.userName);
+    auto user = _dataDirector.GetUsers().Get(loginContext.userName);
     if (not user)
-    {
       continue;
-    }
 
     _clientLoginRequestQueue.pop();
 
     bool isAuthenticated = false;
-    user->Immutable([&isAuthenticated, &loginContext](auto& user){
+    bool hasCharacter = false;
+    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](auto& user){
       isAuthenticated = user.token() == loginContext.userToken;
+      hasCharacter == user.characterUid() != soa::data::InvalidUid;
     });
 
     // If the user succeeds in authentication queue user for further processing.
     if (isAuthenticated)
     {
+      if (not hasCharacter)
+      {
+        QueueUserCreateNickname(clientId, loginContext.userName);
+        break;
+      }
+
       // Queue the processing of the response.
       _clientLoginResponseQueue.emplace(clientId);
     }
@@ -76,10 +81,11 @@ void LoginHandler::Tick()
   {
     const ClientId clientId = _clientLoginResponseQueue.front();
     const auto& loginContext = _clientLogins[clientId];
-    bool hasCharacter = true;
 
     {
       // Load the character.
+      auto userRecord = _dataDirector.GetUsers().Get(loginContext.userName);
+      assert(userRecord.has_value());
 
       auto user = *_dataDirector.GetUsers().Get(loginContext.userName);
 
@@ -99,7 +105,7 @@ void LoginHandler::Tick()
         const auto horseEquipment = _dataDirector.GetItems().Get(
           (*character)().horseEquipment());
 
-        const auto horses = _dataDirector.GetHorses().Get((*character)().horses());
+        const auto horses = _dataDirector.GetHorses().Get((*character)().horseUids());
         const auto ranch = _dataDirector.GetRanches().Get((*character)().ranchUid());
 
         if (not characterEquipment
@@ -110,18 +116,11 @@ void LoginHandler::Tick()
           continue;
         }
       }
-      else
-      {
-        hasCharacter = false;
-      }
     }
 
     _clientLoginResponseQueue.pop();
 
-    if (not hasCharacter)
-      QueueUserCreateNickname(clientId, loginContext.userName);
-    else
-      QueueUserLoginAccepted(clientId, loginContext.userName);
+    QueueUserLoginAccepted(clientId, loginContext.userName);
   }
 }
 
@@ -156,191 +155,255 @@ void LoginHandler::HandleUserLogin(
 
   // Queue the login.
   const auto [iterator, inserted] =
-    _clientLogins.try_emplace(clientId, LoginContext{.userName = login.loginId, .userToken = login.authKey});
+    _clientLogins.try_emplace(clientId, LoginContext{
+      .userName = login.loginId,
+      .userToken = login.authKey});
   assert(inserted && "Duplicate client login request.");
 
   _clientLoginRequestQueue.emplace(clientId);
 }
 
-void LoginHandler::QueueUserLoginAccepted(const ClientId clientId, const std::string& userName)
+void LoginHandler::HandleUserCreateCharacter(
+  ClientId clientId,
+  const LobbyCommandCreateNickname& command)
 {
-  _server.QueueCommand<LobbyCommandLoginOK>(
+  const auto& loginContext = _clientLogins[clientId];
+
+  auto userRecord = _dataDirector.GetUsers().Get(loginContext.userName);
+  if (not userRecord)
+    throw std::runtime_error("User record does not exist");
+
+  auto characterRecord = _dataDirector.CreateCharacter();
+  soa::data::Uid userCharacterUid{soa::data::InvalidUid};
+
+  characterRecord.Mutable([&userCharacterUid, &command](soa::data::Character& character) {
+    userCharacterUid = character.uid();
+
+    character.name = command.nickname;
+    character.parts = soa::data::Character::Parts{
+      .modelId = command.character.parts.charId,
+      .mouthId = command.character.parts.mouthSerialId,
+      .faceId = command.character.parts.faceSerialId};
+    character.appearance = soa::data::Character::Appearance{
+      .headSize = command.character.appearance.headSize,
+      .height = command.character.appearance.height,
+      .thighVolume = command.character.appearance.thighVolume,
+      .legVolume = command.character.appearance.legVolume,};
+  });
+
+  userRecord->Mutable([&userCharacterUid](soa::data::User& user)
+  {
+    user.characterUid = userCharacterUid;
+  });
+
+  // Queue the processing of the login response.
+  _clientLoginResponseQueue.emplace(clientId);
+}
+
+void LoginHandler::QueueUserLoginAccepted(
+  const ClientId clientId,
+  const std::string& userName)
+{
+  const auto lobbyServerTime = UnixTimeToFileTime(
+  std::chrono::system_clock::now());
+
+  LobbyCommandLoginOK response {
+    .lobbyTime =
+      {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
+       .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
+    .val0 = 0xCA794,
+
+    .characterEquipment = {},
+    .horseEquipment = {},
+
+    .val1 = 0x0,
+    .val2 = 0x0,
+    .val3 = 0x0,
+
+    .optionType = OptionType::Value,
+    .valueOptions = 0x64,
+
+    .val5 = {
+      {0x18, {{2, 1}}},
+      {0x1F, {{2, 1}}},
+      {0x23, {{2, 1}}},
+      {0x29, {{2, 1}}},
+      {0x2A, {{2, 1}}},
+      {0x2B, {{2, 1}}},
+      {0x2E, {{2, 1}}}},
+
+    .address = _lobbyDirector.GetSettings().ranchAdvAddress.to_uint(),
+    .port = _lobbyDirector.GetSettings().ranchAdvPort,
+
+    .scramblingConstant = 0,
+
+    .val7 = {
+      .values = {
+        {0x6, 0x0},
+          {0xF, 0x4},
+          {0x1B, 0x2},
+          {0x1E, 0x0},
+          {0x1F, 0x0},
+          {0x25, 0x7530},
+          {0x35, 0x4},
+          {0x42, 0x2},
+          {0x43, 0x4},
+          {0x45, 0x0}}},
+
+    .val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010,
+    .val11 = {4, 0x2B, 4},
+    .val14 = 0xca1b87db,
+    .val15 = {.val1 = 1},
+    .val16 = 4,
+    .val17 = {.mountUid = 2, .val1 = 0x12, .val2 = 0x16e67e4},
+    .val18 = 0x3a,
+    .val19 = 0x38e,
+    .val20 = 0x1c6};
+
+  auto userRecord = _dataDirector.GetUsers().Get(userName);
+
+  if (not userRecord)
+    throw std::runtime_error("User record unavailable");
+
+  // Get the character UID of the user.
+  soa::data::Uid userCharacterUid{soa::data::InvalidUid};
+  userRecord->Immutable([&userCharacterUid](
+    const soa::data::User& user)
+  {
+    userCharacterUid = user.characterUid();
+  });
+
+  // Get the character record and fill the protocol data.
+  // Also get the UID of the horse mounted by the character.
+  auto characterRecord = _dataDirector.GetCharacters().Get(userCharacterUid);
+  if (not characterRecord)
+    throw std::runtime_error("Character record unavailable");
+
+  soa::data::Uid characterMountUid{
+    soa::data::InvalidUid};
+
+  characterRecord->Immutable([&response, &characterMountUid](const soa::data::Character& character)
+  {
+    response.selfUid = character.uid();
+    response.nickName = character.name();
+    response.profileGender = Gender::Unspecified;
+
+    response.level = character.level();
+    response.carrots = character.carrots();
+
+    response.ageGroup = AgeGroup::Adult;
+    response.hideAge = false;
+
+    // Set the character parts.
+    // These serial ID's can be found in the `_ClientCharDefaultPartInfo` table.
+    // Each character has specific part serial IDs for each part type.
+    response.character.parts = {
+      .charId = static_cast<uint8_t>(character.parts.modelId()),
+      .mouthSerialId = static_cast<uint8_t>(character.parts.mouthId()),
+      .faceSerialId = static_cast<uint8_t>(character.parts.faceId()),};
+
+    // Set the character appearance.
+    response.character.appearance = {
+      .headSize = static_cast<uint8_t>(character.appearance.headSize()),
+      .height = static_cast<uint8_t>(character.appearance.height()),
+      .thighVolume = static_cast<uint8_t>(character.appearance.thighVolume()),
+      .legVolume = static_cast<uint8_t>(character.appearance.legVolume()),};
+
+    characterMountUid = character.mountUid();
+  });
+
+  // Get the mounted horse record and fill the protocol data.
+  auto mountRecord = _dataDirector.GetHorses().Get(characterMountUid);
+  if (not mountRecord)
+    throw std::runtime_error("Morse mount record unavailable");
+
+  mountRecord->Immutable([&response](const soa::data::Horse& horse)
+  {
+    response.horse = {
+      .uid = horse.uid(),
+      .tid = horse.tid(),
+      .name = horse.name(),
+
+      .rating = horse.rating(),
+      .clazz = static_cast<uint8_t>(horse.clazz()),
+      .val0 = 1,
+      .grade = static_cast<uint8_t>(horse.grade()),
+      .growthPoints = static_cast<uint16_t>(horse.growthPoints()),
+
+      .vals0 = {
+        .stamina = 0x7d0,
+        .attractiveness = 0x3c,
+        .hunger = 0x21c,
+        .val0 = 0x00,
+        .val1 = 0x03E8,
+        .val2 = 0x00,
+        .val3 = 0x00,
+        .val4 = 0x00,
+        .val5 = 0x03E8,
+        .val6 = 0x1E,
+        .val7 = 0x0A,
+        .val8 = 0x0A,
+        .val9 = 0x0A,
+        .val10 = 0x00,},
+
+      //
+      .vals1 = {
+        .val0 = 0x00,
+        .val1 = 0x00,
+        .dateOfBirth = 0xb8a167e4,
+        .val3 = 0x02,
+        .val4 = 0x00,
+        .classProgression = static_cast<uint32_t>(horse.clazzProgress()),
+        .val5 = 0x00,
+        .potentialLevel = static_cast<uint8_t>(horse.potentialLevel()),
+        .hasPotential = static_cast<uint8_t>(horse.potentialType() != 0),
+        .potentialValue = static_cast<uint8_t>(horse.potentialLevel()),
+        .val9 = 0x00,
+        .luck = static_cast<uint8_t>(horse.luckState()),
+        .hasLuck = static_cast<uint8_t>(horse.luckState() != 0),
+        .val12 = 0x00,
+        .fatigue = 0x00,
+        .val14 = 0x00,
+        .emblem = static_cast<uint16_t>(horse.emblem())},
+
+      .val16 = 0xb8a167e4,
+      .val17 = 0};
+
+    response.horse.parts = {
+      .skinId = static_cast<uint8_t>(horse.parts.skinId()),
+      .maneId = static_cast<uint8_t>(horse.parts.maneId()),
+      .tailId = static_cast<uint8_t>(horse.parts.tailId()),
+      .faceId = static_cast<uint8_t>(horse.parts.faceId())};
+
+    response.horse.appearance = {
+      .scale = static_cast<uint8_t>(horse.appearance.scale()),
+      .legLength = static_cast<uint8_t>(horse.appearance.legLength()),
+      .legVolume = static_cast<uint8_t>(horse.appearance.legVolume()),
+      .bodyLength = static_cast<uint8_t>(horse.appearance.bodyLength()),
+      .bodyVolume = static_cast<uint8_t>(horse.appearance.bodyVolume())};
+
+    response.horse.stats = {
+        .agility = horse.stats.agility(),
+        .control = horse.stats.control(),
+        .speed = horse.stats.speed(),
+        .strength = horse.stats.strength(),
+        .spirit = horse.stats.spirit()};
+
+    response.horse.mastery = {
+        .spurMagicCount = horse.mastery.spurMagicCount(),
+        .jumpCount = horse.mastery.jumpCount(),
+        .slidingTime = horse.mastery.slidingTime(),
+        .glidingDistance = horse.mastery.glidingDistance(),};
+  });
+
+  _server.SetCode(clientId, {});
+
+  _server.QueueCommand<decltype(response)>(
     clientId,
     CommandId::LobbyLoginOK,
-    [userName, clientId, this]()
+    [response]()
     {
-      auto user = *_dataDirector.GetUsers().Get(userName);
-      auto character = _dataDirector.GetCharacters().Get(
-        user().characterUid());
-
-      Character gameCharacter {};
-      Horse gameHorse{};
-
-      if (character)
-      {
-        character->Immutable([&gameCharacter](const soa::data::Character& character)
-        {
-          gameCharacter.parts.charId = static_cast<uint8_t>(
-            character.parts.modelId());
-          gameCharacter.parts.mouthSerialId = static_cast<uint8_t>(
-            character.parts.mouthId());
-          gameCharacter.parts.faceSerialId = static_cast<uint8_t>(
-            character.parts.faceId());
-
-          gameCharacter.appearance.headSize = static_cast<uint8_t>(
-            character.appearance.headSize());
-          gameCharacter.appearance.height = static_cast<uint8_t>(
-            character.appearance.height());
-          gameCharacter.appearance.thighVolume = static_cast<uint8_t>(
-            character.appearance.thighVolume());
-          gameCharacter.appearance.legVolume = static_cast<uint8_t>(
-            character.appearance.legVolume());
-        });
-
-        gameHorse = {
-          .uid = 2,
-          .tid = 0x4e21,
-          .name = "default",
-          .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-          .appearance = {
-            .scale = 0x4,
-            .legLength = 0x4,
-            .legVolume = 0x5,
-            .bodyLength = 0x3,
-            .bodyVolume = 0x4},
-          .stats = {
-            .agility = 9,
-            .spirit = 9,
-            .speed = 9,
-            .strength = 9,
-            .ambition = 0x13},
-          .rating = 0,
-          .clazz = 0x15,
-          .val0 = 1,
-          .grade = 5,
-          .growthPoints = 2,
-          .vals0 = {
-           .stamina = 0x7d0,
-           .attractiveness = 0x3c,
-           .hunger = 0x21c,
-           .val0 = 0x00,
-           .val1 = 0x03E8,
-           .val2 = 0x00,
-           .val3 = 0x00,
-           .val4 = 0x00,
-           .val5 = 0x03E8,
-           .val6 = 0x1E,
-           .val7 = 0x0A,
-           .val8 = 0x0A,
-           .val9 = 0x0A,
-           .val10 = 0x00,},
-          .vals1 = {
-            .val0 = 0x00,
-            .val1 = 0x00,
-            .dateOfBirth = 0xb8a167e4,
-            .val3 = 0x02,
-            .val4 = 0x00,
-            .classProgression = 0x32e7d,
-            .val5 = 0x00,
-            .potentialLevel = 0x40,
-            .hasPotential = 0x1,
-            .potentialValue = 0x64,
-            .val9 = 0x00,
-            .luck = 0x05,
-            .hasLuck = 0x00,
-            .val12 = 0x00,
-            .fatigue = 0x00,
-            .val14 = 0x00,
-            .emblem = 0xA},
-           .mastery = {
-             .magic = 0x1fe,
-             .jumping = 0x421,
-             .sliding = 0x5f8,
-             .gliding = 0xcfa4,},
-           .val16 = 0xb8a167e4,
-           .val17 = 0};
-      }
-
-      //
-      // auto characterEquipment = *_dataDirector.GetItems().Get(character().characterEquipment());
-      // auto horseEquipment = *_dataDirector.GetItems().Get(character().horseEquipment());
-      //
-      // auto horses = *_dataDirector.GetHorses().Get(character().horses());
-      //
-      // auto ranch = *_dataDirector.GetRanches().Get(character().ranchUid());
-
-      const auto time = UnixTimeToFileTime(std::chrono::system_clock::now());
-
-      _server.SetCode(clientId, {});
-
-      // Transform the server data to alicia protocol data.
-      return LobbyCommandLoginOK{
-        .lobbyTime =
-          {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
-           .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
-        .val0 = 0xCA794,
-
-        .selfUid = character.has_value() ? user().characterUid() : 0,
-        .nickName = character.has_value() ? character->operator()().name() : "",
-        .motd = "Welcome to SoA!",
-        .profileGender = Gender::Unspecified,
-        .status = "",
-
-        .characterEquipment = {},
-        .horseEquipment = {},
-
-        .level = 0,
-        .carrots = 0,
-        .val1 = 0x0,
-        .val2 = 0x0,
-        .val3 = 0x0,
-
-        .optionType = OptionType::Value,
-        .valueOptions = 0x64,
-
-        .ageGroup = AgeGroup::Adult,
-        .hideAge = 0,
-
-        .val5 = {
-          {0x18, {{2, 1}}},
-          {0x1F, {{2, 1}}},
-          {0x23, {{2, 1}}},
-          {0x29, {{2, 1}}},
-          {0x2A, {{2, 1}}},
-          {0x2B, {{2, 1}}},
-          {0x2E, {{2, 1}}}},
-
-        .address = _lobbyDirector.GetSettings().ranchAdvAddress.to_uint(),
-        .port = _lobbyDirector.GetSettings().ranchAdvPort,
-
-        .scramblingConstant = 0,
-
-        .character = gameCharacter,
-        .horse = gameHorse,
-
-        .val7 = {
-          .values = {
-            {0x6, 0x0},
-              {0xF, 0x4},
-              {0x1B, 0x2},
-              {0x1E, 0x0},
-              {0x1F, 0x0},
-              {0x25, 0x7530},
-              {0x35, 0x4},
-              {0x42, 0x2},
-              {0x43, 0x4},
-              {0x45, 0x0}}},
-
-        .val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010,
-        .val11 = {4, 0x2B, 4},
-        .val14 = 0xca1b87db,
-        .val15 = {.val1 = 1},
-        .val16 = 4,
-        .val17 = {.mountUid = 2, .val1 = 0x12, .val2 = 0x16e67e4},
-        .val18 = 0x3a,
-        .val19 = 0x38e,
-        .val20 = 0x1c6
-        };
+      return response;
     });
 }
 void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string& userName)

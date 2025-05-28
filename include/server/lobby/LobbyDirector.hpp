@@ -47,15 +47,11 @@ public:
   void Initialize();
   void Terminate();
   void Tick();
+
   soa::DataDirector& GetDataDirector();
   Settings::LobbySettings& GetSettings();
 
 private:
-  //!
-  void HandleCreateNicknameOK(
-    ClientId clientId,
-    const LobbyCommandCreateNickname& createNickname);
-
   //!
   void HandleEnterChannel(
     ClientId clientId,

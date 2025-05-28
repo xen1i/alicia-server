@@ -43,6 +43,11 @@ public:
     ClientId clientId,
     const LobbyCommandLogin& login);
 
+  //!
+  void HandleUserCreateCharacter(
+    ClientId clientId,
+    const LobbyCommandCreateNickname& command);
+
   void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
   void QueueUserCreateNickname(ClientId clientId, const std::string& userName);
   void QueueUserLoginRejected(ClientId clientId);

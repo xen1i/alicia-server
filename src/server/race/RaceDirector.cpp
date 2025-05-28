@@ -157,10 +157,10 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
                   .stats =
                     {
                       .agility = 9,
-                      .spirit = 9,
+                      .control = 9,
                       .speed = 9,
                       .strength = 9,
-                      .ambition = 0x13
+                      .spirit = 0x13
                     },
                   .rating = 0,
                   .clazz = 0x15,
@@ -169,10 +169,10 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
                   .growthPoints = 2,
                   .mastery =
                     {
-                      .magic = 0x1fe,
-                      .jumping = 0x421,
-                      .sliding = 0x5f8,
-                      .gliding = 0xcfa4,
+                      .spurMagicCount = 0x1fe,
+                      .jumpCount = 0x421,
+                      .slidingTime = 0x5f8,
+                      .glidingDistance = 0xcfa4,
                     },
                   .val16 = 0xb8a167e4,
                   .val17 = 0},
@@ -231,16 +231,6 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
 
 void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace& startRace)
 {
-  RaceCommandStartRaceCancel response;
-  _server.QueueCommand<decltype(response)>(
-    clientId,
-    CommandId::RaceStartRaceCancel,
-    [response]()
-    {
-      return response;
-    });
-
-  /*
   // Start the race or AcCmdRCRoomCountdown
   const RaceCommandStartRaceNotify response {
     .gamemode = 6,
@@ -269,7 +259,7 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
     [response](auto& sink)
     {
       RaceCommandStartRaceNotify::Write(response, sink);
-    });*/
+    });
 }
 
 void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceTimer)

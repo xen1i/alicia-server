@@ -73,7 +73,10 @@ DataDirector::DataDirector()
   _dataSource->Initialize(".");
 }
 
-DataDirector::~DataDirector() { _dataSource->Terminate(); }
+DataDirector::~DataDirector()
+{
+  _dataSource->Terminate();
+}
 
 void DataDirector::Initialize()
 {

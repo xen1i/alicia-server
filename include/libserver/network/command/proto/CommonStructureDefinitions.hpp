@@ -191,13 +191,13 @@ struct Horse
     //!
     uint32_t agility{};
     //!
-    uint32_t spirit{};
+    uint32_t control{};
     //!
     uint32_t speed{};
     //!
     uint32_t strength{};
     //!
-    uint32_t ambition{};
+    uint32_t spirit{};
 
     static void Write(const Stats& value, SinkStream& buffer);
     static void Read(Stats& value, SourceStream& buffer);
@@ -260,11 +260,11 @@ struct Horse
 
   struct Mastery
   {
-    uint32_t magic{};
-    uint32_t jumping{};
-    uint32_t sliding{};
+    uint32_t spurMagicCount{};
+    uint32_t jumpCount{};
+    uint32_t slidingTime{};
     //! Divided by 10?
-    uint32_t gliding{};
+    uint32_t glidingDistance{};
 
     static void Write(const Mastery& value, SinkStream& buffer);
     static void Read(Mastery& value, SourceStream& buffer);

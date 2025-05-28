@@ -48,6 +48,10 @@ public:
   //! Ticks the data director.
   void Tick();
 
+  data::Character& GetCharacter()
+  {
+  }
+
   Record<data::Character> CreateCharacter()
   {
     return _characterStorage.Create([this]() {

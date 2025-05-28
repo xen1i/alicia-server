@@ -151,31 +151,74 @@ void RanchDirector::HandleEnterRanch(
   for (auto [mountUid, mountEntityId] : ranchInstance._worldTracker.GetMountEntities())
   {
     // const auto& mount = _dataDirector.GetHorse(mountUid);
-    response.horses.push_back({.ranchIndex = mountEntityId, .horse = {.uid = 2, .tid = 0x4e21, .name = "default", .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3}, .appearance = {.scale = 0x4, .legLength = 0x4, .legVolume = 0x5, .bodyLength = 0x3, .bodyVolume = 0x4}, .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 0x13}, .rating = 0, .clazz = 0x15, .val0 = 1, .grade = 5, .growthPoints = 2, .vals0 = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .stamina = 0x7d0,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .attractiveness = 0x3c,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .hunger = 0x21c,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val0 = 0x00,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val1 = 0x03E8,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val2 = 0x00,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val3 = 0x00,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val4 = 0x00,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val5 = 0x03E8,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val6 = 0x1E,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val7 = 0x0A,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val8 = 0x0A,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val9 = 0x0A,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            .val10 = 0x00,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          },
-                                                                      .vals1 = {.val0 = 0x00, .val1 = 0x00, .dateOfBirth = 0xb8a167e4, .val3 = 0x02, .val4 = 0x00, .classProgression = 0x32e7d, .val5 = 0x00, .potentialLevel = 0x40, .hasPotential = 0x1, .potentialValue = 0x64, .val9 = 0x00, .luck = 0x05, .hasLuck = 0x00, .val12 = 0x00, .fatigue = 0x00, .val14 = 0x00, .emblem = 0xA},
-                                                                      .mastery = {
-                                                                        .magic = 0x1fe,
-                                                                        .jumping = 0x421,
-                                                                        .sliding = 0x5f8,
-                                                                        .gliding = 0xcfa4,
-                                                                      },
-                                                                      .val16 = 0xb8a167e4,
-                                                                      .val17 = 0}});
+    // response.horses.push_back({
+    //    .ranchIndex = mountEntityId,
+    //    .horse = {
+    //      .uid = 2,
+    //      .tid = 0x4e21,
+    //      .name = "default",
+    //      .parts = {
+    //        .skinId = 0x2,
+    //        .maneId = 0x3,
+    //        .tailId = 0x3,
+    //        .faceId = 0x3},
+    //      .appearance = {
+    //        .scale = 0x4,
+    //        .legLength = 0x4,
+    //        .legVolume = 0x5,
+    //        .bodyLength = 0x3,
+    //        .bodyVolume = 0x4},
+    //      .stats = {
+    //        .agility = 9,
+    //        .control = 9,
+    //        .speed = 9,
+    //        .strength = 9,
+    //        .spirit = 0x13},
+    //      .rating = 0,
+    //      .clazz = 0x15,
+    //      .val0 = 1,
+    //      .grade = 5,
+    //      .growthPoints = 2,
+    //      .vals0 = {
+    //        .stamina = 0x7d0,
+    //        .attractiveness = 0x3c,
+    //        .hunger = 0x21c,
+    //        .val0 = 0x00,
+    //        .val1 = 0x03E8,
+    //        .val2 = 0x00,
+    //        .val3 = 0x00,
+    //        .val4 = 0x00,
+    //        .val5 = 0x03E8,
+    //        .val6 = 0x1E,
+    //        .val7 = 0x0A,
+    //        .val8 = 0x0A,
+    //        .val9 = 0x0A,
+    //        .val10 = 0x00,},
+    //      .vals1 = {
+    //        .val0 = 0x00,
+    //        .val1 = 0x00,
+    //        .dateOfBirth = 0xb8a167e4,
+    //        .val3 = 0x02,
+    //        .val4 = 0x00,
+    //        .classProgression = 0x32e7d,
+    //        .val5 = 0x00,
+    //        .potentialLevel = 0x40,
+    //        .hasPotential = 0x1,
+    //        .potentialValue = 0x64,
+    //        .val9 = 0x00,
+    //        .luck = 0x05,
+    //        .hasLuck = 0x00,
+    //        .val12 = 0x00,
+    //        .fatigue = 0x00,
+    //        .val14 = 0x00,
+    //        .emblem = 0xA},
+    //      .mastery = {
+    //        .magic = 0x1fe,
+    //        .jumping = 0x421,
+    //        .sliding = 0x5f8,
+    //        .gliding = 0xcfa4,},
+    //      .val16 = 0xb8a167e4,
+    //      .val17 = 0}});
   }
 
   // Add the ranch players.
@@ -194,19 +237,18 @@ void RanchDirector::HandleEnterRanch(
         .tid = 0x4e21,
         .name = "ranch horse",
         .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-        .appearance =
-          {.scale = 0x4,
+        .appearance = {
+          .scale = 0x4,
            .legLength = 0x4,
            .legVolume = 0x5,
            .bodyLength = 0x3,
            .bodyVolume = 0x4},
-        .stats =
-          {
+        .stats = {
             .agility = 9,
-            .spirit = 9,
+            .control = 9,
             .speed = 9,
             .strength = 9,
-            .ambition = 0x13},
+            .spirit = 0x13},
         .rating = 0,
         .clazz = 0x15,
         .val0 = 1,
@@ -250,10 +292,10 @@ void RanchDirector::HandleEnterRanch(
             .emblem = 0x01},
         .mastery =
           {
-            .magic = 0x1fe,
-            .jumping = 0x421,
-            .sliding = 0x5f8,
-            .gliding = 0xcfa4,
+            .spurMagicCount = 0x1fe,
+            .jumpCount = 0x421,
+            .slidingTime = 0x5f8,
+            .glidingDistance = 0xcfa4,
           },
         .val16 = 0xb8a167e4,
         .val17 = 0x186A0},
@@ -448,10 +490,10 @@ void RanchDirector::HandleSearchStallion(
             .unk8 = 0xFFFFFFFF,
             .stats = {
               .agility = 9,
-              .spirit = 9,
+              .control = 9,
               .speed = 9,
               .strength = 9,
-              .ambition = 9},
+              .spirit = 9},
             .parts = {
               .skinId = 1,
               .maneId = 4,
@@ -516,7 +558,7 @@ void RanchDirector::HandleTryBreeding(
           .tailId = 4,
           .faceId = 5},
         .appearance = {.scale = 4, .legLength = 4, .legVolume = 5, .bodyLength = 3, .bodyVolume = 4},
-        .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 9},
+        .stats = {.agility = 9, .control = 9, .speed = 9, .strength = 9, .spirit = 9},
         .unk1 = 0,
         .unk2 = 0,
         .unk3 = 0,

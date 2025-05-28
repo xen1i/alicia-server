@@ -160,6 +160,10 @@ struct Character
   //! A name of the character.
   dao::Field<std::string> name{};
 
+  dao::Field<uint32_t> level{};
+  dao::Field<uint32_t> carrots{};
+  dao::Field<uint32_t> cash{};
+
   struct Parts
   {
     //! An ID of the character model.
@@ -181,7 +185,8 @@ struct Character
   dao::Field<std::vector<Uid>> characterEquipment;
   dao::Field<std::vector<Uid>> horseEquipment;
 
-  dao::Field<std::vector<Uid>> horses;
+  dao::Field<std::vector<Uid>> horseUids;
+  dao::Field<Uid> mountUid;
 
   dao::Field<Uid> ranchUid{InvalidUid};
 };
@@ -198,7 +203,7 @@ struct Horse
     dao::Field<uint32_t> maneId{0u};
     dao::Field<uint32_t> tailId{0u};
     dao::Field<uint32_t> faceId{0u};
-  } _parts{};
+  } parts{};
 
   struct Appearance
   {
@@ -207,22 +212,36 @@ struct Horse
     dao::Field<uint32_t> legVolume{0u};
     dao::Field<uint32_t> bodyLength{0u};
     dao::Field<uint32_t> bodyVolume{0u};
-  } _appearance{};
+  } appearance{};
 
   struct Stats
   {
     dao::Field<uint32_t> agility{0u};
-    dao::Field<uint32_t> spirit{0u};
+    dao::Field<uint32_t> control{0u};
     dao::Field<uint32_t> speed{0u};
     dao::Field<uint32_t> strength{0u};
-    dao::Field<uint32_t> ambition{0u};
-  } _stats{};
+    dao::Field<uint32_t> spirit{0u};
+  } stats{};
+
+  struct Mastery
+  {
+    dao::Field<uint32_t> spurMagicCount;
+    dao::Field<uint32_t> jumpCount;
+    dao::Field<uint32_t> slidingTime;
+    dao::Field<uint32_t> glidingDistance;
+  } mastery;
 
   dao::Field<uint32_t> rating{0u};
   dao::Field<uint32_t> clazz{0u};
   dao::Field<uint32_t> clazzProgress{0u};
   dao::Field<uint32_t> grade{0u};
   dao::Field<uint32_t> growthPoints{0u};
+
+  dao::Field<uint32_t> potentialType{0u};
+  dao::Field<uint32_t> potentialLevel{0u};
+
+  dao::Field<uint32_t> luckState{0u};
+  dao::Field<uint32_t> emblem{0u};
 };
 
 struct Ranch

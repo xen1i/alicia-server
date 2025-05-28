@@ -41,14 +41,16 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
   , _dataDirector(dataDirector)
   , _loginHandler(*this, _server)
 {
-  // LobbyCommandLogin
   _server.RegisterCommandHandler<LobbyCommandLogin>(
     CommandId::LobbyLogin,
     [this](ClientId clientId, const auto& message)
     {
-      assert(message.constant0 == 50 && message.constant1 == 281 && "Game version mismatch");
+      assert(message.constant0 == 50
+        && message.constant1 == 281
+        && "Game version mismatch");
 
       _clientUsers[clientId] = message.loginId;
+
       _loginHandler.HandleUserLogin(clientId, message);
     });
 
@@ -56,7 +58,7 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
     CommandId::LobbyCreateNickname,
     [this](ClientId clientId, const auto& message)
     {
-      HandleCreateNicknameOK(clientId, message);
+      _loginHandler.HandleUserCreateCharacter(clientId, message);
     });
 
   _server.RegisterCommandHandler<LobbyCommandEnterChannel>(
@@ -195,43 +197,6 @@ soa::DataDirector& LobbyDirector::GetDataDirector()
 Settings::LobbySettings& LobbyDirector::GetSettings()
 {
   return _settings;
-}
-
-void LobbyDirector::HandleCreateNicknameOK(
-  ClientId clientId,
-  const LobbyCommandCreateNickname& createNickname)
-{
-  const auto userName = _clientUsers[clientId];
-  {
-    auto user = _dataDirector.GetUsers().Get(userName);
-
-    if (not user)
-      return;
-
-    if ((*user)().characterUid() != soa::data::InvalidUid)
-    {
-      spdlog::warn("User already has a character");
-      return;
-    }
-
-    auto characterRecord = _dataDirector.CreateCharacter();
-    characterRecord.Mutable([&](auto& character) {
-      (*user)().characterUid() = character.uid();
-
-      character.name = createNickname.nickname;
-      character.parts = soa::data::Character::Parts{
-        .modelId = createNickname.character.parts.charId,
-        .mouthId = createNickname.character.parts.mouthSerialId,
-        .faceId = createNickname.character.parts.faceSerialId};
-      character.appearance = soa::data::Character::Appearance{
-        .headSize = createNickname.character.appearance.headSize,
-        .height = createNickname.character.appearance.height,
-        .thighVolume = createNickname.character.appearance.thighVolume,
-        .legVolume = createNickname.character.appearance.legVolume,};
-    });
-  }
-
-  _loginHandler.QueueUserLoginAccepted(clientId, userName);
 }
 
 void LobbyDirector::HandleEnterChannel(
