@@ -99,6 +99,7 @@ struct LobbyCommandLoginOK
     };
     std::vector<Unk1Unk1> val1{};
   };
+  //! If this is not set, crash happens in preview image generation.
   std::vector<Unk1> val5; // max 17
 
   // 256 characters max

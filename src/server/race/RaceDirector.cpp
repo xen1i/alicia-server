@@ -189,7 +189,7 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
             .unk9 = {.unk0 = 1, .unk1 = 1}
           }
         },
-        .unk0 = 1,
+        .nowPlaying = 1,
         .unk1 = 1,
         .roomDescription = {
           .name = room.name,
@@ -234,7 +234,7 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
 {
   // Start the race or AcCmdRCRoomCountdown
   const RaceCommandStartRaceNotify response {
-    .gamemode = 1,
+    .gamemode = 6,
     .unk3 = 1,
     .map = 20004,
     .racers = {
@@ -249,8 +249,8 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
         .unk7 = 1,
       }
     },
-    .ip = htonl(_settings.address.to_uint()),
-    .port = _settings.port,
+    .ip = _settings.address.to_uint(),
+    .port = htons(_settings.port),
   };
 
   // TODO: Send to all clients in the room
@@ -271,8 +271,8 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
     [&](auto& sink)
     {
       UserRaceTimerOK response{
-        .unk0 = raceTimer.timestamp + 1000,
-        .unk1 = raceTimer.timestamp + 2000};
+        .unk0 = raceTimer.timestamp + 10000,
+        .unk1 = raceTimer.timestamp + 20000};
       UserRaceTimerOK::Write(response, sink);
     });
 }

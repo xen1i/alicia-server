@@ -115,7 +115,7 @@ struct RaceCommandEnterRoomOK
 {
   // List size specified with a uint32_t. Max size 10
   std::vector<Racer> racers{};
-  uint8_t unk0{};
+  uint8_t nowPlaying{};
   uint32_t unk1{};
   RoomDescription roomDescription{};
 
