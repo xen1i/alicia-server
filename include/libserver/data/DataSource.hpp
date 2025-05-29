@@ -60,9 +60,15 @@ public:
   //! @param item Item to store.
   virtual void StoreItem(data::Uid uid, const data::Item& item) = 0;
 
+  //! Creates
+  virtual void CreateHorse(data::Horse& horse) = 0;
+
   //! Retrieves the horse from the data source.
   //! @param horse Horse to retrieve.
   virtual void RetrieveHorse(data::Uid uid, data::Horse& horse) = 0;
+
+  //! Creates
+  virtual void CreateRanch(data::Ranch& ranch) = 0;
 
   //! Stores the horse on the data source.
   //! @param horse Horse to store.

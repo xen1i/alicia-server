@@ -103,6 +103,10 @@ private:
     ClientId clientId,
     const RanchCommandRequestNpcDressList& requestNpcDressList);
 
+  void HandleChat(
+    ClientId clientId,
+    const RanchCommandChat& command);
+
   //!
   Settings::RanchSettings _settings;
   //!

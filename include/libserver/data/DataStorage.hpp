@@ -35,20 +35,27 @@ template <typename Data>
 class Record
 {
 public:
-  Record(Data& value, std::shared_mutex& mutex)
+  using DataPtr = Data*;
+  using Mutex = std::shared_mutex;
+  using MutexPtr = Mutex*;
+
+  Record()
+    : _mutex(nullptr)
+    , _value(nullptr)
+  {
+
+  }
+
+  Record(DataPtr value, MutexPtr mutex)
     : _mutex(mutex)
-    , _exclusiveLock(_mutex, std::defer_lock)
-    , _sharedLock(_mutex, std::defer_lock)
+    , _exclusiveLock(*_mutex, std::defer_lock)
+    , _sharedLock(*_mutex, std::defer_lock)
     , _value(value)
   {
   }
 
   ~Record()
   {
-    if (_exclusiveLock.owns_lock())
-      _exclusiveLock.unlock();
-    if (_sharedLock.owns_lock())
-      _sharedLock.unlock();
   }
 
   //! Deleted copy constructor.
@@ -57,23 +64,19 @@ public:
   void operator=(const Record&) = delete;
 
   //! Move constructor.
-  Record(Record&& other)
+  Record(Record&& other) noexcept
     : _mutex(other._mutex)
-    , _exclusiveLock(
-        std::move(other._exclusiveLock))
-    , _sharedLock(
-        std::move(other._sharedLock))
+    , _exclusiveLock(std::move(other._exclusiveLock))
+    , _sharedLock(std::move(other._sharedLock))
     , _value(other._value)
   {
   }
 
   //! Move assignment.
-  void operator=(Record&& other)
+  void operator=(Record&& other) noexcept
   {
     _mutex = other._mutex;
-    _exclusiveLock.unlock();
     _exclusiveLock = std::move(other._exclusiveLock);
-    _sharedLock.unlock();
     _sharedLock = std::move(other._sharedLock);
     _value = other._value;
   }
@@ -84,7 +87,7 @@ public:
   {
     if (not _exclusiveLock.owns_lock())
       _exclusiveLock.lock();
-    return _value;
+    return *_value;
   };
 
   //! Immutable shared access to the underlying data.
@@ -92,7 +95,7 @@ public:
   void Immutable(std::function<void(const Data&)> consumer)
   {
     _sharedLock.lock();
-    consumer(_value);
+    consumer(*_value);
     _sharedLock.unlock();
   }
 
@@ -101,23 +104,23 @@ public:
   void Mutable(std::function<void(Data&)> consumer)
   {
     _exclusiveLock.lock();
-    consumer(_value);
+    consumer(*_value);
     _exclusiveLock.unlock();
   };
 
 private:
-  std::shared_mutex& _mutex;
+  MutexPtr _mutex;
   std::unique_lock<std::shared_mutex> _exclusiveLock;
   std::shared_lock<std::shared_mutex> _sharedLock;
 
-  Data& _value;
+  DataPtr _value;
 };
 
 template <typename Key, typename Data>
 class DataStorage
 {
 public:
-  using KeySpan = std::span<Key>;
+  using KeySpan = std::span<const Key>;
 
   using DataSourceRetrieveListener = std::function<void(const Key& key, Data& data)>;
   using DataSourceStoreListener = std::function<void(const Key& key, Data& data)>;
@@ -183,7 +186,7 @@ public:
     entry.value = std::move(data);
     entry.available = true;
 
-    return Record(it->second.value, it->second.mutex);
+    return Record(&entry.value, &entry.mutex);
   }
 
   std::optional<Record<Data>> Get(const Key& key)
@@ -198,22 +201,30 @@ public:
     }
 
     if (record.available)
-      return Record(record.value, record.mutex);
+      return Record(&record.value, &record.mutex);
     return std::nullopt;
   }
 
-  std::optional<std::vector<Record<Data>>> Get(KeySpan keys)
+  std::optional<std::vector<Record<Data>>> Get(const KeySpan keys)
   {
-    if (not IsAvailable(keys))
-      return std::nullopt;
+    bool isComplete = true;
 
     std::vector<Record<Data>> records;
     for (const auto& key : keys)
     {
-      records.emplace_back(*Get(key));
+      auto record = Get(key);
+      if (not record)
+      {
+        isComplete = false;
+        continue;
+      }
+
+      records.emplace_back() = std::move(*record);
     }
 
-    return records;
+    if (isComplete)
+      return records;
+    return std::nullopt;
   }
 
   void Save(const Key& key)
@@ -256,7 +267,7 @@ private:
   {
     std::atomic_bool available{false};
     std::atomic_bool dirty{false};
-    std::shared_mutex mutex;
+    std::shared_mutex mutex{};
     Data value;
   };
 

@@ -64,8 +64,8 @@ void LobbyCommandLoginOK::Write(
   }
 
   // Horse equipment
-  stream.Write(static_cast<uint8_t>(command.horseEquipment.size()));
-  for (const Item& item : command.horseEquipment)
+  stream.Write(static_cast<uint8_t>(command.mountEquipment.size()));
+  for (const Item& item : command.mountEquipment)
   {
     stream.Write(item);
   }

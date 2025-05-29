@@ -1062,6 +1062,49 @@ struct RanchCommandRequestNpcDressListCancel
     SourceStream& stream);
 };
 
+struct RanchCommandChat
+{
+  std::string message;
+  uint8_t unknown{};
+  uint8_t unknown2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandChat& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandChat& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandChatNotify
+{
+  std::string author;
+  std::string message;
+  uint8_t isBlue{};
+  uint8_t unknown2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandChatNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandChatNotify& command,
+    SourceStream& stream);
+};
+
 // TODO Quest commands: RanchCommandUpdateDailyQuest, RanchCommandEmblemList, etc.
 
 } // namespace alicia

@@ -185,6 +185,9 @@ enum class CommandId : uint16_t
   RanchRequestNpcDressListCancel = 0x44e,
   RanchRequestNpcDressListOK = 0x44d,
 
+  RanchChat = 0x137,
+  RanchChatNotify = 0x138,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,
@@ -202,6 +205,9 @@ enum class CommandId : uint16_t
 
   RaceLoadingComplete = 0x1b6,
   RaceLoadingCompleteNotify = 0x1b7,
+
+  RaceChat = 0x52,
+  RaceChatNotify = 0x53,
 
   Count = 0xFFFF
 };

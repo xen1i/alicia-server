@@ -70,7 +70,7 @@ struct LobbyCommandLoginOK
   std::string status{};
 
   std::vector<Item> characterEquipment{};
-  std::vector<Item> horseEquipment{};
+  std::vector<Item> mountEquipment{};
 
   uint16_t level{};
   int32_t carrots{};

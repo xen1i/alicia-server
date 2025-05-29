@@ -51,9 +51,9 @@ void LoginHandler::Tick()
 
     bool isAuthenticated = false;
     bool hasCharacter = false;
-    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](auto& user){
+    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](const soa::data::User& user){
       isAuthenticated = user.token() == loginContext.userToken;
-      hasCharacter == user.characterUid() != soa::data::InvalidUid;
+      hasCharacter = user.characterUid() != soa::data::InvalidUid;
     });
 
     // If the user succeeds in authentication queue user for further processing.
@@ -82,44 +82,48 @@ void LoginHandler::Tick()
     const ClientId clientId = _clientLoginResponseQueue.front();
     const auto& loginContext = _clientLogins[clientId];
 
+    // Preload all the user data.
+
+    auto userRecord = _dataDirector.GetUsers().Get(
+      loginContext.userName);
+    if (not userRecord)
+      continue;
+
+    auto characterUid = soa::data::InvalidUid;
+    userRecord->Immutable([&characterUid](const soa::data::User& user)
     {
-      // Load the character.
-      auto userRecord = _dataDirector.GetUsers().Get(loginContext.userName);
-      assert(userRecord.has_value());
+      characterUid = user.characterUid();
+    });
 
-      auto user = *_dataDirector.GetUsers().Get(loginContext.userName);
+    auto characterRecord = _dataDirector.GetCharacters().Get(
+      characterUid);
+    if (not characterRecord)
+      continue;
 
-      if (user().characterUid() != soa::data::InvalidUid)
-      {
-        auto character = _dataDirector.GetCharacters().Get(
-          user().characterUid());
-        if (not character)
-        {
-          continue;
-        }
+    bool isCharacterLoaded = false;
 
-        // Load the character's equipment, horses and ranch.
+    characterRecord->Immutable([this, &isCharacterLoaded](const soa::data::Character& character)
+    {
+      if (not _dataDirector.GetItems().Get(character.inventory()))
+        return;
+      if (not _dataDirector.GetItems().Get(character.characterEquipment()))
+        return;
+      if (not _dataDirector.GetItems().Get(character.mountEquipment()))
+        return;
 
-        const auto characterEquipment = _dataDirector.GetItems().Get(
-          (*character)().characterEquipment());
-        const auto horseEquipment = _dataDirector.GetItems().Get(
-          (*character)().horseEquipment());
+      if (not _dataDirector.GetHorses().Get(character.horses()))
+        return;
 
-        const auto horses = _dataDirector.GetHorses().Get((*character)().horseUids());
-        const auto ranch = _dataDirector.GetRanches().Get((*character)().ranchUid());
+      if (not _dataDirector.GetRanches().Get(character.ranchUid()))
+        return;
 
-        if (not characterEquipment
-          || not horseEquipment
-          || not horses
-          || not ranch)
-        {
-          continue;
-        }
-      }
-    }
+      isCharacterLoaded = true;
+    });
+
+    if (not isCharacterLoaded)
+      continue;
 
     _clientLoginResponseQueue.pop();
-
     QueueUserLoginAccepted(clientId, loginContext.userName);
   }
 }
@@ -173,10 +177,60 @@ void LoginHandler::HandleUserCreateCharacter(
   if (not userRecord)
     throw std::runtime_error("User record does not exist");
 
-  auto characterRecord = _dataDirector.CreateCharacter();
-  soa::data::Uid userCharacterUid{soa::data::InvalidUid};
+  // Create a new horse for the character.
+  auto horseRecord = _dataDirector.CreateHorse();
+  // The UID of the newly created horse.
+  auto characterMountUid{soa::data::InvalidUid};
 
-  characterRecord.Mutable([&userCharacterUid, &command](soa::data::Character& character) {
+  horseRecord.Mutable([&characterMountUid](soa::data::Horse& horse)
+  {
+    horse.name() = "default";
+
+    // The TID of the horse specifies which body mesh is used for that horse.
+    // Can be found in the `MountPartInfo` table.
+    horse.tid() = 20001;
+
+    // The default parts and appearance of each horse TID
+    // can be found in the `MountPartSet` table.
+    horse.parts.faceId() = 1;
+    horse.parts.maneId() = 5;
+    horse.parts.skinId() = 2;
+    horse.parts.tailId() = 3;
+    horse.appearance.bodyLength() = 5;
+    horse.appearance.bodyVolume() = 5;
+    horse.appearance.legLength() = 5;
+    horse.appearance.legVolume() = 5;
+    horse.appearance.scale() = 5;
+
+    characterMountUid = horse.uid();
+  });
+
+  // Create a new ranch for the character.
+  auto ranchRecord = _dataDirector.CreateRanch();
+  // The UID of the newly created ranch.
+  auto characterRanchUid{soa::data::InvalidUid};
+
+  ranchRecord.Mutable([&characterRanchUid, &command](soa::data::Ranch& ranch)
+  {
+    const bool endsWithPlural = command.nickname.ends_with("s")
+      || command.nickname.ends_with("S");
+    const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
+
+    ranch.name = std::format("{}{} ranch", command.nickname, possessiveSuffix);
+    characterRanchUid = ranch.uid();
+  });
+
+  // And finally create the character with the new horse,
+  // new ranch and the appearance sent from the client.
+  auto characterRecord = _dataDirector.CreateCharacter();
+  auto userCharacterUid{soa::data::InvalidUid};
+
+  characterRecord.Mutable([
+    &userCharacterUid,
+    &characterMountUid,
+    &characterRanchUid,
+    &command](soa::data::Character& character)
+  {
     userCharacterUid = character.uid();
 
     character.name = command.nickname;
@@ -189,11 +243,17 @@ void LoginHandler::HandleUserCreateCharacter(
       .height = command.character.appearance.height,
       .thighVolume = command.character.appearance.thighVolume,
       .legVolume = command.character.appearance.legVolume,};
+
+    character.mountUid() = characterMountUid;
+    character.horses().emplace_back(characterMountUid);
+
+    character.ranchUid() = characterRanchUid;
   });
 
+  // Assign the character to the user.
   userRecord->Mutable([&userCharacterUid](soa::data::User& user)
   {
-    user.characterUid = userCharacterUid;
+    user.characterUid() = userCharacterUid;
   });
 
   // Queue the processing of the login response.
@@ -204,22 +264,21 @@ void LoginHandler::QueueUserLoginAccepted(
   const ClientId clientId,
   const std::string& userName)
 {
+  auto userRecord = _dataDirector.GetUsers().Get(userName);
+  if (not userRecord)
+    throw std::runtime_error("User record unavailable");
+
   const auto lobbyServerTime = UnixTimeToFileTime(
-  std::chrono::system_clock::now());
+    std::chrono::system_clock::now());
 
   LobbyCommandLoginOK response {
     .lobbyTime =
       {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
     .val0 = 0xCA794,
-
-    .characterEquipment = {},
-    .horseEquipment = {},
-
     .val1 = 0x0,
     .val2 = 0x0,
     .val3 = 0x0,
-
     .optionType = OptionType::Value,
     .valueOptions = 0x64,
 
@@ -234,23 +293,21 @@ void LoginHandler::QueueUserLoginAccepted(
 
     .address = _lobbyDirector.GetSettings().ranchAdvAddress.to_uint(),
     .port = _lobbyDirector.GetSettings().ranchAdvPort,
-
     .scramblingConstant = 0,
 
     .val7 = {
       .values = {
         {0x6, 0x0},
-          {0xF, 0x4},
-          {0x1B, 0x2},
-          {0x1E, 0x0},
-          {0x1F, 0x0},
-          {0x25, 0x7530},
-          {0x35, 0x4},
-          {0x42, 0x2},
-          {0x43, 0x4},
-          {0x45, 0x0}}},
+        {0xF, 0x4},
+        {0x1B, 0x2},
+        {0x1E, 0x0},
+        {0x1F, 0x0},
+        {0x25, 0x7530},
+        {0x35, 0x4},
+        {0x42, 0x2},
+        {0x43, 0x4},
+        {0x45, 0x0}}},
 
-    .val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010,
     .val11 = {4, 0x2B, 4},
     .val14 = 0xca1b87db,
     .val15 = {.val1 = 1},
@@ -259,11 +316,6 @@ void LoginHandler::QueueUserLoginAccepted(
     .val18 = 0x3a,
     .val19 = 0x38e,
     .val20 = 0x1c6};
-
-  auto userRecord = _dataDirector.GetUsers().Get(userName);
-
-  if (not userRecord)
-    throw std::runtime_error("User record unavailable");
 
   // Get the character UID of the user.
   soa::data::Uid userCharacterUid{soa::data::InvalidUid};
@@ -282,11 +334,44 @@ void LoginHandler::QueueUserLoginAccepted(
   soa::data::Uid characterMountUid{
     soa::data::InvalidUid};
 
-  characterRecord->Immutable([&response, &characterMountUid](const soa::data::Character& character)
+  characterRecord->Immutable([this, &response, &characterMountUid](const soa::data::Character& character)
   {
     response.selfUid = character.uid();
     response.nickName = character.name();
     response.profileGender = Gender::Unspecified;
+
+    // The character equipment items.
+    for (const auto& characterEquipmentItemUid : character.characterEquipment())
+    {
+      auto itemRecord = _dataDirector.GetItems().Get(characterEquipmentItemUid);
+      if (not itemRecord)
+        throw std::runtime_error("Character equipment items unavailable");
+
+      auto& itemResponse = response.characterEquipment.emplace_back();
+      itemRecord->Immutable([&itemResponse](const soa::data::Item& item)
+      {
+        itemResponse.uid = item.uid();
+        itemResponse.tid = item.tid();
+        itemResponse.count = item.count();
+      });
+    }
+
+    // The character's mount equipment items.
+    for (const auto& mountEquipmentItemUid : character.mountEquipment())
+    {
+      auto itemRecord = _dataDirector.GetItems().Get(mountEquipmentItemUid);
+      if (not itemRecord)
+        throw std::runtime_error("Horse equipment items unavailable");
+
+      auto& itemResponse = response.mountEquipment.emplace_back();
+      itemRecord->Immutable([&itemResponse](const soa::data::Item& item)
+      {
+        itemResponse = {
+          .uid = item.uid(),
+          .tid = item.tid(),
+          .count = item.count()};
+      });
+    }
 
     response.level = character.level();
     response.carrots = character.carrots();
@@ -309,13 +394,15 @@ void LoginHandler::QueueUserLoginAccepted(
       .thighVolume = static_cast<uint8_t>(character.appearance.thighVolume()),
       .legVolume = static_cast<uint8_t>(character.appearance.legVolume()),};
 
+    response.val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010;
+
     characterMountUid = character.mountUid();
   });
 
   // Get the mounted horse record and fill the protocol data.
   auto mountRecord = _dataDirector.GetHorses().Get(characterMountUid);
   if (not mountRecord)
-    throw std::runtime_error("Morse mount record unavailable");
+    throw std::runtime_error("Horse mount record unavailable");
 
   mountRecord->Immutable([&response](const soa::data::Horse& horse)
   {

@@ -91,6 +91,11 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
     CommandId::RanchRequestStorage,
     [this](ClientId clientId, auto& command)
     { HandleRequestStorage(clientId, command); });
+
+  _server.RegisterCommandHandler<RanchCommandChat>(
+    CommandId::RanchChat,
+    [this](ClientId clientId, auto& command)
+    { HandleChat(clientId, command); });
 }
 
 void RanchDirector::Initialize()
@@ -641,6 +646,20 @@ void RanchDirector::HandleRequestNpcDressList(ClientId clientId, const RanchComm
     {
       RanchCommandRequestNpcDressListOK::Write(response, sink);
     });
+}
+
+void RanchDirector::HandleChat(
+  ClientId clientId,
+  const RanchCommandChat& command)
+{
+  RanchCommandChatNotify response{
+    .author = "system",
+    .message = command.message};
+
+  _server.QueueCommand<decltype(response)>(clientId, CommandId::RanchChatNotify, [response]()
+  {
+    return response;
+  });
 }
 
 } // namespace alicia

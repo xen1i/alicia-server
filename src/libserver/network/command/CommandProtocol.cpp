@@ -153,6 +153,9 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::RanchRequestNpcDressListCancel, "RaceRequestNpcDressListCancel"},
   {CommandId::RanchRequestNpcDressListOK, "RaceRequestNpcDressListOK"},
 
+  {CommandId::RanchChat, "RanchChat"},
+  {CommandId::RanchChatNotify, "RanchChatNotify"},
+
   {CommandId::RaceEnterRoom, "RaceEnterRoom"},
   {CommandId::RaceEnterRoomNotify, "RaceEnterRoomNotify"},
   {CommandId::RaceEnterRoomOK, "RaceEnterRoomOK"},
@@ -170,6 +173,9 @@ const std::unordered_map<CommandId, std::string_view> commands = {
 
   {CommandId::RaceLoadingComplete, "RaceLoadingComplete"},
   {CommandId::RaceLoadingCompleteNotify, "RaceLoadingCompleteNotify"},
+
+  {CommandId::RaceChat, "RaceChat"},
+  {CommandId::RaceChatNotify, "RaceChatNotify"},
 };
 
 } // namespace

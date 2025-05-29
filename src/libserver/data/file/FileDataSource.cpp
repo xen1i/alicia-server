@@ -130,6 +130,7 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
 
   const auto json = nlohmann::json::parse(file);
 
+  character.uid = json["uid"].get<data::Uid>();
   character.name = json["name"].get<std::string>();
   character.level = json["level"].get<uint32_t>();
   character.carrots = json["carrots"].get<uint32_t>();
@@ -148,12 +149,13 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
     .thighVolume = appearance["thighVolume"].get<uint32_t>(),
     .legVolume = appearance["legVolume"].get<uint32_t>()};
 
+  character.inventory = json["inventory"].get<std::vector<data::Uid>>();
   character.characterEquipment = json["characterEquipment"].get<std::vector<data::Uid>>();
-  character.horseEquipment = json["horseEquipment"].get<std::vector<data::Uid>>();
+  character.mountEquipment = json["horseEquipment"].get<std::vector<data::Uid>>();
 
-  character.horseUids = json["horseUids"].get<std::vector<data::Uid>>();
+  character.horses = json["horseUids"].get<std::vector<data::Uid>>();
   character.mountUid = json["mountUid"].get<data::Uid>();
-
+  character.ranchUid = json["ranchUid"].get<data::Uid>();
 }
 
 void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
@@ -166,19 +168,20 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
     return;
 
   nlohmann::json json;
+  json["uid"] = character.uid();
   json["name"] = character.name();
   json["level"] = character.level();
   json["carrots"] = character.carrots();
   json["cash"] = character.cash();
 
-  // character parts
+  // Character parts
   nlohmann::json parts;
   parts["modelId"] = character.parts.modelId();
   parts["mouthId"] = character.parts.mouthId();
   parts["faceId"] = character.parts.faceId();
   json["parts"] = parts;
 
-  // character appearance
+  // Character appearance
   nlohmann::json appearance;
   appearance["headSize"] = character.appearance.headSize();
   appearance["height"] = character.appearance.height();
@@ -186,12 +189,13 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
   appearance["legVolume"] = character.appearance.legVolume();
   json["appearance"] = appearance;
 
-
+  json["inventory"] = character.inventory();
   json["characterEquipment"] = character.characterEquipment();
-  json["horseEquipment"] = character.horseEquipment();
+  json["horseEquipment"] = character.mountEquipment();
 
-  json["horseUids"] = character.horseUids();
+  json["horseUids"] = character.horses();
   json["mountUid"] = character.mountUid();
+  json["ranchUid"] = character.ranchUid();
 
   file << json.dump(2);
 }
@@ -210,7 +214,6 @@ void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
   item.uid = json["uid"].get<data::Uid>();
   item.tid = json["tid"].get<data::Tid>();
   item.count = json["count"].get<uint32_t>();
-  item.slot = static_cast<soa::data::Item::Slot>(json["slot"].get<int32_t>());
 }
 
 void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
@@ -226,8 +229,13 @@ void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   json["uid"] = item.uid();
   json["tid"] = item.tid();
   json["count"] = item.count();
-  json["slot"] = item.slot();
   file << json.dump(2);
+}
+
+void soa::FileDataSource::CreateHorse(data::Horse& horse)
+{
+  _sequentialUid++;
+  horse.uid = _sequentialUid;
 }
 
 void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
@@ -240,6 +248,8 @@ void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
     return;
 
   const auto json = nlohmann::json::parse(file);
+  horse.uid = json["uid"].get<data::Uid>();
+  horse.tid = json["tid"].get<data::Tid>();
   horse.name = json["name"].get<std::string>();
 
   auto parts = json["parts"];
@@ -295,6 +305,8 @@ void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
     return;
 
   nlohmann::json json;
+  json["uid"] = horse.uid();
+  json["tid"] = horse.tid();
   json["name"] = horse.name();
 
   nlohmann::json parts;
@@ -342,6 +354,12 @@ void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   file << json.dump(2);
 }
 
+void soa::FileDataSource::CreateRanch(data::Ranch& ranch)
+{
+  _sequentialUid++;
+  ranch.uid = _sequentialUid;
+}
+
 void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
@@ -353,6 +371,7 @@ void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 
   const auto json = nlohmann::json::parse(file);
 
+  ranch.uid = json["uid"].get<data::Uid>();
   ranch.name = json["name"].get<std::string>();
 }
 
@@ -366,6 +385,7 @@ void soa::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
     return;
 
   nlohmann::json json;
+  json["uid"] = ranch.uid();
   json["name"] = ranch.name();
   file << json.dump(2);
 }

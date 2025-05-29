@@ -23,6 +23,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <unordered_set>
 #include <string>
 
 namespace soa
@@ -182,11 +183,12 @@ struct Character
     dao::Field<uint32_t> legVolume{0u};
   } appearance{};
 
+  dao::Field<std::vector<Uid>> inventory;
   dao::Field<std::vector<Uid>> characterEquipment;
-  dao::Field<std::vector<Uid>> horseEquipment;
+  dao::Field<std::vector<Uid>> mountEquipment;
 
-  dao::Field<std::vector<Uid>> horseUids;
-  dao::Field<Uid> mountUid;
+  dao::Field<std::vector<Uid>> horses;
+  dao::Field<Uid> mountUid{InvalidUid};
 
   dao::Field<Uid> ranchUid{InvalidUid};
 };
@@ -225,10 +227,10 @@ struct Horse
 
   struct Mastery
   {
-    dao::Field<uint32_t> spurMagicCount;
-    dao::Field<uint32_t> jumpCount;
-    dao::Field<uint32_t> slidingTime;
-    dao::Field<uint32_t> glidingDistance;
+    dao::Field<uint32_t> spurMagicCount{0u};
+    dao::Field<uint32_t> jumpCount{0u};
+    dao::Field<uint32_t> slidingTime{0u};
+    dao::Field<uint32_t> glidingDistance{0u};
   } mastery;
 
   dao::Field<uint32_t> rating{0u};
@@ -246,6 +248,7 @@ struct Horse
 
 struct Ranch
 {
+  dao::Field<Uid> uid{InvalidUid};
   dao::Field<std::string> name{};
 };
 

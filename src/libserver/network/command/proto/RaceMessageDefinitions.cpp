@@ -440,4 +440,35 @@ void RaceCommandLoadingCompleteNotify::Read(
   throw std::logic_error("Not implemented.");
 }
 
+void RaceCommandChat::Write(
+  const RaceCommandChat& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RaceCommandChat::Read(
+RaceCommandChat& command,
+  SourceStream& stream)
+{
+  stream.Read(command.message)
+    .Read(command.unknown);
+}
+
+void RaceCommandChatNotify::Write(
+  const RaceCommandChatNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.author)
+    .Write(command.message)
+    .Write(command.unknown);
+}
+
+void RaceCommandChatNotify::Read(
+  RaceCommandChatNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
 } // namespace alicia

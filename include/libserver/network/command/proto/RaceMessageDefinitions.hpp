@@ -456,6 +456,47 @@ struct RaceCommandLoadingCompleteNotify
     SourceStream& stream);
 };
 
+struct RaceCommandChat
+{
+  std::string message;
+  uint8_t unknown{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandChat& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandChat& command,
+    SourceStream& stream);
+};
+
+struct RaceCommandChatNotify
+{
+  std::string author;
+  std::string message;
+  uint8_t unknown{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandChatNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandChatNotify& command,
+    SourceStream& stream);
+};
+
 } // namespace alicia
 
 #endif // RACE_MESSAGE_DEFINES_HPP

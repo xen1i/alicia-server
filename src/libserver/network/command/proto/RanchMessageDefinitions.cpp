@@ -927,4 +927,37 @@ void RanchCommandRequestNpcDressListCancel::Read(
   // Empty
 }
 
+void RanchCommandChat::Write(
+  const RanchCommandChat& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandChat::Read(
+RanchCommandChat& command,
+  SourceStream& stream)
+{
+  stream.Read(command.message)
+    .Read(command.unknown)
+    .Read(command.unknown2);
+}
+
+void RanchCommandChatNotify::Write(
+  const RanchCommandChatNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.author)
+    .Write(command.message)
+    .Write(command.isBlue)
+    .Write(command.unknown2);
+}
+
+void RanchCommandChatNotify::Read(
+  RanchCommandChatNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
 } // namespace alicia
