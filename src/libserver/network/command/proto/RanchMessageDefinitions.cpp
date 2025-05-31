@@ -307,7 +307,7 @@ void RanchCommandEnterRanchNotify::Write(
   const RanchCommandEnterRanchNotify& command,
   SinkStream& stream)
 {
-  WriteRanchPlayer(stream, command.player);
+  WriteRanchPlayer(stream, command.character);
 }
 
 void RanchCommandEnterRanchNotify::Read(

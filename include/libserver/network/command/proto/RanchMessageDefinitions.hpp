@@ -276,7 +276,7 @@ struct RanchCommandEnterRanchCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanchNotify
 {
-  RanchCharacter player{};
+  RanchCharacter character{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.

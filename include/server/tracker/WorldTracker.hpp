@@ -22,7 +22,7 @@
 
 #include "libserver/data/DataDefinitions.hpp"
 
-#include <unordered_map>
+#include <map>
 
 namespace alicia
 {
@@ -37,7 +37,7 @@ class WorldTracker
 {
 public:
   //! An entity map.
-  using EntityMap = std::unordered_map<soa::data::Uid, uint16_t>;
+  using EntityMap = std::map<soa::data::Uid, uint16_t>;
 
   //!
   EntityId AddCharacter(soa::data::Uid character);

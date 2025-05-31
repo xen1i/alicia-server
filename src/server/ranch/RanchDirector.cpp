@@ -102,6 +102,9 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
 
 void RanchDirector::Initialize()
 {
+
+  _dataDirector.GetCharacters().Get(10);
+
   spdlog::debug(
     "Ranch server listening on {}:{}",
     _settings.address.to_string(),
@@ -163,6 +166,8 @@ void RanchDirector::HandleEnterRanch(
   // Add the character to the ranch.
   ranchInstance._worldTracker.AddCharacter(
     enterRanch.characterUid);
+  ranchInstance._worldTracker.AddCharacter(
+    10);
 
   RanchCharacter enteringRanchPlayer;
 
@@ -190,6 +195,8 @@ void RanchDirector::HandleEnterRanch(
   {
     auto& ranchCharacter = response.characters.emplace_back();
     ranchCharacter.ranchIndex = characterEntityId;
+    ranchCharacter.playerRelatedThing = {
+      .val1 = 1};
 
     auto characterRecord = _dataDirector.GetCharacters().Get(characterUid);
     if (not characterRecord)
@@ -235,7 +242,9 @@ void RanchDirector::HandleEnterRanch(
       mountRecord->Immutable([&ranchCharacter](const soa::data::Horse& horse)
       {
         protocol::BuildProtocolHorse(ranchCharacter.mount, horse);
-        ranchCharacter.anotherPlayerRelatedThing = {.mountUid = horse.uid(), .val1 = 0x12};
+        ranchCharacter.anotherPlayerRelatedThing = {
+          .mountUid = horse.uid(),
+          .val1 = 0x12};
       });
     });
 
@@ -268,7 +277,7 @@ void RanchDirector::HandleEnterRanch(
 
   // Notify to all other players of the entering player.
   const RanchCommandEnterRanchNotify ranchJoinNotification {
-    .player = enteringRanchPlayer
+    .character = enteringRanchPlayer
   };
 
   // Iterate over all the clients connected
@@ -278,9 +287,9 @@ void RanchDirector::HandleEnterRanch(
     spdlog::debug(
       "Sending notification to {}, player {} ('{}') index {} is entering the ranch.",
       _clientContext[ranchClient].characterUid,
-      ranchJoinNotification.player.name,
-      ranchJoinNotification.player.uid,
-      ranchJoinNotification.player.ranchIndex);
+      ranchJoinNotification.character.name,
+      ranchJoinNotification.character.uid,
+      ranchJoinNotification.character.ranchIndex);
 
     _server.QueueCommand<decltype(ranchJoinNotification)>(
       ranchClient,
@@ -307,11 +316,13 @@ void RanchDirector::HandleSnapshot(
     .snapshot = snapshot.snapshot
   };
 
-  for (const ClientId ranchClient : ranchInstance._clients)
+  for (const auto& ranchClient : ranchInstance._clients)
   {
     // Do not broadcast to the client that sent the snapshot.
     if (ranchClient == clientId)
       continue;
+
+    spdlog::debug("Snapshot from {} sent to {}", clientContext.characterUid, _clientContext[ranchClient].characterUid);
 
     _server.QueueCommand<decltype(response)>(
       clientId,
