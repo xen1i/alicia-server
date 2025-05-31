@@ -116,12 +116,14 @@ void BuildProtocolItems(std::vector<Item>& protocolItems, const std::vector<soa:
   {
     auto& protocolItem = protocolItems.emplace_back();
     itemRecord.Immutable([&protocolItem](const soa::data::Item& item)
-                         {
+    {
       protocolItem.uid = item.uid();
       protocolItem.tid = item.tid();
-      protocolItem.count = item.count(); });
+      protocolItem.count = item.count();
+    });
   }
 }
+
 } // namespace protocol
 
 } // namespace alicia

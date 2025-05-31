@@ -114,8 +114,15 @@ private:
   //!
   CommandServer _server;
 
+  struct ClientContext
+  {
+    soa::data::Uid characterUid;
+    soa::data::Uid ranchUid;
+    uint8_t busyState{0};
+  };
+
   //!
-  std::unordered_map<ClientId, std::string> _clientUsers;
+  std::unordered_map<ClientId, ClientContext> _clientContext;
 
   struct RanchInstance
   {

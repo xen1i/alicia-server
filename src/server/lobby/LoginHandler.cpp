@@ -240,6 +240,9 @@ void LoginHandler::HandleUserCreateCharacter(
   {
     userCharacterUid = character.uid();
 
+    character.level = 1;
+    character.carrots = 5000;
+
     character.name = command.nickname;
     character.parts = soa::data::Character::Parts{
       .modelId = command.character.parts.charId,
@@ -319,7 +322,6 @@ void LoginHandler::QueueUserLoginAccepted(
     .val14 = 0xca1b87db,
     .val15 = {.val1 = 1},
     .val16 = 4,
-    .val17 = {.mountUid = 2, .val1 = 0x12, .val2 = 0x16e67e4},
     .val18 = 0x3a,
     .val19 = 0x38e,
     .val20 = 0x1c6};
@@ -388,6 +390,11 @@ void LoginHandler::QueueUserLoginAccepted(
 
   mountRecord->Immutable([&response](const soa::data::Horse& horse)
   {
+    response.val17 = {
+      .mountUid = horse.uid(),
+      .val1 = 0x12,
+      .val2 = 0x16e67e4};
+
     protocol::BuildProtocolHorse(response.horse, horse);
   });
 

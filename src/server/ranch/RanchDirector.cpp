@@ -132,6 +132,10 @@ void RanchDirector::HandleEnterRanch(
 {
   // todo verify the OTP against the character UID
 
+  auto& clientContext = _clientContext[clientId];
+  clientContext.characterUid = enterRanch.characterUid;
+  clientContext.ranchUid = enterRanch.ranchUid;
+
   RanchCommandEnterRanchOK response{
     .ranchId = enterRanch.ranchUid,
     .unk0 = "unk0",
@@ -140,7 +144,6 @@ void RanchDirector::HandleEnterRanch(
       .unk1 = 1}};
 
   // Get the ranch the user is connecting to.
-
   auto ranchRecord = _dataDirector.GetRanches().Get(enterRanch.ranchUid);
   if (not ranchRecord)
   {
@@ -264,7 +267,7 @@ void RanchDirector::HandleEnterRanch(
     _server.QueueCommand<decltype(ranchJoinNotification)>(
       connectedClientId,
       CommandId::RanchEnterRanchNotify,
-      [&ranchJoinNotification](){
+      [ranchJoinNotification](){
         return ranchJoinNotification;
       });
   }
@@ -276,43 +279,30 @@ void RanchDirector::HandleSnapshot(
   ClientId clientId,
   const RanchCommandRanchSnapshot& snapshot)
 {
-  // const auto characterUid = _clientUsers[clientId];
-  //
-  // auto character = _dataDirector.GetCharacter(characterUid);
-  // auto& ranchInstance = _ranches[character->ranchUid];
-  //
-  // const RanchCommandRanchSnapshotNotify response {
-  //   .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(characterUid),
-  //   .unk0 = snapshot.unk0,
-  //   .snapshot = snapshot.snapshot
-  // };
-  //
-  // // Iterate over all the clients and broadcast the snapshot.
-  // for (auto [clientId, clientCharacterUid] : _clientUsers)
-  // {
-  //   // Todo: Too many uncecessary lookups
-  //   // Do not broadcast to the client that sent the snapshot.
-  //   if (clientCharacterUid == characterUid)
-  //   {
-  //     continue;
-  //   }
-  //
-  //   // Do not broadcast to clients that are not on the ranch.
-  //   const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
-  //     clientCharacterUid);
-  //   if (characterEntityId == InvalidEntityId)
-  //   {
-  //     continue;
-  //   }
-  //
-  //   _server.QueueCommand(
-  //     clientId,
-  //     CommandId::RanchSnapshotNotify,
-  //     [&](auto& sink)
-  //     {
-  //       RanchCommandRanchSnapshotNotify::Write(response, sink);
-  //     });
-  // }
+  const auto& clientContext = _clientContext[clientId];
+  auto& ranchInstance = _ranches[clientContext.ranchUid];
+
+  const RanchCommandRanchSnapshotNotify response {
+    .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(
+      clientContext.characterUid),
+    .unk0 = snapshot.unk0,
+    .snapshot = snapshot.snapshot
+  };
+
+  for (const ClientId ranchClient : ranchInstance._clients)
+  {
+    // Do not broadcast to the client that sent the snapshot.
+    if (ranchClient == clientId)
+      continue;
+
+    _server.QueueCommand(
+      clientId,
+      CommandId::RanchSnapshotNotify,
+      [&](auto& sink)
+      {
+        RanchCommandRanchSnapshotNotify::Write(response, sink);
+      });
+  }
 }
 
 void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)
@@ -334,51 +324,59 @@ void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCm
 
 void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchStuff& command)
 {
-  // const DatumUid characterUid = _clientUsers[clientId];
-  // auto character = _dataDirector.GetCharacter(characterUid);
-  //
-  // // todo: needs validation
-  // character->carrots += command.value;
-  // const auto totalCarrots = character->carrots;
-  //
-  // _server.QueueCommand(
-  //   clientId,
-  //   CommandId::RanchStuffOK,
-  //   [command, totalCarrots](auto& sink)
-  //   {
-  //     RanchCommandRanchStuffOK response{
-  //       command.eventId,
-  //       command.value,
-  //       totalCarrots};
-  //
-  //     RanchCommandRanchStuffOK::Write(response, sink);
-  //   });
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+
+  if (not characterRecord)
+  {
+    throw std::runtime_error(
+      std::format("Character [{}] not available", clientContext.characterUid));
+  }
+
+  RanchCommandRanchStuffOK response{
+    command.eventId,
+    command.value};
+
+  // Todo: needs validation
+  characterRecord->Mutable([&command, &response](soa::data::Character& character)
+  {
+    character.carrots() += command.value;
+    response.totalMoney = character.carrots();
+  });
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchStuffOK,
+    [response]
+    {
+      return response;
+    });
 }
 
 void RanchDirector::HandleUpdateBusyState(
   ClientId clientId,
   const RanchCommandUpdateBusyState& command)
 {
-  // const DatumUid characterUid = _clientUsers[clientId];
-  // auto character = _dataDirector.GetCharacter(characterUid);
-  // auto& ranchInstance = _ranches[character->ranchUid];
-  //
-  // // TODO: Store the busy state in the character instance
-  //
-  // RanchCommandUpdateBusyStateNotify response {.characterId = characterUid, .busyState = command.busyState};
-  //
-  // for (auto [clientId, clientCharacterUid] : _clientUsers)
-  // {
-  //   if (ranchInstance._worldTracker.GetCharacterEntityId(clientCharacterUid) == InvalidEntityId)
-  //   {
-  //     continue;
-  //   }
-  //
-  //   _server.QueueCommand(
-  //     clientId,
-  //     CommandId::RanchSnapshotNotify,
-  //     [&](auto& sink) { RanchCommandUpdateBusyStateNotify::Write(response, sink); });
-  // }
+  auto& clientContext = _clientContext[clientId];
+  auto& ranchInstance = _ranches[clientContext.ranchUid];
+
+  RanchCommandUpdateBusyStateNotify response {
+    .characterId = clientContext.characterUid,
+    .busyState = command.busyState};
+
+  clientContext.busyState = command.busyState;
+
+  for (auto ranchClientId : ranchInstance._clients)
+  {
+    _server.QueueCommand<decltype(response)>(
+      ranchClientId,
+      CommandId::RanchSnapshotNotify,
+      [response]()
+      {
+        return response;
+      });
+  }
 }
 
 void RanchDirector::HandleSearchStallion(
@@ -564,9 +562,17 @@ void RanchDirector::HandleChat(
   ClientId clientId,
   const RanchCommandChat& command)
 {
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+
   RanchCommandChatNotify response{
-    .author = "system",
     .message = command.message};
+
+  characterRecord->Immutable([&response](const soa::data::Character& character)
+  {
+    response.author = character.name();
+  });
 
   _server.QueueCommand<decltype(response)>(clientId, CommandId::RanchChatNotify, [response]()
   {
