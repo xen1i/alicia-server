@@ -188,6 +188,8 @@ enum class CommandId : uint16_t
   RanchChat = 0x137,
   RanchChatNotify = 0x138,
 
+  RanchEnterRandom = 0x109,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,

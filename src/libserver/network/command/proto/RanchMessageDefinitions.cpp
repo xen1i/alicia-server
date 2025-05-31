@@ -960,4 +960,18 @@ void RanchCommandChatNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
+void RanchCommandEnterRandom::Write(
+  const RanchCommandEnterRandom& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandEnterRandom::Read(
+  RanchCommandEnterRandom& command,
+  SourceStream& stream)
+{
+  // Empty.
+}
+
 } // namespace alicia

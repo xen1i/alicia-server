@@ -98,6 +98,28 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
     CommandId::RanchChat,
     [this](ClientId clientId, auto& command)
     { HandleChat(clientId, command); });
+
+  _server.RegisterCommandHandler<RanchCommandEnterRandom>(
+    CommandId::RanchEnterRandom,
+    [this](ClientId clientId, auto& command)
+    {
+      auto& clientContext = _clientContext[clientId];
+
+      RanchCommandEnterRanch request{
+        .characterUid = clientContext.characterUid};
+
+      for (const auto& [ranchId, ranch] : _ranches)
+      {
+        // Pick the first ranch that the user is not on.
+        if (ranchId != clientContext.ranchUid)
+        {
+          request.ranchUid = ranchId;
+          break;
+        }
+      }
+
+      HandleEnterRanch(clientId, request);
+    });
 }
 
 void RanchDirector::Initialize()
