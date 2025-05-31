@@ -120,6 +120,7 @@ private:
   struct RanchInstance
   {
     WorldTracker _worldTracker;
+    std::unordered_set<ClientId> _clients;
   };
   std::unordered_map<soa::data::Uid, RanchInstance> _ranches;
 };

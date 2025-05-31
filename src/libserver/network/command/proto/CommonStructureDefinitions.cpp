@@ -379,9 +379,9 @@ void RanchHorse::Read(RanchHorse& value, SourceStream& stream)
     .Read(value.horse);
 }
 
-void RanchPlayer::Write(const RanchPlayer& value, SinkStream& stream)
+void RanchCharacter::Write(const RanchCharacter& value, SinkStream& stream)
 {
-  stream.Write(value.userUid)
+  stream.Write(value.uid)
     .Write(value.name)
     .Write(static_cast<uint8_t>(value.gender))
     .Write(value.unk0)
@@ -389,7 +389,7 @@ void RanchPlayer::Write(const RanchPlayer& value, SinkStream& stream)
     .Write(value.description);
 
   stream.Write(value.character)
-    .Write(value.horse);
+    .Write(value.mount);
 
   stream.Write(static_cast<uint8_t>(value.characterEquipment.size()));
   for (const auto& item : value.characterEquipment)
@@ -410,16 +410,16 @@ void RanchPlayer::Write(const RanchPlayer& value, SinkStream& stream)
     .Write(value.unk5);
 }
 
-void RanchPlayer::Read(RanchPlayer& value, SourceStream& stream)
+void RanchCharacter::Read(RanchCharacter& value, SourceStream& stream)
 {
-  stream.Read(value.userUid)
+  stream.Read(value.uid)
     .Read(value.name)
     .Read(reinterpret_cast<uint8_t&>(value.gender))
     .Read(value.unk0)
     .Read(value.unk1)
     .Read(value.description);
 
-  stream.Read(value.character).Read(value.horse);
+  stream.Read(value.character).Read(value.mount);
 
   uint8_t size;
   stream.Read(size);

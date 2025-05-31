@@ -92,7 +92,7 @@ public:
 
   //! Immutable shared access to the underlying data.
   //! @param consumer Consumer that receives the data.
-  void Immutable(std::function<void(const Data&)> consumer)
+  void Immutable(std::function<void(const Data&)> consumer) const
   {
     _sharedLock.lock();
     consumer(*_value);
@@ -109,9 +109,9 @@ public:
   };
 
 private:
-  MutexPtr _mutex;
-  std::unique_lock<std::shared_mutex> _exclusiveLock;
-  std::shared_lock<std::shared_mutex> _sharedLock;
+  mutable MutexPtr _mutex;
+  mutable std::unique_lock<std::shared_mutex> _exclusiveLock;
+  mutable std::shared_lock<std::shared_mutex> _sharedLock;
 
   DataPtr _value;
 };

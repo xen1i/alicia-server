@@ -36,13 +36,13 @@ EntityId WorldTracker::GetCharacterEntityId(soa::data::Uid character)
   return itr->second;
 }
 
-EntityId WorldTracker::AddMount(soa::data::Uid mount)
+EntityId WorldTracker::AddHorse(soa::data::Uid mount)
 {
   _mounts[mount] = _nextEntityId;
   return _nextEntityId++;
 }
 
-EntityId WorldTracker::GetMountEntityId(soa::data::Uid mount)
+EntityId WorldTracker::GetHorseEntityId(soa::data::Uid mount)
 {
   const auto itr = _mounts.find(mount);
   if (itr == _mounts.cend())
@@ -50,7 +50,7 @@ EntityId WorldTracker::GetMountEntityId(soa::data::Uid mount)
   return itr->second;
 }
 
-const WorldTracker::EntityMap& WorldTracker::GetMountEntities()
+const WorldTracker::EntityMap& WorldTracker::GetHorseEntities()
 {
   return _mounts;
 }

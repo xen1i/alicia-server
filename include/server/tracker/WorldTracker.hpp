@@ -44,12 +44,12 @@ public:
   //!
   [[nodiscard]] EntityId GetCharacterEntityId(soa::data::Uid character);
   //!
-  EntityId AddMount(soa::data::Uid mount);
+  EntityId AddHorse(soa::data::Uid mount);
   //!
-  [[nodiscard]] EntityId GetMountEntityId(soa::data::Uid mount);
+  [[nodiscard]] EntityId GetHorseEntityId(soa::data::Uid mount);
 
   //!
-  [[nodiscard]] const EntityMap& GetMountEntities();
+  [[nodiscard]] const EntityMap& GetHorseEntities();
   //!
   [[nodiscard]] const EntityMap& GetCharacterEntities();
 

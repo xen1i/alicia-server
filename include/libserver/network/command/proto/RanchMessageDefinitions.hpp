@@ -165,11 +165,10 @@ struct RanchCommandMountFamilyTreeCancel
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandEnterRanch
 {
   uint32_t characterUid{};
-  uint32_t code{};
+  uint32_t otp{};
   uint32_t ranchUid{};
 
   //! Writes the command to a provided sink stream.
@@ -199,7 +198,7 @@ struct RanchCommandEnterRanchOK
   // If the horse list takes indexes 0, 1 and 2
   // the player list must use indexes 3, 4 and 5.
   std::vector<RanchHorse> horses{};
-  std::vector<RanchPlayer> users{};
+  std::vector<RanchCharacter> characters{};
 
   uint64_t unk1{};
   uint32_t unk2{};
@@ -277,7 +276,7 @@ struct RanchCommandEnterRanchCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanchNotify
 {
-  RanchPlayer player{};
+  RanchCharacter player{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.

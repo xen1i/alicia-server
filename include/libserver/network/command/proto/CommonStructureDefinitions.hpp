@@ -327,9 +327,9 @@ struct RanchHorse
 };
 
 //!
-struct RanchPlayer
+struct RanchCharacter
 {
-  uint32_t userUid{};
+  uint32_t uid{};
   std::string name{};
   Gender gender{};
   uint8_t unk0{};
@@ -337,7 +337,7 @@ struct RanchPlayer
   std::string description{};
 
   Character character{};
-  Horse horse{};
+  Horse mount{};
   std::vector<Item> characterEquipment{};
 
   Struct5 playerRelatedThing{};
@@ -352,8 +352,8 @@ struct RanchPlayer
   uint8_t unk4{};
   uint8_t unk5{};
 
-  static void Write(const RanchPlayer& value, SinkStream& buffer);
-  static void Read(RanchPlayer& value, SourceStream& buffer);
+  static void Write(const RanchCharacter& value, SinkStream& buffer);
+  static void Read(RanchCharacter& value, SourceStream& buffer);
 };
 
 //!

@@ -19,6 +19,8 @@
 
 #include "server/ranch/RanchDirector.hpp"
 
+#include "libserver/data/helper/ProtocolHelper.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace alicia
@@ -115,6 +117,7 @@ void RanchDirector::Initialize()
   // Host the server.
   _server.Host(_settings.address, _settings.port);
 }
+
 void RanchDirector::Terminate()
 {
 }
@@ -127,200 +130,121 @@ void RanchDirector::HandleEnterRanch(
   ClientId clientId,
   const RanchCommandEnterRanch& enterRanch)
 {
-  // Todo: Validate the received data and the code.
-  // ( so you cant pretend to be someone else :) )
-
-  const auto characterUid = enterRanch.characterUid;
-  const auto ranchUid = enterRanch.ranchUid;
-
-  auto ranch = _dataDirector.GetRanches().Get(ranchUid);
-  auto& ranchInstance = _ranches[ranchUid];
-
-  // Add character to the ranch.
-  ranchInstance._worldTracker.AddCharacter(characterUid);
-
-  RanchPlayer enteringRanchPlayer;
+  // todo verify the OTP against the character UID
 
   RanchCommandEnterRanchOK response{
     .ranchId = enterRanch.ranchUid,
     .unk0 = "unk0",
-    .ranchName = "default",
     .unk11 = {
       .unk0 = 1,
       .unk1 = 1}};
 
-  ranchInstance._worldTracker.AddMount(3);
-  ranchInstance._worldTracker.AddMount(2);
+  // Get the ranch the user is connecting to.
 
-  // Add the ranch mounts.
-  for (auto [mountUid, mountEntityId] : ranchInstance._worldTracker.GetMountEntities())
+  auto ranchRecord = _dataDirector.GetRanches().Get(enterRanch.ranchUid);
+  if (not ranchRecord)
   {
-    // const auto& mount = _dataDirector.GetHorse(mountUid);
-    // response.horses.push_back({
-    //    .ranchIndex = mountEntityId,
-    //    .horse = {
-    //      .uid = 2,
-    //      .tid = 0x4e21,
-    //      .name = "default",
-    //      .parts = {
-    //        .skinId = 0x2,
-    //        .maneId = 0x3,
-    //        .tailId = 0x3,
-    //        .faceId = 0x3},
-    //      .appearance = {
-    //        .scale = 0x4,
-    //        .legLength = 0x4,
-    //        .legVolume = 0x5,
-    //        .bodyLength = 0x3,
-    //        .bodyVolume = 0x4},
-    //      .stats = {
-    //        .agility = 9,
-    //        .control = 9,
-    //        .speed = 9,
-    //        .strength = 9,
-    //        .spirit = 0x13},
-    //      .rating = 0,
-    //      .clazz = 0x15,
-    //      .val0 = 1,
-    //      .grade = 5,
-    //      .growthPoints = 2,
-    //      .vals0 = {
-    //        .stamina = 0x7d0,
-    //        .attractiveness = 0x3c,
-    //        .hunger = 0x21c,
-    //        .val0 = 0x00,
-    //        .val1 = 0x03E8,
-    //        .val2 = 0x00,
-    //        .val3 = 0x00,
-    //        .val4 = 0x00,
-    //        .val5 = 0x03E8,
-    //        .val6 = 0x1E,
-    //        .val7 = 0x0A,
-    //        .val8 = 0x0A,
-    //        .val9 = 0x0A,
-    //        .val10 = 0x00,},
-    //      .vals1 = {
-    //        .val0 = 0x00,
-    //        .val1 = 0x00,
-    //        .dateOfBirth = 0xb8a167e4,
-    //        .val3 = 0x02,
-    //        .val4 = 0x00,
-    //        .classProgression = 0x32e7d,
-    //        .val5 = 0x00,
-    //        .potentialLevel = 0x40,
-    //        .hasPotential = 0x1,
-    //        .potentialValue = 0x64,
-    //        .val9 = 0x00,
-    //        .luck = 0x05,
-    //        .hasLuck = 0x00,
-    //        .val12 = 0x00,
-    //        .fatigue = 0x00,
-    //        .val14 = 0x00,
-    //        .emblem = 0xA},
-    //      .mastery = {
-    //        .magic = 0x1fe,
-    //        .jumping = 0x421,
-    //        .sliding = 0x5f8,
-    //        .gliding = 0xcfa4,},
-    //      .val16 = 0xb8a167e4,
-    //      .val17 = 0}});
+    throw std::runtime_error(
+      std::format("Ranch [{}] not available",
+        enterRanch.characterUid));
   }
 
-  // Add the ranch players.
+  ranchRecord->Immutable([&response](const soa::data::Ranch& ranch)
+  {
+    response.ranchName = ranch.name();
+  });
+
+  auto& ranchInstance = _ranches[enterRanch.ranchUid];
+
+  // Add the character to the ranch.
+  ranchInstance._worldTracker.AddCharacter(
+    enterRanch.characterUid);
+
+  RanchCharacter enteringRanchPlayer;
+
+  // Add the ranch horses.
+  for (auto [horseUid, horseEntityId] : ranchInstance._worldTracker.GetHorseEntities())
+  {
+    auto& ranchHorse = response.horses.emplace_back();
+    ranchHorse.ranchIndex = horseEntityId;
+
+    auto horseRecord = _dataDirector.GetHorses().Get(horseUid);
+    if (not horseRecord)
+    {
+      throw std::runtime_error(
+        std::format("Horse [{}] not available", horseUid));
+    }
+
+    horseRecord->Immutable([&ranchHorse](const soa::data::Horse& horse)
+    {
+       protocol::BuildProtocolHorse(ranchHorse.horse, horse);
+    });
+  }
+
+  // Add the ranch characters.
   for (auto [characterUid, characterEntityId] : ranchInstance._worldTracker.GetCharacterEntities())
   {
-    const RanchPlayer ranchPlayer{
-      .userUid = characterUid,
-      .name = "ranch player",
-      .gender = Gender::Unspecified,
-      .unk0 = 1,
-      .unk1 = 1,
-      .description = "this is a ranch player",
-      .character = {},
-      .horse = {
-        .uid = 2,
-        .tid = 0x4e21,
-        .name = "ranch horse",
-        .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-        .appearance = {
-          .scale = 0x4,
-           .legLength = 0x4,
-           .legVolume = 0x5,
-           .bodyLength = 0x3,
-           .bodyVolume = 0x4},
-        .stats = {
-            .agility = 9,
-            .control = 9,
-            .speed = 9,
-            .strength = 9,
-            .spirit = 0x13},
-        .rating = 0,
-        .clazz = 0x15,
-        .val0 = 1,
-        .grade = 5,
-        .growthPoints = 2,
-        .vals0 =
-          {
-            .stamina = 0x7d0,
-            .attractiveness = 0x3c,
-            .hunger = 0x21c,
-            .val0 = 0x00,
-            .val1 = 0x03E8,
-            .val2 = 0x00,
-            .val3 = 0x00,
-            .val4 = 0x00,
-            .val5 = 0x03E8,
-            .val6 = 0x1E,
-            .val7 = 0x0A,
-            .val8 = 0x0A,
-            .val9 = 0x0A,
-            .val10 = 0x00,
-          },
-        .vals1 =
-          {
-            .val0 = 0x00,
-            .val1 = 0x00,
-            .dateOfBirth = 0xb8a167e4,
-            .val3 = 0x02,
-            .val4 = 0x00,
-            .classProgression = 0x32e7d,
-            .val5 = 0x00,
-            .potentialLevel = 0x00,
-            .hasPotential = 0x00,
-            .potentialValue = 0x00,
-            .val9 = 0x00,
-            .luck = 0x04,
-            .hasLuck = 0x00,
-            .val12 = 0x00,
-            .fatigue = 0x00,
-            .val14 = 0x00,
-            .emblem = 0x01},
-        .mastery =
-          {
-            .spurMagicCount = 0x1fe,
-            .jumpCount = 0x421,
-            .slidingTime = 0x5f8,
-            .glidingDistance = 0xcfa4,
-          },
-        .val16 = 0xb8a167e4,
-        .val17 = 0x186A0},
-      .characterEquipment = {},
-      .playerRelatedThing = {.val1 = 1},
-      .ranchIndex = characterEntityId,
-      .anotherPlayerRelatedThing = {.mountUid = 2, .val1 = 0x12}};
+    auto& ranchCharacter = response.characters.emplace_back();
+    ranchCharacter.ranchIndex = characterEntityId;
+
+    auto characterRecord = _dataDirector.GetCharacters().Get(characterUid);
+    if (not characterRecord)
+    {
+      throw std::runtime_error(
+        std::format("Character [{}] not available", characterUid));
+    }
+
+    characterRecord->Immutable([this, &ranchCharacter](const soa::data::Character& character)
+    {
+      ranchCharacter.uid = character.uid();
+      ranchCharacter.name = "ranch player";
+      ranchCharacter.gender = Gender::Unspecified;
+      ranchCharacter.unk0 = 1;
+      ranchCharacter.unk1 = 1;
+      ranchCharacter.description = "this is a ranch player";
+
+      protocol::BuildProtocolCharacter(ranchCharacter.character, character);
+
+      // Character's equipment.
+      auto equipment = _dataDirector.GetItems().Get(character.characterEquipment());
+      if (not equipment)
+      {
+        throw std::runtime_error(
+          std::format(
+            "Character's [{}] equipment is not available",
+            character.uid()));
+      }
+
+      protocol::BuildProtocolItems(ranchCharacter.characterEquipment, *equipment);
+
+      // Character's mount.
+      auto mountRecord = _dataDirector.GetHorses().Get(character.mountUid());
+      if (not mountRecord)
+      {
+        throw std::runtime_error(
+          std::format(
+            "Character's [{}] mount [{}] is not available",
+            character.uid(),
+            character.mountUid()));
+      }
+
+      mountRecord->Immutable([&ranchCharacter](const soa::data::Horse& horse)
+      {
+        protocol::BuildProtocolHorse(ranchCharacter.mount, horse);
+        ranchCharacter.anotherPlayerRelatedThing = {.mountUid = horse.uid(), .val1 = 0x12};
+      });
+    });
 
     if (enterRanch.characterUid == characterUid)
     {
-      enteringRanchPlayer = ranchPlayer;
+      enteringRanchPlayer = ranchCharacter;
     }
-
-    response.users.push_back(ranchPlayer);
   }
 
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
   _server.SetCode(clientId, {});
-  _server.QueueCommand<RanchCommandEnterRanchOK>(
+  _server.QueueCommand<decltype(response)>(
     clientId,
     CommandId::RanchEnterRanchOK,
     [response]()
@@ -328,36 +252,24 @@ void RanchDirector::HandleEnterRanch(
       return response;
     });
 
-  // // Notify to all other players of the entering player.
-  // const RanchCommandEnterRanchNotify notification {
-  //   .player = enteringRanchPlayer
-  // };
-  //
-  // // Iterate over all the clients and broadcast join notification.
-  // for (auto [clientId, clientCharacterUid] : _clientUsers)
-  // {
-  //   // Todo: Too many uncecessary lookups
-  //   // Do not broadcast to the client that sent the snapshot.
-  //   if (clientCharacterUid == characterUid)
-  //   {
-  //     continue;
-  //   }
-  //
-  //   // Do not broadcast to clients that are not on the ranch.
-  //   const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
-  //     clientCharacterUid);
-  //   if (characterEntityId == InvalidEntityId)
-  //   {
-  //     continue;
-  //   }
-  //
-  //   _server.QueueCommand(
-  //     clientId,
-  //     CommandId::RanchEnterRanchNotify,
-  //     [&](auto& sink){
-  //       RanchCommandEnterRanchNotify::Write(notification, sink);
-  //     });
-  // }
+  // Notify to all other players of the entering player.
+  const RanchCommandEnterRanchNotify ranchJoinNotification {
+    .player = enteringRanchPlayer
+  };
+
+  // Iterate over all the clients connected
+  // to the ranch and broadcast join notification.
+  for (ClientId connectedClientId : ranchInstance._clients)
+  {
+    _server.QueueCommand<decltype(ranchJoinNotification)>(
+      connectedClientId,
+      CommandId::RanchEnterRanchNotify,
+      [&ranchJoinNotification](){
+        return ranchJoinNotification;
+      });
+  }
+
+  ranchInstance._clients.emplace(clientId);
 }
 
 void RanchDirector::HandleSnapshot(

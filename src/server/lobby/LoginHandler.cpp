@@ -18,8 +18,10 @@
  **/
 
 #include "server/lobby/LoginHandler.hpp"
-
 #include "server/lobby/LobbyDirector.hpp"
+
+#include "libserver/data/helper/ProtocolHelper.hpp"
+
 #include "spdlog/spdlog.h"
 
 namespace alicia
@@ -124,6 +126,11 @@ void LoginHandler::Tick()
       continue;
 
     _clientLoginResponseQueue.pop();
+
+    _lobbyDirector._clientContext[clientId] = {
+      .authorized = true,
+      .characterUid = characterUid};
+
     QueueUserLoginAccepted(clientId, loginContext.userName);
   }
 }
@@ -340,61 +347,36 @@ void LoginHandler::QueueUserLoginAccepted(
     response.nickName = character.name();
     response.profileGender = Gender::Unspecified;
 
-    // The character equipment items.
-    for (const auto& characterEquipmentItemUid : character.characterEquipment())
-    {
-      auto itemRecord = _dataDirector.GetItems().Get(characterEquipmentItemUid);
-      if (not itemRecord)
-        throw std::runtime_error("Character equipment items unavailable");
-
-      auto& itemResponse = response.characterEquipment.emplace_back();
-      itemRecord->Immutable([&itemResponse](const soa::data::Item& item)
-      {
-        itemResponse.uid = item.uid();
-        itemResponse.tid = item.tid();
-        itemResponse.count = item.count();
-      });
-    }
-
-    // The character's mount equipment items.
-    for (const auto& mountEquipmentItemUid : character.mountEquipment())
-    {
-      auto itemRecord = _dataDirector.GetItems().Get(mountEquipmentItemUid);
-      if (not itemRecord)
-        throw std::runtime_error("Horse equipment items unavailable");
-
-      auto& itemResponse = response.mountEquipment.emplace_back();
-      itemRecord->Immutable([&itemResponse](const soa::data::Item& item)
-      {
-        itemResponse = {
-          .uid = item.uid(),
-          .tid = item.tid(),
-          .count = item.count()};
-      });
-    }
-
     response.level = character.level();
     response.carrots = character.carrots();
-
     response.ageGroup = AgeGroup::Adult;
     response.hideAge = false;
 
-    // Set the character parts.
-    // These serial ID's can be found in the `_ClientCharDefaultPartInfo` table.
-    // Each character has specific part serial IDs for each part type.
-    response.character.parts = {
-      .charId = static_cast<uint8_t>(character.parts.modelId()),
-      .mouthSerialId = static_cast<uint8_t>(character.parts.mouthId()),
-      .faceSerialId = static_cast<uint8_t>(character.parts.faceId()),};
-
-    // Set the character appearance.
-    response.character.appearance = {
-      .headSize = static_cast<uint8_t>(character.appearance.headSize()),
-      .height = static_cast<uint8_t>(character.appearance.height()),
-      .thighVolume = static_cast<uint8_t>(character.appearance.thighVolume()),
-      .legVolume = static_cast<uint8_t>(character.appearance.legVolume()),};
-
     response.val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010;
+
+    // Character equipment.
+    auto characterEquipmentItems = _dataDirector.GetItems().Get(
+      character.characterEquipment());
+    if (not characterEquipmentItems)
+      throw std::runtime_error("Character equipment items unavailable");
+
+    protocol::BuildProtocolItems(
+      response.characterEquipment,
+      *characterEquipmentItems);
+
+    // Mount equipment.
+    auto mountEquipmentItems = _dataDirector.GetItems().Get(
+      character.mountEquipment());
+    if (not mountEquipmentItems)
+      throw std::runtime_error("Character equipment items unavailable");
+
+    protocol::BuildProtocolItems(
+      response.mountEquipment,
+      *mountEquipmentItems);
+
+    protocol::BuildProtocolCharacter(
+      response.character,
+      character);
 
     characterMountUid = character.mountUid();
   });
@@ -406,81 +388,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
   mountRecord->Immutable([&response](const soa::data::Horse& horse)
   {
-    response.horse = {
-      .uid = horse.uid(),
-      .tid = horse.tid(),
-      .name = horse.name(),
-
-      .rating = horse.rating(),
-      .clazz = static_cast<uint8_t>(horse.clazz()),
-      .val0 = 1,
-      .grade = static_cast<uint8_t>(horse.grade()),
-      .growthPoints = static_cast<uint16_t>(horse.growthPoints()),
-
-      .vals0 = {
-        .stamina = 0x7d0,
-        .attractiveness = 0x3c,
-        .hunger = 0x21c,
-        .val0 = 0x00,
-        .val1 = 0x03E8,
-        .val2 = 0x00,
-        .val3 = 0x00,
-        .val4 = 0x00,
-        .val5 = 0x03E8,
-        .val6 = 0x1E,
-        .val7 = 0x0A,
-        .val8 = 0x0A,
-        .val9 = 0x0A,
-        .val10 = 0x00,},
-
-      //
-      .vals1 = {
-        .val0 = 0x00,
-        .val1 = 0x00,
-        .dateOfBirth = 0xb8a167e4,
-        .val3 = 0x02,
-        .val4 = 0x00,
-        .classProgression = static_cast<uint32_t>(horse.clazzProgress()),
-        .val5 = 0x00,
-        .potentialLevel = static_cast<uint8_t>(horse.potentialLevel()),
-        .hasPotential = static_cast<uint8_t>(horse.potentialType() != 0),
-        .potentialValue = static_cast<uint8_t>(horse.potentialLevel()),
-        .val9 = 0x00,
-        .luck = static_cast<uint8_t>(horse.luckState()),
-        .hasLuck = static_cast<uint8_t>(horse.luckState() != 0),
-        .val12 = 0x00,
-        .fatigue = 0x00,
-        .val14 = 0x00,
-        .emblem = static_cast<uint16_t>(horse.emblem())},
-
-      .val16 = 0xb8a167e4,
-      .val17 = 0};
-
-    response.horse.parts = {
-      .skinId = static_cast<uint8_t>(horse.parts.skinId()),
-      .maneId = static_cast<uint8_t>(horse.parts.maneId()),
-      .tailId = static_cast<uint8_t>(horse.parts.tailId()),
-      .faceId = static_cast<uint8_t>(horse.parts.faceId())};
-
-    response.horse.appearance = {
-      .scale = static_cast<uint8_t>(horse.appearance.scale()),
-      .legLength = static_cast<uint8_t>(horse.appearance.legLength()),
-      .legVolume = static_cast<uint8_t>(horse.appearance.legVolume()),
-      .bodyLength = static_cast<uint8_t>(horse.appearance.bodyLength()),
-      .bodyVolume = static_cast<uint8_t>(horse.appearance.bodyVolume())};
-
-    response.horse.stats = {
-        .agility = horse.stats.agility(),
-        .control = horse.stats.control(),
-        .speed = horse.stats.speed(),
-        .strength = horse.stats.strength(),
-        .spirit = horse.stats.spirit()};
-
-    response.horse.mastery = {
-        .spurMagicCount = horse.mastery.spurMagicCount(),
-        .jumpCount = horse.mastery.jumpCount(),
-        .slidingTime = horse.mastery.slidingTime(),
-        .glidingDistance = horse.mastery.glidingDistance(),};
+    protocol::BuildProtocolHorse(response.horse, horse);
   });
 
   _server.SetCode(clientId, {});

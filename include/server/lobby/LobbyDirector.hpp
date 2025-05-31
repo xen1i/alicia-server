@@ -32,6 +32,8 @@ namespace alicia
 
 class LobbyDirector final
 {
+  friend LoginHandler;
+
 public:
   //!
   explicit LobbyDirector(
@@ -133,8 +135,15 @@ private:
   //!
   LoginHandler _loginHandler;
 
+protected:
+  struct ClientContext
+  {
+    bool authorized;
+    soa::data::Uid characterUid = soa::data::InvalidUid;
+  };
+  
   //!
-  std::unordered_map<ClientId, std::string> _clientUsers;
+  std::unordered_map<ClientId, ClientContext> _clientContext;
 };
 
 } // namespace alicia
