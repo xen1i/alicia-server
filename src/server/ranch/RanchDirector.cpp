@@ -98,28 +98,6 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
     CommandId::RanchChat,
     [this](ClientId clientId, auto& command)
     { HandleChat(clientId, command); });
-
-  _server.RegisterCommandHandler<RanchCommandEnterRandom>(
-    CommandId::RanchEnterRandom,
-    [this](ClientId clientId, auto& command)
-    {
-      auto& clientContext = _clientContext[clientId];
-
-      RanchCommandEnterRanch request{
-        .characterUid = clientContext.characterUid};
-
-      for (const auto& [ranchId, ranch] : _ranches)
-      {
-        // Pick the first ranch that the user is not on.
-        if (ranchId != clientContext.ranchUid)
-        {
-          request.ranchUid = ranchId;
-          break;
-        }
-      }
-
-      HandleEnterRanch(clientId, request);
-    });
 }
 
 void RanchDirector::Initialize()
@@ -155,6 +133,7 @@ void RanchDirector::HandleEnterRanch(
   // todo verify the OTP against the character UID
 
   auto& clientContext = _clientContext[clientId];
+
   clientContext.characterUid = enterRanch.characterUid;
   clientContext.ranchUid = enterRanch.ranchUid;
 
@@ -222,7 +201,7 @@ void RanchDirector::HandleEnterRanch(
     characterRecord->Immutable([this, &ranchCharacter](const soa::data::Character& character)
     {
       ranchCharacter.uid = character.uid();
-      ranchCharacter.name = "ranch player";
+      ranchCharacter.name = character.name();
       ranchCharacter.gender = Gender::Unspecified;
       ranchCharacter.unk0 = 1;
       ranchCharacter.unk1 = 1;
@@ -266,6 +245,16 @@ void RanchDirector::HandleEnterRanch(
     }
   }
 
+  spdlog::debug("{} is entering ranch with:", enterRanch.characterUid);
+  for (const auto& ranchCharacter : response.characters)
+  {
+    spdlog::debug(
+      "Character '{}' ({}), index {}",
+      ranchCharacter.name,
+      ranchCharacter.uid,
+      ranchCharacter.ranchIndex);
+  }
+
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
   _server.SetCode(clientId, {});
@@ -284,10 +273,17 @@ void RanchDirector::HandleEnterRanch(
 
   // Iterate over all the clients connected
   // to the ranch and broadcast join notification.
-  for (ClientId connectedClientId : ranchInstance._clients)
+  for (ClientId ranchClient : ranchInstance._clients)
   {
+    spdlog::debug(
+      "Sending notification to {}, player {} ('{}') index {} is entering the ranch.",
+      _clientContext[ranchClient].characterUid,
+      ranchJoinNotification.player.name,
+      ranchJoinNotification.player.uid,
+      ranchJoinNotification.player.ranchIndex);
+
     _server.QueueCommand<decltype(ranchJoinNotification)>(
-      connectedClientId,
+      ranchClient,
       CommandId::RanchEnterRanchNotify,
       [ranchJoinNotification](){
         return ranchJoinNotification;
@@ -317,12 +313,12 @@ void RanchDirector::HandleSnapshot(
     if (ranchClient == clientId)
       continue;
 
-    _server.QueueCommand(
+    _server.QueueCommand<decltype(response)>(
       clientId,
       CommandId::RanchSnapshotNotify,
-      [&](auto& sink)
+      [response]()
       {
-        RanchCommandRanchSnapshotNotify::Write(response, sink);
+        return response;
       });
   }
 }

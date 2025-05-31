@@ -1104,23 +1104,6 @@ struct RanchCommandChatNotify
     SourceStream& stream);
 };
 
-struct RanchCommandEnterRandom
-{
-  //! Writes the command to a provided sink stream.
-  //! @param command Command.
-  //! @param stream Sink stream.
-  static void Write(
-    const RanchCommandEnterRandom& command,
-    SinkStream& stream);
-
-  //! Reader a command from a provided source stream.
-  //! @param command Command.
-  //! @param stream Source stream.
-  static void Read(
-    RanchCommandEnterRandom& command,
-    SourceStream& stream);
-};
-
 // TODO Quest commands: RanchCommandUpdateDailyQuest, RanchCommandEmblemList, etc.
 
 } // namespace alicia

@@ -1116,6 +1116,23 @@ struct LobbyCommandGuildPartyListOK
     SourceStream& stream);
 };
 
+struct LobbyCommandEnterRandomRanch
+{
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandEnterRandomRanch& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandEnterRandomRanch& command,
+    SourceStream& stream);
+};
+
 // TODO: AcCmdCLRequestPersonalInfo, others
 
 } // namespace alicia

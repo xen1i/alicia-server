@@ -157,6 +157,12 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
       if (message.val0 != 1)
         spdlog::error("Client error notification: state[{}], value[{}]", message.val0, message.val1);
     });
+
+  _server.RegisterCommandHandler<LobbyCommandEnterRandomRanch>(
+    CommandId::LobbyEnterRandomRanch,
+    [this](ClientId clientId, auto& command)
+    {
+    });
 }
 
 void LobbyDirector::Initialize()
@@ -470,5 +476,19 @@ void LobbyDirector::HandleGuildPartyList(
 //       LobbyCommandGuildPartyListOK::Write(response, sink);
 //     });
 // }
+
+void LobbyCommandEnterRandomRanch::Write(
+  const LobbyCommandEnterRandomRanch& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandEnterRandomRanch::Read(
+  LobbyCommandEnterRandomRanch& command,
+  SourceStream& stream)
+{
+  // Empty.
+}
 
 } // namespace alicia

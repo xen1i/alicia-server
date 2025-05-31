@@ -188,9 +188,12 @@ void CommandServer::QueueCommand(ClientId client, CommandId command, CommandSupp
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);
 
-      spdlog::debug("Sent command message '{}' (0x{:X})",
+      if (not IsMuted(command))
+      {
+        spdlog::debug("Sent command message '{}' (0x{:X})",
         GetCommandName(command),
         static_cast<uint32_t>(command));
+      }
     });
 }
 
