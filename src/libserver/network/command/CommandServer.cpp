@@ -368,7 +368,7 @@ void CommandServer::HandleClientRead(
       handler(clientId, commandDataStream);
 
       // There shouldn't be any left-over data in the stream.
-      assert(commandDataStream.GetCursor() == commandDataStream.Size());
+      /*assert(commandDataStream.GetCursor() == commandDataStream.Size());*/
 
       if (!IsMuted(commandId))
       {

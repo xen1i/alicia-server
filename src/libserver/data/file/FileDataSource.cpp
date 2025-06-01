@@ -133,7 +133,7 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
   character.uid = json["uid"].get<data::Uid>();
   character.name = json["name"].get<std::string>();
   character.level = json["level"].get<uint32_t>();
-  character.carrots = json["carrots"].get<uint32_t>();
+  character.carrots = json["carrots"].get<int32_t>();
   character.cash = json["cash"].get<uint32_t>();
 
   auto parts = json["parts"];

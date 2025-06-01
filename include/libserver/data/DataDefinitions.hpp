@@ -162,7 +162,7 @@ struct Character
   dao::Field<std::string> name{};
 
   dao::Field<uint32_t> level{};
-  dao::Field<uint32_t> carrots{};
+  dao::Field<int32_t> carrots{};
   dao::Field<uint32_t> cash{};
 
   struct Parts

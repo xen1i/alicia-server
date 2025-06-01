@@ -31,8 +31,6 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
   , _dataDirector(dataDirector)
   , _server()
 {
-  _ranches[100] = RanchInstance{};
-
   // Handlers
 
   // EnterRanch handler
@@ -102,9 +100,6 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
 
 void RanchDirector::Initialize()
 {
-
-  _dataDirector.GetCharacters().Get(10);
-
   spdlog::debug(
     "Ranch server listening on {}:{}",
     _settings.address.to_string(),
@@ -164,10 +159,12 @@ void RanchDirector::HandleEnterRanch(
   auto& ranchInstance = _ranches[enterRanch.ranchUid];
 
   // Add the character to the ranch.
+  ranchInstance._worldTracker.AddHorse(
+    1);
+  ranchInstance._worldTracker.AddHorse(
+    4);
   ranchInstance._worldTracker.AddCharacter(
     enterRanch.characterUid);
-  ranchInstance._worldTracker.AddCharacter(
-    10);
 
   RanchCharacter enteringRanchPlayer;
 
@@ -309,12 +306,25 @@ void RanchDirector::HandleSnapshot(
   const auto& clientContext = _clientContext[clientId];
   auto& ranchInstance = _ranches[clientContext.ranchUid];
 
-  const RanchCommandRanchSnapshotNotify response {
+  RanchCommandRanchSnapshotNotify response {
     .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(
       clientContext.characterUid),
-    .unk0 = snapshot.unk0,
-    .snapshot = snapshot.snapshot
+    .type = snapshot.type,
   };
+
+  switch (snapshot.type)
+  {
+    case RanchCommandRanchSnapshot::Full:
+    {
+      response.full = snapshot.full;
+      break;
+    }
+    case RanchCommandRanchSnapshot::Partial:
+    {
+      response.partial = snapshot.partial;
+      break;
+    }
+  }
 
   for (const auto& ranchClient : ranchInstance._clients)
   {
@@ -322,7 +332,21 @@ void RanchDirector::HandleSnapshot(
     if (ranchClient == clientId)
       continue;
 
-    spdlog::debug("Snapshot from {} sent to {}", clientContext.characterUid, _clientContext[ranchClient].characterUid);
+    if (snapshot.type == RanchCommandRanchSnapshot::Full)
+    {
+      spdlog::debug(
+        "Full update from {} sent to {}. [x: {}, y: {}, z: {}]",
+        clientContext.characterUid,
+        _clientContext[ranchClient].characterUid,
+        snapshot.full.x, snapshot.full.y, snapshot.full.z);
+    }
+    else
+    {
+      spdlog::debug(
+        "Partial update from {} sent to {}.",
+        clientContext.characterUid,
+        _clientContext[ranchClient].characterUid);
+    }
 
     _server.QueueCommand<decltype(response)>(
       clientId,

@@ -284,8 +284,7 @@ void LobbyDirector::HandleAchievementCompleteList(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
-  const LobbyCommandAchievementCompleteListOK response{
-    .unk0 = clientContext.characterUid};
+  const LobbyCommandAchievementCompleteListOK response{};
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -319,8 +318,7 @@ void LobbyDirector::HandleRequestQuestList(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
-  LobbyCommandRequestQuestListOK response{
-    .unk0 = clientContext.characterUid};
+  LobbyCommandRequestQuestListOK response{};
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -339,8 +337,7 @@ void LobbyDirector::HandleRequestDailyQuestList(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
-  LobbyCommandRequestDailyQuestListOK response{
-    .val0 = clientContext.characterUid};
+  LobbyCommandRequestDailyQuestListOK response{};
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -358,8 +355,7 @@ void LobbyDirector::HandleRequestSpecialEventList(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
-  LobbyCommandRequestSpecialEventListOK response{
-    .unk0 = clientContext.characterUid};
+  LobbyCommandRequestSpecialEventListOK response{};
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -385,7 +381,6 @@ void LobbyDirector::HandleEnterRanch(
   }
 
   LobbyCommandEnterRanchOK response{
-    .ranchUid = 1,
     .code = 0x44332211,
     .ip = static_cast<uint32_t>(htonl(_settings.ranchAdvAddress.to_uint())),
     .port = _settings.ranchAdvPort};
