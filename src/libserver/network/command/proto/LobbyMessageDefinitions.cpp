@@ -154,7 +154,7 @@ void LobbyCommandLoginOK::Write(
       .Write(value.val1);
   }
 
-  stream.Write(command.val8);
+  stream.Write(command.bitfield);
 
   // Struct2
   const auto& struct1 = command.val9;

@@ -124,7 +124,7 @@ struct LobbyCommandLoginOK
 
   // std::bitset
   //! Bit 2: Has played before
-  uint32_t val8{};
+  uint32_t bitfield{};
 
   struct Struct1
   {

@@ -354,7 +354,8 @@ void LoginHandler::QueueUserLoginAccepted(
     response.ageGroup = AgeGroup::Adult;
     response.hideAge = false;
 
-    response.val8 = 0b0000'0000'0000'0000'0000'0000'0000'0010;
+    response.bitfield = 0x0e06;
+
 
     // Character equipment.
     auto characterEquipmentItems = _dataDirector.GetItems().Get(

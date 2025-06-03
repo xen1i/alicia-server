@@ -334,14 +334,19 @@ void LobbyDirector::HandleRequestQuestList(
   });
 
   response.quests.emplace_back(Quest{
-    .tid = 11'030,
-    .member1 = 3,
-    .member2 = 1,
+    .tid = 11'039,
+    .member1 = 1,
+    .member2 = 0xA,
     .member4 = 3});
   response.quests.emplace_back(Quest{
-    .tid = 11'031,
-    .member1 = 3,
-    .member2 = 6,
+    .tid = 12'012,
+    .member1 = 1,
+    .member2 = 3,
+    .member4 = 3});
+  response.quests.emplace_back(Quest{
+    .tid = 13'010,
+    .member1 = 1,
+    .member2 = 0x14,
     .member4 = 3});
 
   _server.QueueCommand<decltype(response)>(
