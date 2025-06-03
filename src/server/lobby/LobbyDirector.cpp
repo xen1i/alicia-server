@@ -284,7 +284,15 @@ void LobbyDirector::HandleAchievementCompleteList(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
-  const LobbyCommandAchievementCompleteListOK response{};
+  LobbyCommandAchievementCompleteListOK response{};
+
+  characterRecord->Immutable([&response](const soa::data::Character& character)
+  {
+    response.unk0 = character.uid();
+  });
+
+  response.achievements.emplace_back().tid = 20'008;
+  response.achievements.emplace_back().tid = 20'004;
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -320,9 +328,25 @@ void LobbyDirector::HandleRequestQuestList(
 
   LobbyCommandRequestQuestListOK response{};
 
+  characterRecord->Immutable([&response](const soa::data::Character& character)
+  {
+    response.unk0 = character.uid();
+  });
+
+  response.quests.emplace_back(Quest{
+    .tid = 11'030,
+    .member1 = 3,
+    .member2 = 1,
+    .member4 = 3});
+  response.quests.emplace_back(Quest{
+    .tid = 11'031,
+    .member1 = 3,
+    .member2 = 6,
+    .member4 = 3});
+
   _server.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyRequestQuestListOK,
+    CommandId::LobbyAchievementCompleteListOK,
     [response]()
     {
       return response;
@@ -338,6 +362,11 @@ void LobbyDirector::HandleRequestDailyQuestList(
     clientContext.characterUid);
 
   LobbyCommandRequestDailyQuestListOK response{};
+
+  characterRecord->Immutable([&response](const soa::data::Character& character)
+  {
+    response.val0 = character.uid();
+  });
 
   _server.QueueCommand<decltype(response)>(
     clientId,

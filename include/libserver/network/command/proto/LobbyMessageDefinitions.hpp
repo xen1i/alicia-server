@@ -895,8 +895,8 @@ struct Event
 struct LobbyCommandRequestSpecialEventListOK
 {
   uint32_t unk0;
-  std::vector<Quest> unk1;
-  std::vector<Event> unk2;
+  std::vector<Quest> quests;
+  std::vector<Event> events;
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.

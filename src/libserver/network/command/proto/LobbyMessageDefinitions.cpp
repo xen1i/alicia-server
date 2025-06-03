@@ -411,11 +411,7 @@ void LobbyCommandAchievementCompleteListOK::Write(
   stream.Write(static_cast<uint16_t>(command.achievements.size()));
   for (const auto& achievement : command.achievements)
   {
-    stream.Write(achievement.unk0)
-      .Write(achievement.unk1)
-      .Write(achievement.unk2)
-      .Write(achievement.unk3)
-      .Write(achievement.unk4);
+    stream.Write(achievement);
   }
 }
 
@@ -543,11 +539,7 @@ void LobbyCommandRequestQuestListOK::Write(
   stream.Write(static_cast<uint16_t>(command.quests.size()));
   for (const auto& quest : command.quests)
   {
-    stream.Write(quest.unk0)
-      .Write(quest.unk1)
-      .Write(quest.unk2)
-      .Write(quest.unk3)
-      .Write(quest.unk4);
+    stream.Write(quest);
   }
 }
 
@@ -581,11 +573,7 @@ void LobbyCommandRequestDailyQuestListOK::Write(
 
   for (const auto& quest : command.quests)
   {
-    stream.Write(quest.unk0)
-      .Write(quest.unk1)
-      .Write(quest.unk2)
-      .Write(quest.unk3)
-      .Write(quest.unk4);
+    stream.Write(quest);
   }
   stream.Write(
     static_cast<uint16_t>(command.val1.size()));
@@ -768,21 +756,17 @@ void LobbyCommandRequestSpecialEventListOK::Write(
 {
   stream.Write(command.unk0);
 
-  stream.Write(static_cast<uint16_t>(command.unk1.size()));
-  for (const auto& unk1Element : command.unk1)
+  stream.Write(static_cast<uint16_t>(command.quests.size()));
+  for (const auto& quest : command.quests)
   {
-    stream.Write(unk1Element.unk0)
-      .Write(unk1Element.unk1)
-      .Write(unk1Element.unk2)
-      .Write(unk1Element.unk3)
-      .Write(unk1Element.unk4);
+    stream.Write(quest);
   }
 
-  stream.Write(static_cast<uint16_t>(command.unk2.size()));
-  for (const auto& unk2Element : command.unk2)
+  stream.Write(static_cast<uint16_t>(command.events.size()));
+  for (const auto& event : command.events)
   {
-    stream.Write(unk2Element.unk0)
-      .Write(unk2Element.unk1);
+    stream.Write(event.unk0)
+      .Write(event.unk1);
   }
 }
 

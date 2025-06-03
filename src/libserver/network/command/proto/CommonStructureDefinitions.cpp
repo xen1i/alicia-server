@@ -444,20 +444,22 @@ void RanchCharacter::Read(RanchCharacter& value, SourceStream& stream)
 
 void Quest::Write(const Quest& value, SinkStream& stream)
 {
-  stream.Write(value.unk0)
-    .Write(value.unk1)
-    .Write(value.unk2)
-    .Write(value.unk3)
-    .Write(value.unk4);
+  stream.Write(value.tid)
+    .Write(value.member0)
+    .Write(value.member1)
+    .Write(value.member2)
+    .Write(value.member3)
+    .Write(value.member4);
 }
 
 void Quest::Read(Quest& value, SourceStream& stream)
 {
-  stream.Read(value.unk0)
-    .Read(value.unk1)
-    .Read(value.unk2)
-    .Read(value.unk3)
-    .Read(value.unk4);
+  stream.Read(value.tid)
+    .Read(value.member0)
+    .Read(value.member1)
+    .Read(value.member2)
+    .Read(value.member3)
+    .Read(value.member4);
 }
 
 void RanchUnk11::Write(const RanchUnk11& value, SinkStream& stream)

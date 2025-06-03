@@ -317,6 +317,9 @@ void RanchDirector::HandleSnapshot(
     case RanchCommandRanchSnapshot::Full:
     {
       response.full = snapshot.full;
+      response.full.x = 0;
+      response.full.y = 10;
+      response.full.z = 0;
       break;
     }
     case RanchCommandRanchSnapshot::Partial:

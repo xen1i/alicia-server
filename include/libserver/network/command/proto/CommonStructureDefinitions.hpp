@@ -359,11 +359,12 @@ struct RanchCharacter
 //!
 struct Quest
 {
-  uint16_t unk0{};
-  uint8_t unk1{};
-  uint32_t unk2{};
-  uint8_t unk3{};
-  uint8_t unk4{};
+  uint16_t tid{};
+  uint32_t member0{};
+  uint8_t member1{};
+  uint32_t member2{};
+  uint8_t member3{};
+  uint8_t member4{};
 
   static void Write(const Quest& value, SinkStream& buffer);
   static void Read(Quest& value, SourceStream& buffer);
