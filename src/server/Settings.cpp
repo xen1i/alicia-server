@@ -191,12 +191,6 @@ std::pair<asio::ip::address_v4, uint16_t> Settings::ParseAddressAndPort(const nl
     const uint16_t port = jsonObject.at("port").get<uint16_t>();
 
     const auto resolvedAddress = ResolveHostName(address);
-    if (resolvedAddress.is_unspecified())
-    {
-      throw std::runtime_error(
-        std::format("Couldn't resolve '{}' to a valid IPv4 address.", address));
-    }
-
     return std::make_pair(
       resolvedAddress,
       port);

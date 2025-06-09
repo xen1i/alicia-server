@@ -3,7 +3,7 @@
     // The bind address and port of the lobby host.
     "bind": {
       // An IPv4 address or a domain
-      "address": "127.0.0.1",
+      "address": "0.0.0.0",
       "port": 10030
     },
     "advertisement": {
@@ -30,7 +30,7 @@
     // The bind address and port of the ranch host
     "bind": {
       // An IPv4 address or a domain
-      "address": "127.0.0.1",
+      "address": "0.0.0.0",
       "port": 10031
     }
   },
@@ -38,7 +38,7 @@
     // The bind address and port of the ranch host
     "bind": {
       // An IPv4 address or a domain
-      "address": "127.0.0.1",
+      "address": "0.0.0.0",
       "port": 10032
     }
   },
@@ -46,7 +46,7 @@
     // The bind address and port of the race host
     "bind": {
       // An IPv4 address or a domain
-      "address": "127.0.0.1",
+      "address": "0.0.0.0",
       "port": 10033
     }
   },

@@ -42,7 +42,7 @@ asio::ip::address_v4 ResolveHostName(const std::string& host)
 {
   const auto address = asio::ip::make_address(host);
   // If host is an IP address, parse that directly.
-  if (not address.is_unspecified() && address.is_v4())
+  if (address.is_v4())
     return address.to_v4();
 
   asio::io_context ioContext;
@@ -56,7 +56,8 @@ asio::ip::address_v4 ResolveHostName(const std::string& host)
       return addr.to_v4();
   }
 
-  return {};
+  throw std::runtime_error(
+    std::format("Hostname '{}' does not resolve to any valid IPv4 address.", host));
 }
 
 std::string GenerateByteDump(const std::span<const std::byte> data)
