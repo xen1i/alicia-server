@@ -70,7 +70,7 @@ DataDirector::DataDirector()
       })
 {
   _dataSource = std::make_unique<FileDataSource>();
-  _dataSource->Initialize(".");
+  _dataSource->Initialize("./data");
 }
 
 DataDirector::~DataDirector()

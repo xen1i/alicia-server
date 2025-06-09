@@ -50,7 +50,8 @@ void soa::FileDataSource::Initialize(const std::filesystem::path& path)
   create_directories(_ranchesPath);
   _itemsPath = _path / "items";
   create_directories(_itemsPath);
-  _metaFilePath = _path / "meta.json";
+  _metaFilePath = _path;
+  create_directories(_metaFilePath);
 
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
@@ -85,6 +86,8 @@ void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _usersPath, name);
+
+  user.name = name;
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
