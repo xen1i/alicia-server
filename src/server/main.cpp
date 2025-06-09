@@ -149,7 +149,7 @@ int main()
 
   // Parsing settings file
   alicia::Settings settings;
-  settings.LoadFromFile("resources/settings.json5");
+  settings.LoadFromFile("config/config.json5");
 
   // Data director.
   soa::DataDirector dataDirector;

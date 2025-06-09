@@ -86,7 +86,7 @@ add_custom_command(
         TARGET alicia-server POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/resources
-        ${CMAKE_CURRENT_BINARY_DIR}/resources)
+        ${CMAKE_CURRENT_BINARY_DIR})
 
 install(TARGETS alicia-server DESTINATION dist)
 install(DIRECTORY resources DESTINATION dist)  

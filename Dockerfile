@@ -5,7 +5,7 @@ FROM alpine:3 AS builder
 RUN apk add --no-cache boost-dev build-base cmake git
 
 ARG BUILDER_REPO_PATH
-ARG BUILD_TYPE=Release
+ARG BUILD_TYPE=RelWithDebInfo
 
 WORKDIR ${BUILDER_REPO_PATH}
 COPY . .

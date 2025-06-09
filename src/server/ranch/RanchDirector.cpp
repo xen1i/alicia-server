@@ -616,6 +616,8 @@ void RanchDirector::HandleChat(
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
 
+  auto& ranchInstance = _ranches[clientContext.ranchUid];
+
   RanchCommandChatNotify response{
     .message = command.message};
 
@@ -624,10 +626,13 @@ void RanchDirector::HandleChat(
     response.author = character.name();
   });
 
-  _server.QueueCommand<decltype(response)>(clientId, CommandId::RanchChatNotify, [response]()
+  for (const auto ranchClientId : ranchInstance._clients)
   {
-    return response;
-  });
+    _server.QueueCommand<decltype(response)>(ranchClientId, CommandId::RanchChatNotify, [response]()
+    {
+      return response;
+    });
+  }
 }
 
 } // namespace alicia
