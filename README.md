@@ -1,5 +1,7 @@
 # Alicia Server
-Server, yippie!
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Story-Of-Alicia/alicia-server/docker-publish.yml)
+
+Dedicated server software for Alicia game series.
 
 ## Community
 If you're a user please feel free to join [the official community of Story Of Alicia](https://discord.gg/storyofalicia) and follow our progress there. 
