@@ -29,12 +29,6 @@ using Clock = std::chrono::steady_clock;
 std::atomic_bool shouldRun = true;
 
 std::shared_ptr<spdlog::logger> g_logger;
-
-std::unique_ptr<soa::DataDirector> g_dataDirector;
-std::unique_ptr<alicia::LobbyDirector> g_lobbyDirector;
-std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
-std::unique_ptr<alicia::RaceDirector> g_raceDirector;
-
 Clock::time_point serverStartupTime;
 
 void TickLoop(
@@ -158,61 +152,68 @@ int main()
   settings.LoadFromFile("resources/settings.json5");
 
   // Data director.
-  g_dataDirector = std::make_unique<soa::DataDirector>();
+  soa::DataDirector dataDirector;
 
   // Lobby director.
-  g_lobbyDirector = std::make_unique<alicia::LobbyDirector>(
-    *g_dataDirector,
+  alicia::LobbyDirector lobbyDirector(
+    dataDirector,
     settings._lobbySettings);
+
   // Ranch director.
-  g_ranchDirector = std::make_unique<alicia::RanchDirector>(
-    *g_dataDirector,
+  alicia::RanchDirector ranchDirector(
+    dataDirector,
     settings._ranchSettings);
+
   // Race director.
-  g_raceDirector = std::make_unique<alicia::RaceDirector>(
-    *g_dataDirector,
+  alicia::RaceDirector raceDirector(
+    dataDirector,
     settings._raceSettings);
 
-  const std::jthread dataThread([]()
-                                {
-    g_dataDirector->Initialize();
-    TickLoop(50, []()
+  const std::jthread dataThread([&dataDirector]()
+  {
+    dataDirector.Initialize();
+    TickLoop(50, [&dataDirector]()
     {
-      g_dataDirector->Tick();
+      dataDirector.Tick();
     });
-    g_dataDirector->Terminate(); });
+    dataDirector.Terminate();
+  });
 
-  const std::jthread lobbyThread([]()
-                                 {
-    g_lobbyDirector->Initialize();
-    TickLoop(50, []()
+  const std::jthread lobbyThread([&lobbyDirector]()
+  {
+    lobbyDirector.Initialize();
+    TickLoop(50, [&lobbyDirector]()
     {
-      g_lobbyDirector->Tick();
+      lobbyDirector.Tick();
     });
-    g_lobbyDirector->Terminate(); });
+    lobbyDirector.Terminate();
+  });
 
-  const std::jthread ranchThread([]()
-                                 {
-    g_ranchDirector->Initialize();
-    TickLoop(50, []()
+  const std::jthread ranchThread([&ranchDirector]
+  {
+    ranchDirector.Initialize();
+    TickLoop(50, [&ranchDirector]()
     {
-      g_ranchDirector->Tick();
+      ranchDirector.Tick();
     });
-    g_ranchDirector->Terminate(); });
+    ranchDirector.Terminate();
+  });
 
-  const std::jthread raceThread([]()
-                                {
-    g_raceDirector->Initialize();
-    TickLoop(50, []()
+  const std::jthread raceThread([&raceDirector]()
+  {
+    raceDirector.Initialize();
+    TickLoop(50, [&raceDirector]()
     {
-      g_raceDirector->Tick();
+      raceDirector.Tick();
     });
-    g_raceDirector->Terminate(); });
+    raceDirector.Terminate();
+  });
 
   const std::jthread messengerThread([]()
-                                     {
+  {
     alicia::ChatterServer chatter;
-    chatter.Host(); });
+    chatter.Host();
+  });
 
   spdlog::info(
     "Server started up in {}ms",

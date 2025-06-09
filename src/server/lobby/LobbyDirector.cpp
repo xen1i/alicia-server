@@ -186,6 +186,7 @@ void LobbyDirector::Initialize()
 
 void LobbyDirector::Terminate()
 {
+  _server.Stop();
 }
 
 void LobbyDirector::Tick()

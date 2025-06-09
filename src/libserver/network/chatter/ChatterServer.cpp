@@ -75,6 +75,7 @@ alicia::ChatterServer::ChatterServer()
 
 alicia::ChatterServer::~ChatterServer()
 {
+  _server.End();
   if (_serverThread.joinable())
     _serverThread.join();
 }

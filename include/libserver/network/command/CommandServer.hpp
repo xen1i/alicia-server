@@ -65,6 +65,8 @@ public:
   //! @param port Port.
   void Host(const asio::ip::address& address, uint16_t port);
 
+  void Stop();
+
   //! Registers a command handler.
   //!
   //! @param commandId ID of the command to register the handler for.

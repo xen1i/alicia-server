@@ -120,11 +120,7 @@ CommandServer::CommandServer()
 
 CommandServer::~CommandServer()
 {
-  _server.End();
-  if (_serverThread.joinable())
-  {
-    _serverThread.join();
-  }
+  Stop();
 }
 
 void CommandServer::Host(const asio::ip::address& address, uint16_t port)
@@ -134,6 +130,15 @@ void CommandServer::Host(const asio::ip::address& address, uint16_t port)
     {
       _server.Begin(address, port);
     });
+}
+
+void CommandServer::Stop()
+{
+  _server.End();
+  if (_serverThread.joinable())
+  {
+    _serverThread.join();
+  }
 }
 
 void CommandServer::RegisterCommandHandler(

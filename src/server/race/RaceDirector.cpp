@@ -87,6 +87,7 @@ void RaceDirector::Initialize()
 
 void RaceDirector::Terminate()
 {
+  _server.Stop();
 }
 
 void RaceDirector::Tick() {}

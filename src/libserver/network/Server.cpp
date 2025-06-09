@@ -188,6 +188,7 @@ void Server::End()
   }
 
   _acceptor.close();
+  _io_ctx.stop();
 }
 
 Client& Server::GetClient(ClientId clientId)

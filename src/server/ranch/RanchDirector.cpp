@@ -118,6 +118,7 @@ void RanchDirector::Initialize()
 
 void RanchDirector::Terminate()
 {
+  _server.Stop();
 }
 
 void RanchDirector::Tick()
@@ -159,10 +160,6 @@ void RanchDirector::HandleEnterRanch(
   auto& ranchInstance = _ranches[enterRanch.ranchUid];
 
   // Add the character to the ranch.
-  ranchInstance._worldTracker.AddHorse(
-    1);
-  ranchInstance._worldTracker.AddHorse(
-    4);
   ranchInstance._worldTracker.AddCharacter(
     enterRanch.characterUid);
 
