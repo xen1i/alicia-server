@@ -19,6 +19,7 @@
 
 #include "server/lobby/LobbyDirector.hpp"
 
+#include "libserver/data/helper/ProtocolHelper.hpp"
 #include "libserver/registry/RoomRegistry.hpp"
 
 #include <random>
@@ -162,6 +163,11 @@ LobbyDirector::LobbyDirector(soa::DataDirector& dataDirector, Settings::LobbySet
     CommandId::LobbyEnterRandomRanch,
     [this](ClientId clientId, auto& command)
     {
+      const auto randomRanchUids = _dataDirector.GetRanches().GetKeys();
+      std::uniform_int_distribution<soa::data::Uid> uidDistribution(
+        0, randomRanchUids.size() - 1);
+
+      QueueEnterRanchOK(clientId, randomRanchUids[uidDistribution(rd)]);
     });
 }
 
@@ -264,9 +270,22 @@ void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+
   LobbyCommandShowInventoryOK response{
     .items = {},
     .horses = {}};
+
+  characterRecord->Immutable([this, &response](const soa::data::Character& character)
+  {
+    auto itemRecords = _dataDirector.GetItems().Get(character.inventory());
+    protocol::BuildProtocolItems(response.items, *itemRecords);
+
+    auto horseRecords = _dataDirector.GetHorses().Get(character.horses());
+    protocol::BuildProtocolHorses(response.horses, *horseRecords);
+  });
 
   _server.QueueCommand<decltype(response)>(
     clientId,
@@ -415,15 +434,24 @@ void LobbyDirector::HandleEnterRanch(
       std::format("Character [{}] not available", clientContext.characterUid));
   }
 
+  auto ranchUid = soa::data::InvalidUid;
+  characterRecord->Immutable([&ranchUid](const soa::data::Character& character)
+  {
+    ranchUid = character.ranchUid();
+  });
+
+  QueueEnterRanchOK(clientId, ranchUid);
+}
+
+void LobbyDirector::QueueEnterRanchOK(
+  ClientId clientId,
+  soa::data::Uid ranchUid)
+{
   LobbyCommandEnterRanchOK response{
+    .ranchUid =  ranchUid,
     .code = 0x44332211,
     .ip = static_cast<uint32_t>(htonl(_settings.ranchAdvAddress.to_uint())),
     .port = _settings.ranchAdvPort};
-
-  characterRecord->Immutable([&response](const soa::data::Character& character)
-  {
-    response.ranchUid = character.ranchUid();
-  });
 
   _server.QueueCommand<decltype(response)>(
     clientId,

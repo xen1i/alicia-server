@@ -48,6 +48,8 @@ public:
   //! Ticks the data director.
   void Tick();
 
+  UserStorage& GetUsers();
+
   Record<data::Character> CreateCharacter()
   {
     return _characterStorage.Create([this]() {
@@ -58,9 +60,7 @@ public:
     });
   }
 
-  UserStorage& GetUsers();
   CharacterStorage& GetCharacters();
-  ItemStorage& GetItems();
 
   Record<data::Horse> CreateHorse()
   {
@@ -69,6 +69,18 @@ public:
       _dataSource->CreateHorse(horse);
 
       return std::make_pair(horse.uid(), std::move(horse));
+    });
+  }
+
+  ItemStorage& GetItems();
+
+  Record<data::Item> CreateItem()
+  {
+    return _itemStorage.Create([this]() {
+      data::Item item;
+      _dataSource->CreateItem(item);
+
+      return std::make_pair(item.uid(), std::move(item));
     });
   }
 

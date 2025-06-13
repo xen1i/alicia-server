@@ -104,6 +104,10 @@ private:
     ClientId clientId,
     const LobbyCommandEnterRanch& requestEnterRanch);
 
+  void QueueEnterRanchOK(
+    ClientId clientId,
+    soa::data::Uid ranchUid);
+
   //!
   void HandleGetMessengerInfo(
     ClientId clientId,

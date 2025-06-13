@@ -106,6 +106,8 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyGuildPartyList, "LobbyGuildPartyList"},
   {CommandId::LobbyGuildPartyListOK, "LobbyGuildPartyListOK"},
 
+  {CommandId::LobbyEnterRandomRanch, "LobbyEnterRandomRanch"},
+
   {CommandId::RanchEnterRanch, "RanchEnterRanch"},
   {CommandId::RanchEnterRanchCancel, "RanchEnterRanchCancel"},
   {CommandId::RanchEnterRanchNotify, "RanchEnterRanchNotify"},
@@ -156,7 +158,17 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::RanchChat, "RanchChat"},
   {CommandId::RanchChatNotify, "RanchChatNotify"},
 
-  {CommandId::LobbyEnterRandomRanch, "LobbyEnterRandomRanch"},
+  {CommandId::RanchWearEquipment, "RanchWearEquipment"},
+  {CommandId::RanchWearEquipmentOK, "RanchWearEquipmentOK"},
+  {CommandId::RanchWearEquipmentCancel, "RanchWearEquipmentCancel"},
+
+  {CommandId::RanchRemoveEquipment, "RanchWearEquipment"},
+  {CommandId::RanchRemoveEquipmentOK, "RanchWearEquipmentOK"},
+  {CommandId::RanchRemoveEquipmentCancel, "RanchWearEquipmentCancel"},
+
+  {CommandId::RanchUseItem, "RanchUseItem"},
+  {CommandId::RanchUseItemOK, "RanchUseItemOK"},
+  {CommandId::RanchUseItemCancel, "RanchUseItemCancel"},
 
   {CommandId::RaceEnterRoom, "RaceEnterRoom"},
   {CommandId::RaceEnterRoomNotify, "RaceEnterRoomNotify"},

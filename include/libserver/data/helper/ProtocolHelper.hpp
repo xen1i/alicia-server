@@ -24,6 +24,14 @@ void BuildProtocolHorse(
   Horse& protocolHorse,
   const soa::data::Horse& horse);
 
+void BuildProtocolHorses(
+    std::vector<Horse>& protocolHorses,
+    const std::vector<soa::Record<soa::data::Horse>>& horses);
+
+void BuildProtocolItem(
+  Item& protocolItem,
+  const soa::data::Item& item);
+
 void BuildProtocolItems(
   std::vector<Item>& protocolItems,
   const std::vector<soa::Record<soa::data::Item>>& items);

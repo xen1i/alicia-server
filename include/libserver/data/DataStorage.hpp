@@ -27,6 +27,7 @@
 #include <spdlog/spdlog.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <ranges>
 
 namespace soa
 {
@@ -225,6 +226,16 @@ public:
     if (isComplete)
       return records;
     return std::nullopt;
+  }
+
+  std::vector<Key> GetKeys()
+  {
+    std::vector<Key> keys;
+    for (const auto & key : std::ranges::views::keys(_entries))
+    {
+      keys.emplace_back(key);
+    }
+    return keys;
   }
 
   void Save(const Key& key)

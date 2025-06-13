@@ -19,9 +19,10 @@
 
 #include "server/ranch/RanchDirector.hpp"
 
+#include "libserver/util/Util.hpp"
 #include "libserver/data/helper/ProtocolHelper.hpp"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 namespace alicia
 {
@@ -37,65 +38,110 @@ RanchDirector::RanchDirector(soa::DataDirector& dataDirector, Settings::RanchSet
   _server.RegisterCommandHandler<RanchCommandEnterRanch>(
     CommandId::RanchEnterRanch,
     [this](ClientId clientId, const auto& message)
-    { HandleEnterRanch(clientId, message); });
+    {
+      HandleEnterRanch(clientId, message);
+    });
 
   // Snapshot handler
   _server.RegisterCommandHandler<RanchCommandRanchSnapshot>(
     CommandId::RanchSnapshot,
     [this](ClientId clientId, const auto& message)
-    { HandleSnapshot(clientId, message); });
+    {
+      HandleSnapshot(clientId, message);
+    });
 
   // RanchCmdAction handler
   _server.RegisterCommandHandler<RanchCommandRanchCmdAction>(
     CommandId::RanchCmdAction,
     [this](ClientId clientId, const auto& message)
-    { HandleCmdAction(clientId, message); });
+    {
+      HandleCmdAction(clientId, message);
+    });
 
   // RanchStuff handler
   _server.RegisterCommandHandler<RanchCommandRanchStuff>(
     CommandId::RanchStuff,
     [this](ClientId clientId, const auto& message)
-    { HandleRanchStuff(clientId, message); });
+    {
+      HandleRanchStuff(clientId, message);
+    });
 
   _server.RegisterCommandHandler<RanchCommandUpdateBusyState>(
     CommandId::RanchUpdateBusyState,
     [this](ClientId clientId, auto& command)
-    { HandleUpdateBusyState(clientId, command); });
+    {
+      HandleUpdateBusyState(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandSearchStallion>(
     CommandId::RanchSearchStallion,
     [this](ClientId clientId, auto& command)
-    { HandleSearchStallion(clientId, command); });
+    {
+      HandleSearchStallion(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandEnterBreedingMarket>(
     CommandId::RanchEnterBreedingMarket,
     [this](ClientId clientId, auto& command)
-    { HandleEnterBreedingMarket(clientId, command); });
+    {
+      HandleEnterBreedingMarket(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandTryBreeding>(
     CommandId::RanchTryBreeding,
     [this](ClientId clientId, auto& command)
-    { HandleTryBreeding(clientId, command); });
+    {
+      HandleTryBreeding(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandBreedingWishlist>(
     CommandId::RanchBreedingWishlist,
     [this](ClientId clientId, auto& command)
-    { HandleBreedingWishlist(clientId, command); });
+    {
+      HandleBreedingWishlist(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandUpdateMountNickname>(
     CommandId::RanchUpdateMountNickname,
     [this](ClientId clientId, auto& command)
-    { HandleUpdateMountNickname(clientId, command); });
+    {
+      HandleUpdateMountNickname(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandRequestStorage>(
     CommandId::RanchRequestStorage,
     [this](ClientId clientId, auto& command)
-    { HandleRequestStorage(clientId, command); });
+    {
+      HandleRequestStorage(clientId, command);
+    });
 
   _server.RegisterCommandHandler<RanchCommandChat>(
     CommandId::RanchChat,
     [this](ClientId clientId, auto& command)
-    { HandleChat(clientId, command); });
+    {
+      HandleChat(clientId, command);
+    });
+
+  _server.RegisterCommandHandler<RanchCommandWearEquipment>(
+    CommandId::RanchWearEquipment,
+    [this](ClientId clientId, auto& command)
+    {
+      HandleWearEquipment(clientId, command);
+    });
+
+  _server.RegisterCommandHandler<RanchCommandRemoveEquipment>(
+    CommandId::RanchRemoveEquipment,
+    [this](ClientId clientId, auto& command)
+    {
+      HandleRemoveEquipment(clientId, command);
+    });
+
+  _server.RegisterCommandHandler<RanchCommandUseItem>(
+    CommandId::RanchUseItem,
+    [this](ClientId clientId, auto& command)
+    {
+      HandleUseItem(clientId, command);
+    });
 }
 
 void RanchDirector::Initialize()
@@ -329,28 +375,6 @@ void RanchDirector::HandleSnapshot(
     // Do not broadcast to the client that sent the snapshot.
     if (ranchClient == clientId)
       continue;
-
-    if (snapshot.type == RanchCommandRanchSnapshot::Full)
-    {
-      spdlog::debug(
-        "Full update from {} sent to {}. [ranchIndex: {}, time: {}, {}, {}, velX: {}, velY: {}, velZ: {}]",
-        clientContext.characterUid,
-        _clientContext[ranchClient].characterUid,
-        snapshot.full.ranchIndex,
-        snapshot.full.time,
-        snapshot.full.action,
-        snapshot.full.timer,
-        snapshot.full.velocityX,
-        snapshot.full.velocityY,
-        snapshot.full.velocityZ);
-    }
-    else
-    {
-      spdlog::debug(
-        "Partial update from {} sent to {}.",
-        clientContext.characterUid,
-        _clientContext[ranchClient].characterUid);
-    }
 
     _server.QueueCommand<decltype(response)>(
       ranchClient,
@@ -619,7 +643,7 @@ void RanchDirector::HandleRequestNpcDressList(ClientId clientId, const RanchComm
 
 void RanchDirector::HandleChat(
   ClientId clientId,
-  const RanchCommandChat& command)
+  const RanchCommandChat& chat)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = _dataDirector.GetCharacters().Get(
@@ -627,24 +651,213 @@ void RanchDirector::HandleChat(
 
   auto& ranchInstance = _ranches[clientContext.ranchUid];
 
+  if (chat.message.starts_with("//"))
+  {
+    RanchCommandChatNotify response{
+      .author = "system",
+      .isBlue = true};
+    response.message = HandleCommand(clientId, chat.message);
+
+    SendChat(clientId, response);
+    return;
+  }
+
   RanchCommandChatNotify response{
-    .message = command.message};
+    .message = chat.message};
 
   characterRecord->Immutable([&response](const soa::data::Character& character)
-  {
-    response.author = character.name();
-  });
+                             { response.author = character.name(); });
 
   for (const auto ranchClientId : ranchInstance._clients)
   {
+    SendChat(ranchClientId, response);
+  }
+}
+
+std::string RanchDirector::HandleCommand(
+  ClientId clientId,
+  const std::string& message)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+
+  const auto command = TokenizeString(
+    message.substr(2), ' ');
+
+  if (command.empty())
+    return "No command provided.";
+
+  if (command[0] == "give")
+  {
+    if (command.size() < 2)
+      return "Invalid command sub-literal. (//give <item/horse>)";
+
+    if (command[1] == "item")
+    {
+      if (command.size() < 4)
+        return "Invalid command arguments. (//give item <count> <uid>)";
+
+      uint32_t itemCount = std::atoi(command[2].c_str());
+      soa::data::Uid itemTid = std::atoi(command[3].c_str());
+
+      auto itemUid = soa::data::InvalidUid;
+      auto newItem = _dataDirector.CreateItem();
+      newItem.Mutable([itemTid, itemCount, &itemUid](soa::data::Item& item)
+                      {
+        item.tid() = itemTid;
+        item.count() = itemCount;
+
+        itemUid = item.uid(); });
+
+      characterRecord->Mutable([itemUid](soa::data::Character& character)
+      {
+        character.inventory().emplace_back(itemUid);
+      });
+
+      return "Item given. Please restart client.";
+    }
+
+    if (command[1] == "horse")
+    {
+      if (command.size() < 3)
+      {
+        return "Not implemented";
+      }
+    }
+  }
+
+  return "Invalid command";
+}
+
+void RanchDirector::SendChat(
+  ClientId clientId,
+  const RanchCommandChatNotify& chat)
+{
+  _server.QueueCommand<RanchCommandChatNotify>(
+    clientId,
+    CommandId::RanchChatNotify,
+    [chat]()
+    {
+      return chat;
+    });
+}
+
+void RanchDirector::HandleWearEquipment(
+  ClientId clientId,
+  const RanchCommandWearEquipment& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);;
+
+  bool successful = false;
+  characterRecord->Mutable([&command, &successful](soa::data::Character& character)
+  {
+    const bool ownsItem = std::ranges::contains(
+      character.inventory(), command.uid);
+    const bool ownsHorse = std::ranges::contains(
+      character.horses(), command.uid);
+
+    // Make sure the equip UID is either a valid item or a horse.
+    successful = ownsItem || ownsHorse;
+
+    if (ownsHorse)
+    {
+      character.mountUid() = command.uid;
+    }
+    else if (ownsItem)
+    {
+      character.characterEquipment().emplace_back(command.uid);
+    }
+  });
+
+  if (successful)
+  {
+    RanchCommandWearEquipmentOK response{
+      .itemUid = command.uid,
+      .member = command.member};
+
     _server.QueueCommand<decltype(response)>(
-      ranchClientId,
-      CommandId::RanchChatNotify,
+      clientId,
+      CommandId::RanchWearEquipmentOK,
       [response]()
       {
         return response;
       });
+
+    return;
   }
+
+  RanchCommandWearEquipmentCancel response{
+    .itemUid = command.uid,
+    .member = command.member};
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchWearEquipmentCancel,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void RanchDirector::HandleRemoveEquipment(
+  ClientId clientId,
+  const RanchCommandRemoveEquipment& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+  ;
+
+  characterRecord->Mutable([&command](soa::data::Character& character)
+                           {
+    const bool ownsItem = std::ranges::contains(
+      character.inventory(), command.uid);
+
+    // You can't unequip horse, you can only switch
+    // to a different one (at least in Alicia 1.0).
+
+    if (ownsItem)
+    {
+      const auto range = std::ranges::remove(
+        character.characterEquipment(), command.uid);
+      character.characterEquipment().erase(range.begin(), range.end());
+    } });
+
+  // We really don't need to cancel the unequip.
+  // Always respond with OK.
+  RanchCommandRemoveEquipmentOK response{
+    .uid = command.uid};
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchRemoveEquipmentOK,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void RanchDirector::HandleUseItem(
+  ClientId clientId,
+  const RanchCommandUseItem& command)
+{
+  RanchCommandUseItemOK response
+  {
+    response.unk0 = command.unk0,
+    response.unk1 = command.unk1,
+    response.type = RanchCommandUseItemOK::ActionType::Empty
+  };
+
+  _server.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchUseItemOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 } // namespace alicia

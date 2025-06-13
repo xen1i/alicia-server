@@ -83,4 +83,26 @@ std::string GenerateByteDump(const std::span<const std::byte> data)
   return dump;
 }
 
+std::vector<std::string> TokenizeString(const std::string& value, char delimiter)
+{
+  std::vector<std::string> tokens;
+  size_t position = 0;
+  size_t idx = std::string::npos;
+  while (true)
+  {
+    idx = value.find(delimiter, position);
+    if (idx == std::string::npos)
+    {
+      tokens.emplace_back(
+        value.substr(position));
+      break;
+    }
+
+    tokens.emplace_back(
+      value.substr(position, idx - position));
+    position = idx + 1;
+  }
+  return tokens;
+}
+
 } // namespace alicia

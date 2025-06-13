@@ -56,13 +56,48 @@ struct RanchCommandUseItem
 //!
 struct RanchCommandUseItemOK
 {
+  enum class ActionType : uint32_t
+  {
+    Empty,
+    Action1,
+    Action2,
+    Action3,
+    Action4
+  };
+
+  struct ActionTwoBytes
+  {
+    uint8_t unk0{};
+    uint8_t unk1{};
+
+    static void Write(
+      const ActionTwoBytes& action,
+      SinkStream& stream);
+    static void Read(
+      ActionTwoBytes& action,
+      SourceStream& stream);
+  };
+
+  struct ActionOneByte
+  {
+    uint8_t unk0{};
+
+    static void Write(
+      const ActionOneByte& action,
+      SinkStream& stream);
+    static void Read(
+      ActionOneByte& action,
+      SourceStream& stream);
+  };
+
   uint32_t unk0{};
   uint16_t unk1{};
 
   // Action points to different structures depending on type
-  uint32_t type{};
-  // todo: std::variant instead of a pointer, or just template the struct
-  void* action = nullptr;
+  ActionType type{};
+
+  ActionTwoBytes actionTwoBytes{};
+  ActionOneByte actionOneByte{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -79,20 +114,25 @@ struct RanchCommandUseItemOK
     SourceStream& stream);
 };
 
-struct UseItemType0Action
+//!
+struct RanchCommandUseItemCancel
 {
-  // Empty
-};
-
-struct UseItemType1And2And3Action
-{
-  uint8_t unk0{};
+  uint32_t unk0{};
   uint8_t unk1{};
-};
 
-struct UseItemType4Action
-{
-  uint8_t unk0{};
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandUseItemCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandUseItemCancel& command,
+    SourceStream& stream);
 };
 
 struct MountFamilyTreeItem
@@ -1144,7 +1184,123 @@ struct RanchCommandChatNotify
     SourceStream& stream);
 };
 
-// TODO Quest commands: RanchCommandUpdateDailyQuest, RanchCommandEmblemList, etc.
+struct RanchCommandWearEquipment
+{
+  uint32_t uid{};
+  uint8_t member{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandWearEquipment& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandWearEquipment& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandWearEquipmentOK
+{
+  uint32_t itemUid{};
+  uint8_t member{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandWearEquipmentOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandWearEquipmentOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandWearEquipmentCancel
+{
+  uint32_t itemUid{};
+  uint8_t member{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandWearEquipmentCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandWearEquipmentCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRemoveEquipment
+{
+  uint32_t uid{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRemoveEquipment& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRemoveEquipment& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRemoveEquipmentOK
+{
+  uint32_t uid{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRemoveEquipmentOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRemoveEquipmentOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRemoveEquipmentCancel
+{
+  uint32_t itemUid{};
+  uint8_t member{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRemoveEquipmentCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRemoveEquipmentCancel& command,
+    SourceStream& stream);
+};
 
 } // namespace alicia
 

@@ -138,6 +138,8 @@ enum class CommandId : uint16_t
   LobbyGuildPartyList = 0x3c2,
   LobbyGuildPartyListOK = 0x3c3,
 
+  LobbyEnterRandomRanch = 0x109,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,
   RanchEnterRanchNotify = 0x12e,
@@ -188,7 +190,17 @@ enum class CommandId : uint16_t
   RanchChat = 0x137,
   RanchChatNotify = 0x138,
 
-  LobbyEnterRandomRanch = 0x109,
+  RanchWearEquipment = 0x81,
+  RanchWearEquipmentOK = 0x82,
+  RanchWearEquipmentCancel = 0x83,
+
+  RanchRemoveEquipment = 0x84,
+  RanchRemoveEquipmentOK = 0x85,
+  RanchRemoveEquipmentCancel = 0x86,
+
+  RanchUseItem = 0x1e0,
+  RanchUseItemOK = 0x1e1,
+  RanchUseItemCancel = 0x1e2,
 
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,

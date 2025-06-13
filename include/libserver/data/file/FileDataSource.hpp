@@ -40,6 +40,7 @@ public:
   void RetrieveCharacter(data::Uid uid, data::Character& character) override;
   void StoreCharacter(data::Uid uid, const data::Character& character) override;
 
+  void CreateItem(data::Item& item) override;
   void RetrieveItem(data::Uid uid, data::Item& item) override;
   void StoreItem(data::Uid uid, const data::Item& item) override;
 

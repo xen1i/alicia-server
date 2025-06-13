@@ -203,6 +203,12 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
   file << json.dump(2);
 }
 
+void soa::FileDataSource::CreateItem(data::Item& item)
+{
+  _sequentialUid++;
+  item.uid = _sequentialUid;
+}
+
 void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(

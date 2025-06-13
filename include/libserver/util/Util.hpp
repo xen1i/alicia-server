@@ -45,6 +45,8 @@ asio::ip::address_v4 ResolveHostName(const std::string& host);
 
 std::string GenerateByteDump(std::span<const std::byte> data);
 
+std::vector<std::string> TokenizeString(const std::string& value, char delimiter);
+
 } // namespace alicia
 
 #endif // UTIL_HPP

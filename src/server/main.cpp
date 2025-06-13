@@ -226,23 +226,8 @@ int main()
     std::string commandLine;
     std::getline(std::cin, commandLine);
 
-    std::vector<std::string> command;
-    size_t position = 0;
-    size_t idx = std::string::npos;
-    while (true)
-    {
-      idx = commandLine.find(' ', position);
-      if (idx == std::string::npos)
-      {
-        command.emplace_back(
-          commandLine.substr(position));
-        break;
-      }
-
-      command.emplace_back(
-        commandLine.substr(position, idx - position));
-      position = idx + 1;
-    }
+    const auto command = alicia::TokenizeString(
+      commandLine, ' ');
 
     if (command[0] == "exit")
     {

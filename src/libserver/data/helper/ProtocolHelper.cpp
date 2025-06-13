@@ -10,7 +10,9 @@ namespace alicia
 namespace protocol
 {
 
-void BuildProtocolCharacter(Character& protocolCharacter, const soa::data::Character& character)
+void BuildProtocolCharacter(
+  Character& protocolCharacter,
+  const soa::data::Character& character)
 {
   // Set the character parts.
   // These serial ID's can be found in the `_ClientCharDefaultPartInfo` table.
@@ -30,7 +32,9 @@ void BuildProtocolCharacter(Character& protocolCharacter, const soa::data::Chara
   };
 }
 
-void BuildProtocolHorse(Horse& protocolHorse, const soa::data::Horse& horse)
+void BuildProtocolHorse(
+  Horse& protocolHorse,
+  const soa::data::Horse& horse)
 {
   protocolHorse.uid = horse.uid();
   protocolHorse.tid = horse.tid();
@@ -109,17 +113,39 @@ void BuildProtocolHorse(Horse& protocolHorse, const soa::data::Horse& horse)
   };
 }
 
-void BuildProtocolItems(std::vector<Item>& protocolItems, const std::vector<soa::Record<soa::data::Item>>& items)
+void BuildProtocolHorses(
+  std::vector<Horse>& protocolHorses,
+  const std::vector<soa::Record<soa::data::Horse>>& horses)
 {
-  // The character equipment items.
-  for (const soa::Record<soa::data::Item>& itemRecord : items)
+  for (const auto& horse : horses)
+  {
+    auto& protocolHorse = protocolHorses.emplace_back();
+    horse.Immutable([&protocolHorse](const auto& horse)
+    {
+      BuildProtocolHorse(protocolHorse, horse);
+    });
+  }
+}
+
+void BuildProtocolItem(
+  Item& protocolItem,
+  const soa::data::Item& item)
+{
+  protocolItem.uid = item.uid();
+  protocolItem.tid = item.tid();
+  protocolItem.count = item.count();
+}
+
+void BuildProtocolItems(
+  std::vector<Item>& protocolItems,
+  const std::vector<soa::Record<soa::data::Item>>& items)
+{
+  for (const auto& item : items)
   {
     auto& protocolItem = protocolItems.emplace_back();
-    itemRecord.Immutable([&protocolItem](const soa::data::Item& item)
+    item.Immutable([&protocolItem](const auto& item)
     {
-      protocolItem.uid = item.uid();
-      protocolItem.tid = item.tid();
-      protocolItem.count = item.count();
+      BuildProtocolItem(protocolItem, item);
     });
   }
 }

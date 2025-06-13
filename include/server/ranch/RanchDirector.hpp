@@ -107,6 +107,26 @@ private:
     ClientId clientId,
     const RanchCommandChat& command);
 
+  std::string HandleCommand(
+    ClientId clientId,
+    const std::string& message);
+
+  void SendChat(
+    ClientId clientId,
+    const RanchCommandChatNotify& chat);
+
+  void HandleWearEquipment(
+    ClientId clientId,
+    const RanchCommandWearEquipment& command);
+
+  void HandleRemoveEquipment(
+    ClientId clientId,
+    const RanchCommandRemoveEquipment& command);
+
+  void HandleUseItem(
+    ClientId clientId,
+    const RanchCommandUseItem& command);
+
   //!
   Settings::RanchSettings _settings;
   //!
