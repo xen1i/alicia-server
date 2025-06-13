@@ -195,14 +195,14 @@ void LoginHandler::HandleUserCreateCharacter(
 
     // The TID of the horse specifies which body mesh is used for that horse.
     // Can be found in the `MountPartInfo` table.
-    horse.tid() = 20001;
+    horse.tid() = 20002;
 
     // The default parts and appearance of each horse TID
     // can be found in the `MountPartSet` table.
     horse.parts.faceId() = 1;
-    horse.parts.maneId() = 5;
-    horse.parts.skinId() = 2;
-    horse.parts.tailId() = 3;
+    horse.parts.maneId() = 1;
+    horse.parts.skinId() = 4;
+    horse.parts.tailId() = 1;
     horse.appearance.bodyLength() = 5;
     horse.appearance.bodyVolume() = 5;
     horse.appearance.legLength() = 5;
@@ -240,7 +240,7 @@ void LoginHandler::HandleUserCreateCharacter(
   {
     userCharacterUid = character.uid();
 
-    character.level = 1;
+    character.level = 60;
     character.carrots = 5000;
 
     character.name = command.nickname;
