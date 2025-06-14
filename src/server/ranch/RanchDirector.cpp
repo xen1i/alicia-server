@@ -637,7 +637,7 @@ void RanchDirector::HandleRequestStorage(
   RanchCommandRequestStorageOK response{
     .category = command.category,
     .page = 1,
-    .val2 = static_cast<uint16_t>(1 << idx++)};
+    .pageCountAndNotification = 0};
 
   const bool showPurchases = command.category == RanchCommandRequestStorage::Category::Purchases;
 

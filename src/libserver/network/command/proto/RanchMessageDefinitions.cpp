@@ -946,7 +946,7 @@ void RanchCommandRequestStorageOK::Write(
 {
   stream.Write(command.category)
     .Write(command.page)
-    .Write(command.val2);
+    .Write(command.pageCountAndNotification);
 
   stream.Write(static_cast<uint8_t>(command.storedItems.size()));
   for (const auto& storedItem : command.storedItems)

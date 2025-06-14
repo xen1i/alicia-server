@@ -1034,7 +1034,9 @@ struct RanchCommandRequestStorageOK
 {
   RanchCommandRequestStorage::Category category{};
   uint16_t page{};
-  uint16_t val2{};
+  // First bit indicates whether there's new items
+  // in the storage. Other bits somehow indicate the page count.
+  uint16_t pageCountAndNotification{};
 
   //! Max 33 elements.
   std::vector<StoredItem> storedItems{};
