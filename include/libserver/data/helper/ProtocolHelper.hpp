@@ -5,7 +5,6 @@
 #ifndef PROTOCOLHELPER_HPP
 #define PROTOCOLHELPER_HPP
 
-
 #include "libserver/data/DataDefinitions.hpp"
 #include "libserver/data/DataStorage.hpp"
 #include "libserver/network/command/proto/CommonStructureDefinitions.hpp"
@@ -23,6 +22,22 @@ void BuildProtocolCharacter(
 void BuildProtocolHorse(
   Horse& protocolHorse,
   const soa::data::Horse& horse);
+
+void BuildProtocolHorseParts(
+  Horse::Parts& protocolHorseParts,
+  const soa::data::Horse::Parts& parts);
+
+void BuildProtocolHorseAppearance(
+  Horse::Appearance& protocolHorseAppearance,
+  const soa::data::Horse::Appearance& appearance);
+
+void BuildProtocolHorseStats(
+  Horse::Stats& protocolHorseStats,
+  const soa::data::Horse::Stats& stats);
+
+void BuildProtocolHorseMastery(
+  Horse::Mastery& protocolHorseMastery,
+  const soa::data::Horse::Mastery& mastery);
 
 void BuildProtocolHorses(
     std::vector<Horse>& protocolHorses,

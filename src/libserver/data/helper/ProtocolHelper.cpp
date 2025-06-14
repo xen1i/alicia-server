@@ -85,31 +85,56 @@ void BuildProtocolHorse(
     .val14 = 0x00,
     .emblem = static_cast<uint16_t>(horse.emblem())};
 
-  protocolHorse.parts = {
-    .skinId = static_cast<uint8_t>(horse.parts.skinId()),
-    .maneId = static_cast<uint8_t>(horse.parts.maneId()),
-    .tailId = static_cast<uint8_t>(horse.parts.tailId()),
-    .faceId = static_cast<uint8_t>(horse.parts.faceId())};
+  BuildProtocolHorseParts(protocolHorse.parts, horse.parts);
+  BuildProtocolHorseAppearance(protocolHorse.appearance, horse.appearance);
+  BuildProtocolHorseStats(protocolHorse.stats, horse.stats);
+  BuildProtocolHorseMastery(protocolHorse.mastery, horse.mastery);
+}
 
-  protocolHorse.appearance = {
-    .scale = static_cast<uint8_t>(horse.appearance.scale()),
-    .legLength = static_cast<uint8_t>(horse.appearance.legLength()),
-    .legVolume = static_cast<uint8_t>(horse.appearance.legVolume()),
-    .bodyLength = static_cast<uint8_t>(horse.appearance.bodyLength()),
-    .bodyVolume = static_cast<uint8_t>(horse.appearance.bodyVolume())};
+void BuildProtocolHorseParts(
+  Horse::Parts& protocolHorseParts,
+  const soa::data::Horse::Parts& parts)
+{
+  protocolHorseParts = {
+    .skinId = static_cast<uint8_t>(parts.skinId()),
+    .maneId = static_cast<uint8_t>(parts.maneId()),
+    .tailId = static_cast<uint8_t>(parts.tailId()),
+    .faceId = static_cast<uint8_t>(parts.faceId())};
+}
 
-  protocolHorse.stats = {
-    .agility = horse.stats.agility(),
-    .control = horse.stats.control(),
-    .speed = horse.stats.speed(),
-    .strength = horse.stats.strength(),
-    .spirit = horse.stats.spirit()};
+void BuildProtocolHorseAppearance(
+  Horse::Appearance& protocolHorseAppearance,
+  const soa::data::Horse::Appearance& appearance)
+{
+  protocolHorseAppearance = {
+    .scale = static_cast<uint8_t>(appearance.scale()),
+    .legLength = static_cast<uint8_t>(appearance.legLength()),
+    .legVolume = static_cast<uint8_t>(appearance.legVolume()),
+    .bodyLength = static_cast<uint8_t>(appearance.bodyLength()),
+    .bodyVolume = static_cast<uint8_t>(appearance.bodyVolume())};
+}
 
-  protocolHorse.mastery = {
-    .spurMagicCount = horse.mastery.spurMagicCount(),
-    .jumpCount = horse.mastery.jumpCount(),
-    .slidingTime = horse.mastery.slidingTime(),
-    .glidingDistance = horse.mastery.glidingDistance(),
+void BuildProtocolHorseStats(
+  Horse::Stats& protocolHorseStats,
+  const soa::data::Horse::Stats& stats)
+{
+  protocolHorseStats = {
+    .agility = stats.agility(),
+    .control = stats.control(),
+    .speed = stats.speed(),
+    .strength = stats.strength(),
+    .spirit = stats.spirit()};
+}
+
+void BuildProtocolHorseMastery(
+  Horse::Mastery& protocolHorseMastery,
+  const soa::data::Horse::Mastery& mastery)
+{
+  protocolHorseMastery = {
+    .spurMagicCount = mastery.spurMagicCount(),
+    .jumpCount = mastery.jumpCount(),
+    .slidingTime = mastery.slidingTime(),
+    .glidingDistance = mastery.glidingDistance(),
   };
 }
 

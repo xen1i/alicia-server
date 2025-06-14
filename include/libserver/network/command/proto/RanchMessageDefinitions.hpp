@@ -676,8 +676,8 @@ struct RanchCommandSearchStallionOK
   struct Stallion
   {
     std::string unk0{};
-    uint32_t unk1{}; // owner? horse id?
-    uint32_t unk2{}; // likely either of these in either order
+    uint32_t uid{};
+    uint32_t tid{};
     std::string name{};
     uint8_t grade{};
     uint8_t chance{};
@@ -735,10 +735,16 @@ struct RanchCommandEnterBreedingMarketOK
   {
     uint32_t uid{};
     uint32_t tid{};
-    uint8_t unk0{};
+    // Counts of successful breeds (>:o) in succession.
+    uint8_t combo{};
     uint32_t unk1{};
+
     uint8_t unk2{};
-    uint8_t unk3{};
+    // Basically weighted score of number of ancestors that share the same coat as the horse.
+    // Ancestors of first generation add two points to lineage,
+    // ancestors of the second generation add one point to the lineage,
+    // while the horse itself adds 1.
+    uint8_t lineage{};
   };
   std::vector<AvailableHorse> availableHorses{};
 

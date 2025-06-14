@@ -655,8 +655,8 @@ void RanchCommandSearchStallionOK::Write(
   for (auto& unk : command.stallions)
   {
     stream.Write(unk.unk0)
-      .Write(unk.unk1)
-      .Write(unk.unk2)
+      .Write(unk.uid)
+      .Write(unk.tid)
       .Write(unk.name)
       .Write(unk.grade)
       .Write(unk.chance)
@@ -722,9 +722,9 @@ void RanchCommandEnterBreedingMarketOK::Write(
   {
     stream.Write(availableHorse.uid)
       .Write(availableHorse.tid)
-      .Write(availableHorse.unk0)
+      .Write(availableHorse.combo)
       .Write(availableHorse.unk1)
-      .Write(availableHorse.unk2)
+      .Write(availableHorse.lineage)
       .Write(availableHorse.unk3);
   }
 }

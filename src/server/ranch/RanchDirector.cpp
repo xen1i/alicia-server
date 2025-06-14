@@ -482,36 +482,36 @@ void RanchDirector::HandleSearchStallion(
   ClientId clientId,
   const RanchCommandSearchStallion& command)
 {
-  // TODO: Fetch data from DB according to the filters in the request
   RanchCommandSearchStallionOK response{
     .unk0 = 0,
-    .unk1 = 0,
-    .stallions = {
-      RanchCommandSearchStallionOK::Stallion{
-        .unk0 = "test",
-        .unk1 = 0x3004e21,
-        .unk2 = 0x4e21,
-        .name = "Juan",
-        .grade = 4,
-        .chance = 0,
-        .price = 1,
-        .unk7 = 0xFFFFFFFF,
-        .unk8 = 0xFFFFFFFF,
-        .stats = {
-          .agility = 9,
-          .control = 9,
-          .speed = 9,
-          .strength = 9,
-          .spirit = 9},
-        .parts = {
-          .skinId = 1,
-          .maneId = 4,
-          .tailId = 4,
-          .faceId = 5,
-        },
-        .appearance = {.scale = 4, .legLength = 4, .legVolume = 5, .bodyLength = 3, .bodyVolume = 4},
-        .unk11 = 5,
-        .coatBonus = 0}}};
+    .unk1 = 0};
+
+  const auto horseUids = GetServerInstance().GetDataDirector().GetHorses().GetKeys();
+  for (const auto& horseUid : horseUids)
+  {
+    const auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+      horseUid);
+
+    auto& stallion = response.stallions.emplace_back();
+    horseRecord->Immutable([&stallion](const soa::data::Horse& horse)
+    {
+      stallion.unk0 = "unk";
+      stallion.uid = horse.uid();
+      stallion.tid = horse.tid();
+
+      stallion.chance = 0xFF;
+      stallion.unk7 = 0xFF;
+      stallion.unk8 = 0xFF;
+
+      stallion.name = horse.name();
+      stallion.grade = horse.grade();
+      stallion.unk11 = 0xFF;
+
+      protocol::BuildProtocolHorseStats(stallion.stats, horse.stats);
+      protocol::BuildProtocolHorseParts(stallion.parts, horse.parts);
+      protocol::BuildProtocolHorseAppearance(stallion.appearance, horse.appearance);
+    });
+  }
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -524,30 +524,37 @@ void RanchDirector::HandleSearchStallion(
 
 void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchCommandEnterBreedingMarket& command)
 {
-  // const DatumUid characterUid = _clientUsers[clientId];
-  // auto character = GetServerInstance().GetDataDirector().GetCharacter(characterUid);
-  // _server.QueueCommand(
-  //   clientId,
-  //   CommandId::RanchEnterBreedingMarketOK,
-  //   [&](auto& sink)
-  //   {
-  //     RanchCommandEnterBreedingMarketOK response;
-  //     for(DatumUid horseId : character->horses)
-  //     {
-  //       auto horse = GetServerInstance().GetDataDirector().GetHorse(horseId);
-  //       RanchCommandEnterBreedingMarketOK::AvailableHorse availableHorse
-  //       {
-  //         .uid = horseId,
-  //         .tid = horse->tid,
-  //         .unk0 = 0,
-  //         .unk1 = 0,
-  //         .unk2 = 0,
-  //         .unk3 = 0
-  //       };
-  //       response.availableHorses.push_back(availableHorse);
-  //     }
-  //     RanchCommandEnterBreedingMarketOK::Write(response, sink);
-  //   });
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    clientContext.characterUid);
+
+  RanchCommandEnterBreedingMarketOK response;
+
+  characterRecord->Immutable([this, &response](const soa::data::Character& character)
+  {
+    const auto horseRecords = GetServerInstance().GetDataDirector().GetHorses().Get(
+      character.horses());
+
+    for (const auto& horseRecord : *horseRecords)
+    {
+      auto& protocolHorse = response.availableHorses.emplace_back();
+      horseRecord.Immutable([&protocolHorse](const soa::data::Horse& horse)
+      {
+        protocolHorse.uid = horse.uid();
+        protocolHorse.tid = horse.tid();
+
+        // todo figure out the rest
+      });
+    }
+  });
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchEnterBreedingMarketOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 void RanchDirector::HandleTryBreeding(
@@ -663,7 +670,7 @@ void RanchDirector::HandleUpdateMountNickname(
     return;
   }
 
-  auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+  const auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
     command.horseUid);
 
   horseRecord->Mutable([horseName = command.name](soa::data::Horse& horse)

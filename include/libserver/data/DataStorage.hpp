@@ -102,7 +102,7 @@ public:
 
   //! Access to the underlying data.
   //! @param consumer Consumer that receives the data.
-  void Mutable(std::function<void(Data&)> consumer)
+  void Mutable(std::function<void(Data&)> consumer) const
   {
     _exclusiveLock.lock();
     consumer(*_value);
