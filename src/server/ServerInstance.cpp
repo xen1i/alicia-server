@@ -22,7 +22,7 @@ ServerInstance::~ServerInstance()
     {
       spdlog::debug("Waiting for the '{}' thread to finish...", threadName);
       thread.join();
-      spdlog::debug("Thread for '{}' finished");
+      spdlog::debug("Thread for '{}' finished", threadName);
     }
   };
 

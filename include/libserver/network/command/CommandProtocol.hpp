@@ -183,6 +183,10 @@ enum class CommandId : uint16_t
   RanchRequestStorageOK = 0x29a,
   RanchRequestStorageCancel = 0x29b,
 
+  RanchGetItemFromStorage = 0x29e,
+  RanchGetItemFromStorageOK = 0x29f,
+  RanchGetItemFromStorageCancel = 0x2a0,
+
   RanchRequestNpcDressList = 0x44c,
   RanchRequestNpcDressListCancel = 0x44e,
   RanchRequestNpcDressListOK = 0x44d,

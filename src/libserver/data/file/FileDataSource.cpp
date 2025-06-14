@@ -241,6 +241,49 @@ void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   file << json.dump(2);
 }
 
+void soa::FileDataSource::CreateStoredItem(data::StoredItem& item)
+{
+  _sequentialUid++;
+  item.uid = _sequentialUid;
+}
+
+void soa::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+  _itemsPath, std::format("{}", uid));
+
+  std::ifstream file(dataFilePath);
+  if (not file.is_open())
+    return;
+
+  const auto json = nlohmann::json::parse(file);
+
+  item.uid = json["uid"].get<data::Uid>();
+  item.items = json["items"].get<std::vector<data::Uid>>();
+  item.sender = json["sender"].get<std::string>();
+  item.message = json["message"].get<std::string>();
+  item.checked = json["checked"].get<bool>();
+  item.expired = json["expired"].get<bool>();
+}
+
+void soa::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem& item)
+{
+  const std::filesystem::path userFilePath = ProduceDataPath(
+  _itemsPath, std::format("{}", uid));
+
+  std::ofstream file(userFilePath);
+  if (not file.is_open())
+    return;
+
+  nlohmann::json json;
+  json["uid"] = item.uid();
+  json["items"] = item.items();
+  json["sender"] = item.sender();
+  json["message"] = item.message();
+  json["checked"] = item.checked();
+  json["expired"] = item.expired();
+}
+
 void soa::FileDataSource::CreateHorse(data::Horse& horse)
 {
   _sequentialUid++;

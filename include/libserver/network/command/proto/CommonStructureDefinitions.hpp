@@ -59,8 +59,28 @@ struct Item
   uint32_t val{};
   uint32_t count{};
 
-  static void Write(const Item& item, SinkStream& buffer);
-  static void Read(Item& item, SourceStream& buffer);
+  static void Write(const Item& item, SinkStream& stream);
+  static void Read(Item& item, SourceStream& stream);
+};
+
+struct StoredItem
+{
+  uint32_t uid{};
+  uint32_t val1{};
+  uint8_t val2{};
+  // hide sender and message.
+  uint32_t val3{};
+  uint32_t val4{};
+  uint32_t val5{};
+  uint32_t val6{};
+  std::string sender;
+  std::string message;
+  //! [0000'00][00'0000]'[0000'0000]'[0000]'[0000'0000'0000]
+  //! [minute] [hour] [day] [month] [year]
+  uint32_t dateAndTime{};
+
+  static void Write(const StoredItem& item, SinkStream& stream);
+  static void Read(StoredItem& item, SourceStream& stream);
 };
 
 //!
@@ -81,22 +101,22 @@ struct KeyboardOptions
     uint8_t type{};
     uint8_t key{};
 
-    static void Write(const Option& option, SinkStream& buffer);
-    static void Read(Option& option, SourceStream& buffer);
+    static void Write(const Option& option, SinkStream& stream);
+    static void Read(Option& option, SourceStream& stream);
   };
 
   std::vector<Option> bindings{};
 
-  static void Write(const KeyboardOptions& value, SinkStream& buffer);
-  static void Read(KeyboardOptions& value, SourceStream& buffer);
+  static void Write(const KeyboardOptions& value, SinkStream& stream);
+  static void Read(KeyboardOptions& value, SourceStream& stream);
 };
 
 struct MacroOptions
 {
   std::array<std::string, 8> macros;
 
-  static void Write(const MacroOptions& value, SinkStream& buffer);
-  static void Read(MacroOptions& value, SourceStream& buffer);
+  static void Write(const MacroOptions& value, SinkStream& stream);
+  static void Read(MacroOptions& value, SourceStream& stream);
 };
 
 //!
@@ -114,8 +134,8 @@ struct Character
     //!
     uint8_t val0{};
 
-    static void Write(const Parts& value, SinkStream& buffer);
-    static void Read(Parts& value, SourceStream& buffer);
+    static void Write(const Parts& value, SinkStream& stream);
+    static void Read(Parts& value, SourceStream& stream);
   } parts{};
 
   //!
@@ -134,12 +154,12 @@ struct Character
     //!
     uint16_t val1{};
 
-    static void Write(const Appearance& value, SinkStream& buffer);
-    static void Read(Appearance& value, SourceStream& buffer);
+    static void Write(const Appearance& value, SinkStream& stream);
+    static void Read(Appearance& value, SourceStream& stream);
   } appearance{};
 
-  static void Write(const Character& value, SinkStream& buffer);
-  static void Read(Character& value, SourceStream& buffer);
+  static void Write(const Character& value, SinkStream& stream);
+  static void Read(Character& value, SourceStream& stream);
 };
 
 //!
@@ -164,8 +184,8 @@ struct Horse
     //!
     uint8_t faceId{};
 
-    static void Write(const Parts& value, SinkStream& buffer);
-    static void Read(Parts& value, SourceStream& buffer);
+    static void Write(const Parts& value, SinkStream& stream);
+    static void Read(Parts& value, SourceStream& stream);
   } parts{};
 
   //! Figure
@@ -182,8 +202,8 @@ struct Horse
     //!
     uint8_t bodyVolume{};
 
-    static void Write(const Appearance& value, SinkStream& buffer);
-    static void Read(Appearance& value, SourceStream& buffer);
+    static void Write(const Appearance& value, SinkStream& stream);
+    static void Read(Appearance& value, SourceStream& stream);
   } appearance{};
 
   struct Stats
@@ -199,8 +219,8 @@ struct Horse
     //!
     uint32_t spirit{};
 
-    static void Write(const Stats& value, SinkStream& buffer);
-    static void Read(Stats& value, SourceStream& buffer);
+    static void Write(const Stats& value, SinkStream& stream);
+    static void Read(Stats& value, SourceStream& stream);
   } stats{};
 
   uint32_t rating{};
@@ -266,15 +286,15 @@ struct Horse
     //! Divided by 10?
     uint32_t glidingDistance{};
 
-    static void Write(const Mastery& value, SinkStream& buffer);
-    static void Read(Mastery& value, SourceStream& buffer);
+    static void Write(const Mastery& value, SinkStream& stream);
+    static void Read(Mastery& value, SourceStream& stream);
   } mastery{};
 
   uint32_t val16{};
   uint32_t val17{};
 
-  static void Write(const Horse& value, SinkStream& buffer);
-  static void Read(Horse& value, SourceStream& buffer);
+  static void Write(const Horse& value, SinkStream& stream);
+  static void Read(Horse& value, SourceStream& stream);
 };
 
 //!
@@ -289,8 +309,8 @@ struct Struct5
   // ignored by the client?
   uint8_t val6{};
 
-  static void Write(const Struct5& value, SinkStream& buffer);
-  static void Read(Struct5& value, SourceStream& buffer);
+  static void Write(const Struct5& value, SinkStream& stream);
+  static void Read(Struct5& value, SourceStream& stream);
 };
 
 //!
@@ -300,8 +320,8 @@ struct Struct6
   uint32_t val1{};
   uint32_t val2{};
 
-  static void Write(const Struct6& value, SinkStream& buffer);
-  static void Read(Struct6& value, SourceStream& buffer);
+  static void Write(const Struct6& value, SinkStream& stream);
+  static void Read(Struct6& value, SourceStream& stream);
 };
 
 //!
@@ -312,8 +332,8 @@ struct Struct7
   std::string val2{};
   uint32_t val3{};
 
-  static void Write(const Struct7& value, SinkStream& buffer);
-  static void Read(Struct7& value, SourceStream& buffer);
+  static void Write(const Struct7& value, SinkStream& stream);
+  static void Read(Struct7& value, SourceStream& stream);
 };
 
 //!
@@ -322,8 +342,8 @@ struct RanchHorse
   uint16_t ranchIndex{};
   Horse horse{};
 
-  static void Write(const RanchHorse& value, SinkStream& buffer);
-  static void Read(RanchHorse& value, SourceStream& buffer);
+  static void Write(const RanchHorse& value, SinkStream& stream);
+  static void Read(RanchHorse& value, SourceStream& stream);
 };
 
 //!
@@ -352,8 +372,8 @@ struct RanchCharacter
   uint8_t unk4{};
   uint8_t unk5{};
 
-  static void Write(const RanchCharacter& ranchCharacter, SinkStream& buffer);
-  static void Read(RanchCharacter& value, SourceStream& buffer);
+  static void Write(const RanchCharacter& ranchCharacter, SinkStream& stream);
+  static void Read(RanchCharacter& value, SourceStream& stream);
 };
 
 //!
@@ -366,8 +386,8 @@ struct Quest
   uint8_t member3{};
   uint8_t member4{};
 
-  static void Write(const Quest& value, SinkStream& buffer);
-  static void Read(Quest& value, SourceStream& buffer);
+  static void Write(const Quest& value, SinkStream& stream);
+  static void Read(Quest& value, SourceStream& stream);
 };
 
 //!
@@ -376,8 +396,8 @@ struct RanchUnk11
   uint8_t unk0{};
   uint8_t unk1{};
 
-  static void Write(const RanchUnk11& value, SinkStream& buffer);
-  static void Read(RanchUnk11& value, SourceStream& buffer);
+  static void Write(const RanchUnk11& value, SinkStream& stream);
+  static void Read(RanchUnk11& value, SourceStream& stream);
 };
 
 } // namespace alicia

@@ -104,6 +104,11 @@ private:
     const RanchCommandRequestStorage& command);
 
   //!
+  void HandleGetItemFromStorage(
+    ClientId clientId,
+    const RanchCommandGetItemFromStorage& command);
+
+  //!
   void HandleRequestNpcDressList(
     ClientId clientId,
     const RanchCommandRequestNpcDressList& requestNpcDressList);

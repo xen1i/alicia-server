@@ -59,6 +59,15 @@ public:
   virtual void StoreItem(data::Uid uid, const data::Item& item) = 0;
 
   //! Creates
+  virtual void CreateStoredItem(data::StoredItem& item) = 0;
+  //! Retrieves the stored item from the data source.
+  //! @param item Item to retrieve.
+  virtual void RetrieveStoredItem(data::Uid uid, data::StoredItem& item) = 0;
+  //! Stores the stored item on the data source.
+  //! @param item Item to store.
+  virtual void StoreStoredItem(data::Uid uid, const data::StoredItem& item) = 0;
+
+  //! Creates
   virtual void CreateHorse(data::Horse& horse) = 0;
   //! Retrieves the horse from the data source.
   //! @param horse Horse to retrieve.

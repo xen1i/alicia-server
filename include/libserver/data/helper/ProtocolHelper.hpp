@@ -36,6 +36,14 @@ void BuildProtocolItems(
   std::vector<Item>& protocolItems,
   const std::vector<soa::Record<soa::data::Item>>& items);
 
+void BuildProtocolStoredItem(
+  StoredItem& protocolStoredItem,
+  const soa::data::StoredItem& storedItem);
+
+void BuildProtocolStoredItems(
+  std::vector<StoredItem>& protocolStoredItems,
+  const std::vector<soa::Record<soa::data::StoredItem>>& storedItems);
+
 } // namespace protocol
 
 } // namespace alicia

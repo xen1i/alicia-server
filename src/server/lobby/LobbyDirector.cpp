@@ -531,36 +531,14 @@ void LobbyDirector::HandleGuildPartyList(
   ClientId clientId,
   const LobbyCommandGuildPartyList& message)
 {
-}
-
-//
-// void LobbyDirector::HandleGuildPartyList(
-//   ClientId clientId,
-//   const LobbyCommandGuildPartyList& message)
-// {
-//   const LobbyCommandGuildPartyListOK response{};
-//
-//   _server.QueueCommand(
-//     clientId,
-//     CommandId::LobbyGuildPartyListOK,
-//     [response](SinkStream& sink)
-//     {
-//       LobbyCommandGuildPartyListOK::Write(response, sink);
-//     });
-// }
-
-void LobbyCommandEnterRandomRanch::Write(
-  const LobbyCommandEnterRandomRanch& command,
-  SinkStream& stream)
-{
-  throw std::runtime_error("Not implemented");
-}
-
-void LobbyCommandEnterRandomRanch::Read(
-  LobbyCommandEnterRandomRanch& command,
-  SourceStream& stream)
-{
-  // Empty.
+  const LobbyCommandGuildPartyListOK response{};
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyGuildPartyListOK,
+    [response]()
+    {
+      return response;
+    });
 }
 
 } // namespace alicia

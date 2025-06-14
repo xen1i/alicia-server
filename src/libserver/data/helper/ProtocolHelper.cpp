@@ -150,6 +150,27 @@ void BuildProtocolItems(
   }
 }
 
+void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const soa::data::StoredItem& storedItem)
+{
+  protocolStoredItem.uid = storedItem.uid();
+  protocolStoredItem.sender = storedItem.sender();
+  protocolStoredItem.message = storedItem.message();
+}
+
+void BuildProtocolStoredItems(
+  std::vector<StoredItem>& protocolStoredItems,
+  const std::vector<soa::Record<soa::data::StoredItem>>& storedItems)
+{
+  for (const auto& storedItem : storedItems)
+  {
+    auto& protoclStoredItem = protocolStoredItems.emplace_back();
+    storedItem.Immutable([&protoclStoredItem](const auto& storedItem)
+    {
+      BuildProtocolStoredItem(protoclStoredItem, storedItem);
+    });
+  }
+}
+
 } // namespace protocol
 
 } // namespace alicia

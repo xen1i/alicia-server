@@ -23,7 +23,8 @@
 #include "libserver/data/helper/ProtocolHelper.hpp"
 #include "libserver/util/Util.hpp"
 
-#include <iso646.h>
+#include <ranges>
+
 #include <spdlog/spdlog.h>
 
 namespace alicia
@@ -113,6 +114,13 @@ RanchDirector::RanchDirector(soa::ServerInstance& serverInstance)
     [this](ClientId clientId, auto& command)
     {
       HandleRequestStorage(clientId, command);
+    });
+
+  _commandServer.RegisterCommandHandler<RanchCommandGetItemFromStorage>(
+    CommandId::RanchGetItemFromStorage,
+    [this](ClientId clientId, auto& command)
+    {
+      HandleGetItemFromStorage(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<RanchCommandChat>(
@@ -621,14 +629,120 @@ void RanchDirector::HandleRequestStorage(
   ClientId clientId,
   const RanchCommandRequestStorage& command)
 {
-  // TODO: Actually do something
-  const RanchCommandRequestStorageOK response{
-    .val0 = command.val0,
-    .val1 = command.val1};
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    clientContext.characterUid);
+
+  static uint32_t idx = 0;
+  RanchCommandRequestStorageOK response{
+    .category = command.category,
+    .page = 1,
+    .val2 = static_cast<uint16_t>(1 << idx++)};
+
+  const bool showPurchases = command.category == RanchCommandRequestStorage::Category::Purchases;
+
+  // Fill the stored items, either from the purchase category or the gift category.
+
+  characterRecord->Immutable([this, showPurchases, &response](const soa::data::Character& character)
+  {
+    const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStoredItems().Get(
+      showPurchases ? character.purchases() : character.gifts());
+
+    // todo pagination of stored item records with std::ranges::chunks
+    protocol::BuildProtocolStoredItems(response.storedItems, *storedItemRecords);
+  });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::RanchRequestStorageOK,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void RanchDirector::HandleGetItemFromStorage(
+  ClientId clientId,
+  const RanchCommandGetItemFromStorage& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    clientContext.characterUid);
+
+  bool storedItemIsValid = true;
+
+  // Try to remove the stored item from the character.
+  characterRecord->Mutable([this, &storedItemIsValid, storedItemUid = command.storedItemUid](
+    soa::data::Character& character)
+    {
+      // The stored item is either a gift or a purchase.
+      // Try to remove from both gift and purchase vectors.
+
+      const auto storedGiftIter = std::ranges::find(character.gifts(), storedItemUid);
+      if (storedGiftIter != character.gifts().cend())
+      {
+        character.gifts().erase(storedGiftIter);
+        return;
+      }
+
+      const auto storedPurchaseIter = std::ranges::find(character.purchases(), storedItemUid);
+      if (storedGiftIter != character.purchases().cend())
+      {
+        character.purchases().erase(storedGiftIter);
+        return;
+      }
+
+      storedItemIsValid = false;
+    });
+
+  // If the stored item is invalid cancel the takeout.
+  if (not storedItemIsValid)
+  {
+    RanchCommandGetItemFromStorageCancel response{
+      .storedItemUid = command.storedItemUid,
+      .status = 0};
+
+    _commandServer.QueueCommand<decltype(response)>(
+      clientId,
+      CommandId::RanchGetItemFromStorageCancel,
+      [response]()
+      {
+        return response;
+      });
+    return;
+  }
+
+  RanchCommandGetItemFromStorageOK response{
+    .storedItemUid = command.storedItemUid,
+    .member0 = 0};
+
+  // Get the items assigned to the stored item and fill the protocol command.
+  characterRecord->Mutable([this, &response](
+    soa::data::Character& character)
+    {
+      const auto storedItemRecord = GetServerInstance().GetDataDirector().GetStoredItems().Get(
+        response.storedItemUid);
+
+      std::vector<soa::data::Uid> items;
+      storedItemRecord->Immutable([this, &items, &response](const soa::data::StoredItem& storedItem)
+      {
+        items = storedItem.items();
+        const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
+          items);
+
+        protocol::BuildProtocolItems(response.items, *itemRecords);
+      });
+
+      // Add the items to the character's inventory.
+      character.inventory().insert(
+        character.inventory().end(),
+        items.begin(),
+        items.end());
+    });
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RanchGetItemFromStorageOK,
     [response]()
     {
       return response;
@@ -709,24 +823,39 @@ std::string RanchDirector::HandleCommand(
         return "Invalid command arguments. (//give item <count> <uid>)";
 
       uint32_t itemCount = std::atoi(command[2].c_str());
-      soa::data::Uid itemTid = std::atoi(command[3].c_str());
+      soa::data::Uid createdItemTid = std::atoi(command[3].c_str());
 
-      auto itemUid = soa::data::InvalidUid;
-      auto newItem = GetServerInstance().GetDataDirector().CreateItem();
-      newItem.Mutable([itemTid, itemCount, &itemUid](soa::data::Item& item)
+      // Create the item.
+      auto createdItemUid = soa::data::InvalidUid;
+      auto createdItemRecord = GetServerInstance().GetDataDirector().CreateItem();
+      createdItemRecord.Mutable([createdItemTid, itemCount, &createdItemUid](soa::data::Item& item)
       {
-        item.tid() = itemTid;
+        item.tid() = createdItemTid;
         item.count() = itemCount;
 
-        itemUid = item.uid();
+        createdItemUid = item.uid();
       });
 
-      characterRecord->Mutable([itemUid](soa::data::Character& character)
+      // Create the stored item.
+      auto giftUid = soa::data::InvalidUid;
+      auto storedItem = GetServerInstance().GetDataDirector().CreateStoredItem();
+      storedItem.Mutable([this, &giftUid, createdItemUid, createdItemTid](soa::data::StoredItem& storedItem)
       {
-        character.inventory().emplace_back(itemUid);
+        storedItem.items().emplace_back(createdItemUid);
+        storedItem.sender() = "System";
+        storedItem.message() = std::format("Item '{}'", createdItemTid);
+
+        giftUid = storedItem.uid();
       });
 
-      return "Item given. Restart the client.";
+      // Add the stored item as a gift.
+
+      characterRecord->Mutable([giftUid](soa::data::Character& character)
+      {
+        character.gifts().emplace_back(giftUid);
+      });
+
+      return "Item given. Check your gifts in inventory!";
     }
 
     if (command[1] == "horse")
@@ -822,7 +951,7 @@ void RanchDirector::HandleRemoveEquipment(
     clientContext.characterUid);
 
   characterRecord->Mutable([&command](soa::data::Character& character)
-    {
+  {
     const bool ownsItem = std::ranges::contains(
       character.inventory(), command.uid);
 

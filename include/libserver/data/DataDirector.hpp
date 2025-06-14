@@ -35,6 +35,7 @@ public:
   using UserStorage = DataStorage<std::string, data::User>;
   using CharacterStorage = DataStorage<data::Uid, data::Character>;
   using ItemStorage = DataStorage<data::Uid, data::Item>;
+  using StoredItemStorage = DataStorage<data::Uid, data::StoredItem>;
   using HorseStorage = DataStorage<data::Uid, data::Horse>;
   using RanchStorage = DataStorage<data::Uid, data::Ranch>;
 
@@ -84,6 +85,18 @@ public:
     });
   }
 
+  StoredItemStorage& GetStoredItems();
+
+  Record<data::StoredItem> CreateStoredItem()
+  {
+    return _storedItemStorage.Create([this]() {
+      data::StoredItem item;
+      _dataSource->CreateStoredItem(item);
+
+      return std::make_pair(item.uid(), std::move(item));
+    });
+  }
+
   HorseStorage& GetHorses();
 
   Record<data::Ranch> CreateRanch()
@@ -106,6 +119,7 @@ private:
   HorseStorage _horseStorage;
   RanchStorage _ranchStorage;
   ItemStorage _itemStorage;
+  StoredItemStorage _storedItemStorage;
 };
 
 } // namespace soa

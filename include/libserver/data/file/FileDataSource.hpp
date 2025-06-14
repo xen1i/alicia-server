@@ -44,6 +44,10 @@ public:
   void RetrieveItem(data::Uid uid, data::Item& item) override;
   void StoreItem(data::Uid uid, const data::Item& item) override;
 
+  void CreateStoredItem(data::StoredItem& item) override;
+  void RetrieveStoredItem(data::Uid uid, data::StoredItem& item) override;
+  void StoreStoredItem(data::Uid uid, const data::StoredItem& item) override;
+
   void CreateHorse(data::Horse& horse) override;
   void RetrieveHorse(data::Uid uid, data::Horse& horse) override;
   void StoreHorse(data::Uid uid, const data::Horse& horse) override;

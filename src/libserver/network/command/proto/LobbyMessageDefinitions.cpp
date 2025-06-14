@@ -926,4 +926,18 @@ void LobbyCommandGuildPartyListOK::Read(
   throw std::logic_error("Not implemented");
 }
 
+void LobbyCommandEnterRandomRanch::Write(
+  const LobbyCommandEnterRandomRanch& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandEnterRandomRanch::Read(
+  LobbyCommandEnterRandomRanch& command,
+  SourceStream& stream)
+{
+  // Empty.
+}
+
 } // namespace alicia

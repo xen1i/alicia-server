@@ -1006,8 +1006,14 @@ struct RanchCommandUpdateMountNicknameCancel
 
 struct RanchCommandRequestStorage
 {
-  uint8_t val0{};
-  uint16_t val1{};
+  enum class Category : uint8_t
+  {
+    Purchases,
+    Gifts
+  };
+
+  Category category{};
+  uint16_t page{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1026,27 +1032,12 @@ struct RanchCommandRequestStorage
 
 struct RanchCommandRequestStorageOK
 {
-  uint8_t val0{};
-  uint16_t val1{};
+  RanchCommandRequestStorage::Category category{};
+  uint16_t page{};
   uint16_t val2{};
 
-  struct Unk
-  {
-    uint32_t uid{};
-    uint32_t val1{};
-    uint8_t val2{};
-    uint32_t val3{};
-    uint32_t val4{};
-    uint32_t val5{};
-    uint32_t val6{};
-    std::string sender;
-    std::string message;
-    //! [0000'00][00'0000]'[0000'0000]'[0000]'[0000'0000'0000]
-    //! [minute] [hour] [day] [month] [year]
-    uint32_t dateAndTime{};
-  };
   //! Max 33 elements.
-  std::vector<Unk> val3{};
+  std::vector<StoredItem> storedItems{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1065,7 +1056,7 @@ struct RanchCommandRequestStorageOK
 
 struct RanchCommandRequestStorageCancel
 {
-  uint8_t val0{};
+  RanchCommandRequestStorage category{};
   uint8_t val1{};
 
   //! Writes the command to a provided sink stream.
@@ -1080,6 +1071,85 @@ struct RanchCommandRequestStorageCancel
   //! @param stream Source stream.
   static void Read(
     RanchCommandRequestStorageCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandGetItemFromStorage
+{
+  uint32_t storedItemUid{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandGetItemFromStorage& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandGetItemFromStorage& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandGetItemFromStorageOK
+{
+  uint32_t storedItemUid{};
+  std::vector<Item> items{};
+  uint32_t member0{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandGetItemFromStorageOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandGetItemFromStorageOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandGetItemFromStorageCancel
+{
+  uint32_t storedItemUid{};
+  uint8_t status{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandGetItemFromStorageCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandGetItemFromStorageCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandCheckStorageItem
+{
+  uint32_t uid{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandGetItemFromStorage& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandGetItemFromStorage& command,
     SourceStream& stream);
 };
 

@@ -38,6 +38,34 @@ void Item::Read(Item& item, SourceStream& stream)
     .Read(item.count);
 }
 
+void StoredItem::Write(const StoredItem& item, SinkStream& stream)
+{
+  stream.Write(item.uid)
+    .Write(item.val1)
+    .Write(item.val2)
+    .Write(item.val3)
+    .Write(item.val4)
+    .Write(item.val5)
+    .Write(item.val6)
+    .Write(item.sender)
+    .Write(item.message)
+    .Write(item.dateAndTime);
+}
+
+void StoredItem::Read(StoredItem& item, SourceStream& stream)
+{
+  stream.Read(item.uid)
+    .Read(item.val1)
+    .Read(item.val2)
+    .Read(item.val3)
+    .Read(item.val4)
+    .Read(item.val5)
+    .Read(item.val6)
+    .Read(item.sender)
+    .Read(item.message)
+    .Read(item.dateAndTime);
+}
+
 void KeyboardOptions::Option::Write(const Option& option, SinkStream& stream)
 {
   stream.Write(option.index)

@@ -937,30 +937,21 @@ void RanchCommandRequestStorage::Write(
 
 void RanchCommandRequestStorage::Read(RanchCommandRequestStorage& command, SourceStream& stream)
 {
-  stream.Read(command.val0).Read(command.val1);
+  stream.Read(command.category).Read(command.page);
 }
 
 void RanchCommandRequestStorageOK::Write(
   const RanchCommandRequestStorageOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.val0)
-    .Write(command.val1)
+  stream.Write(command.category)
+    .Write(command.page)
     .Write(command.val2);
 
-  stream.Write(static_cast<uint8_t>(command.val3.size()));
-  for (const auto& item : command.val3)
+  stream.Write(static_cast<uint8_t>(command.storedItems.size()));
+  for (const auto& storedItem : command.storedItems)
   {
-    stream.Write(item.uid)
-      .Write(item.val1)
-      .Write(item.val2)
-      .Write(item.val3)
-      .Write(item.val4)
-      .Write(item.val5)
-      .Write(item.val6)
-      .Write(item.sender)
-      .Write(item.message)
-      .Write(item.dateAndTime);
+    stream.Write(storedItem);
   }
 }
 
@@ -973,11 +964,60 @@ void RanchCommandRequestStorageCancel::Write(
   const RanchCommandRequestStorageCancel& command,
   SinkStream& stream)
 {
-  stream.Write(command.val0).Write(command.val1);
+  stream.Write(command.category).Write(command.val1);
 }
 
 void RanchCommandRequestStorageCancel::Read(
   RanchCommandRequestStorageCancel& command,
+  SourceStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void RanchCommandGetItemFromStorage::Write(
+  const RanchCommandGetItemFromStorage& command,
+  SinkStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void RanchCommandGetItemFromStorage::Read(
+  RanchCommandGetItemFromStorage& command,
+  SourceStream& stream)
+{
+  stream.Read(command.storedItemUid);
+}
+
+void RanchCommandGetItemFromStorageOK::Write(
+  const RanchCommandGetItemFromStorageOK& command,
+  SinkStream& stream)
+{
+  stream.Write(command.storedItemUid);
+  stream.Write(static_cast<uint8_t>(command.items.size()));
+  for (const auto& item : command.items)
+  {
+    stream.Write(item);
+  }
+  stream.Write(command.member0);
+}
+
+void RanchCommandGetItemFromStorageOK::Read(
+  RanchCommandGetItemFromStorageOK& command,
+  SourceStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void RanchCommandGetItemFromStorageCancel::Write(
+  const RanchCommandGetItemFromStorageCancel& command,
+  SinkStream& stream)
+{
+  stream.Write(command.storedItemUid)
+    .Write(command.status);
+}
+
+void RanchCommandGetItemFromStorageCancel::Read(
+  RanchCommandGetItemFromStorageCancel& command,
   SourceStream& stream)
 {
   throw std::logic_error("Not implemented.");

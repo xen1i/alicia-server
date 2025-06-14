@@ -153,6 +153,16 @@ struct Item
   dao::Field<Slot> slot{Slot::Storage};
 };
 
+struct StoredItem
+{
+  dao::Field<Uid> uid{InvalidUid};
+  dao::Field<std::vector<Uid>> items{};
+  dao::Field<std::string> sender;
+  dao::Field<std::string> message;
+  dao::Field<bool> checked;
+  dao::Field<bool> expired;
+};
+
 //! User
 struct Character
 {
@@ -182,6 +192,9 @@ struct Character
     dao::Field<uint32_t> thighVolume{0u};
     dao::Field<uint32_t> legVolume{0u};
   } appearance{};
+
+  dao::Field<std::vector<Uid>> gifts;
+  dao::Field<std::vector<Uid>> purchases;
 
   dao::Field<std::vector<Uid>> inventory;
   dao::Field<std::vector<Uid>> characterEquipment;

@@ -68,6 +68,15 @@ DataDirector::DataDirector()
       {
         _dataSource->StoreItem(key, item);
       })
+  , _storedItemStorage(
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->RetrieveStoredItem(key, item);
+      },
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->StoreStoredItem(key, item);
+      })
 {
   _dataSource = std::make_unique<FileDataSource>();
   _dataSource->Initialize("./data");
@@ -113,6 +122,11 @@ DataDirector::CharacterStorage& DataDirector::GetCharacters()
 DataDirector::ItemStorage& DataDirector::GetItems()
 {
   return _itemStorage;
+}
+
+DataDirector::StoredItemStorage& DataDirector::GetStoredItems()
+{
+  return _storedItemStorage;
 }
 
 DataDirector::HorseStorage& DataDirector::GetHorses()
