@@ -202,6 +202,8 @@ enum class CommandId : uint16_t
   RanchUseItemOK = 0x1e1,
   RanchUseItemCancel = 0x1e2,
 
+  RanchUpdateEquipmentNotify = 0x14e,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,

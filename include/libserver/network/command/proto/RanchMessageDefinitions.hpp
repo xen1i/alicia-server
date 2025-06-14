@@ -1302,6 +1302,28 @@ struct RanchCommandRemoveEquipmentCancel
     SourceStream& stream);
 };
 
+struct RanchCommandUpdateEquipmentNotify
+{
+  uint32_t characterUid{};
+  std::vector<Item> characterEquipment;
+  std::vector<Item> mountEquipment;
+  Horse mount{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandUpdateEquipmentNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandUpdateEquipmentNotify& command,
+    SourceStream& stream);
+};
+
 } // namespace alicia
 
 #endif // RANCH_MESSAGE_DEFINES_HPP

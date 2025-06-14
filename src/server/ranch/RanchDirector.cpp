@@ -19,9 +19,10 @@
 
 #include "server/ranch/RanchDirector.hpp"
 
-#include "libserver/util/Util.hpp"
 #include "libserver/data/helper/ProtocolHelper.hpp"
+#include "libserver/util/Util.hpp"
 
+#include <iso646.h>
 #include <spdlog/spdlog.h>
 
 namespace alicia
@@ -749,11 +750,11 @@ void RanchDirector::HandleWearEquipment(
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = _dataDirector.GetCharacters().Get(
-    clientContext.characterUid);;
+    clientContext.characterUid);
 
   bool successful = false;
   characterRecord->Mutable([&command, &successful](soa::data::Character& character)
-  {
+                           {
     const bool ownsItem = std::ranges::contains(
       character.inventory(), command.uid);
     const bool ownsHorse = std::ranges::contains(
@@ -769,8 +770,7 @@ void RanchDirector::HandleWearEquipment(
     else if (ownsItem)
     {
       character.characterEquipment().emplace_back(command.uid);
-    }
-  });
+    } });
 
   if (successful)
   {
@@ -785,6 +785,7 @@ void RanchDirector::HandleWearEquipment(
       {
         return response;
       });
+    BroadcastEquipmentUpdate(clientId);
 
     return;
   }
@@ -809,10 +810,9 @@ void RanchDirector::HandleRemoveEquipment(
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = _dataDirector.GetCharacters().Get(
     clientContext.characterUid);
-  ;
 
   characterRecord->Mutable([&command](soa::data::Character& character)
-                           {
+    {
     const bool ownsItem = std::ranges::contains(
       character.inventory(), command.uid);
 
@@ -824,7 +824,8 @@ void RanchDirector::HandleRemoveEquipment(
       const auto range = std::ranges::remove(
         character.characterEquipment(), command.uid);
       character.characterEquipment().erase(range.begin(), range.end());
-    } });
+    }
+  });
 
   // We really don't need to cancel the unequip.
   // Always respond with OK.
@@ -838,6 +839,55 @@ void RanchDirector::HandleRemoveEquipment(
     {
       return response;
     });
+  BroadcastEquipmentUpdate(clientId);
+}
+
+void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = _dataDirector.GetCharacters().Get(
+    clientContext.characterUid);
+
+  RanchCommandUpdateEquipmentNotify notify{
+    .characterUid = clientContext.characterUid};
+
+  characterRecord->Immutable([this, &notify](const soa::data::Character& character)
+  {
+    // Character equipment
+    const auto characterEquipment = _dataDirector.GetItems().Get(
+      character.characterEquipment());
+    protocol::BuildProtocolItems(notify.characterEquipment, *characterEquipment);
+
+    // Mount equipment
+    const auto mountEquipment = _dataDirector.GetItems().Get(
+      character.mountEquipment());
+    protocol::BuildProtocolItems(notify.mountEquipment, *mountEquipment);
+
+    // Mount
+    const auto mountRecord = _dataDirector.GetHorses().Get(
+      character.mountUid());
+    mountRecord->Immutable([&notify](const soa::data::Horse& mount)
+    {
+      protocol::BuildProtocolHorse(notify.mount, mount);
+    });
+  });
+
+  // Broadcast to all the ranch clients.
+  const auto& ranchInstance = _ranches[clientContext.ranchUid];
+  for (ClientId ranchClientId : ranchInstance._clients)
+  {
+    // Prevent broadcasting to self.
+    if (ranchClientId == clientId)
+      continue;
+
+    _server.QueueCommand<decltype(notify)>(
+      ranchClientId,
+      CommandId::RanchUpdateEquipmentNotify,
+      [notify]()
+      {
+        return notify;
+      });
+  }
 }
 
 void RanchDirector::HandleUseItem(

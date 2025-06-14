@@ -123,6 +123,12 @@ private:
     ClientId clientId,
     const RanchCommandRemoveEquipment& command);
 
+  //! Broadcasts an equipment update of the character owned by the client
+  //! to the currently connected ranch.
+  //! @param clientId ID of the client.
+  void BroadcastEquipmentUpdate(
+    ClientId clientId);
+
   void HandleUseItem(
     ClientId clientId,
     const RanchCommandUseItem& command);

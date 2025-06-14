@@ -82,6 +82,6 @@ alicia::ChatterServer::~ChatterServer()
 
 void alicia::ChatterServer::Host()
 {
-  _serverThread = std::thread([this]()
-                              { _server.Begin(boost::asio::ip::address_v4::any(), 10032); });
+  /*_serverThread = std::thread([this]()
+                              { _server.Begin(boost::asio::ip::address_v4::any(), 10032); });*/
 }

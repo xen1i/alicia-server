@@ -1151,4 +1151,32 @@ void RanchCommandRemoveEquipmentCancel::Read(
   throw std::runtime_error("Not implemented");
 }
 
+void RanchCommandUpdateEquipmentNotify::Write(
+  const RanchCommandUpdateEquipmentNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.characterUid);
+
+  stream.Write(static_cast<uint8_t>(command.characterEquipment.size()));
+  for (const auto & item : command.characterEquipment)
+  {
+    stream.Write(item);
+  }
+
+  stream.Write(static_cast<uint8_t>(command.mountEquipment.size()));
+  for (const auto & item : command.mountEquipment)
+  {
+    stream.Write(item);
+  }
+
+  stream.Write(command.mount);
+}
+
+void RanchCommandUpdateEquipmentNotify::Read(
+  RanchCommandUpdateEquipmentNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
 } // namespace alicia
