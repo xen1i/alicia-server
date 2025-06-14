@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/asio/ip/address.hpp>
 
-namespace alicia
+namespace soa
 {
 
 namespace asio = boost::asio;
@@ -82,6 +82,6 @@ public:
   std::pair<asio::ip::address_v4, uint16_t> ParseAddressAndPort(const nlohmann::json& jsonObject);
 };
 
-} // namespace alicia
+} // namespace soa
 
 #endif // SETTINGS_HPP

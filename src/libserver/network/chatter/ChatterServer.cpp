@@ -65,7 +65,7 @@ alicia::ChatterServer::ChatterServer()
           "Size: {}\n"
           "Dump: \n\n{}\n\n",
           buffer.size(),
-          GenerateByteDump({dataBuffer.begin(), stream.GetCursor()}));
+          soa::util::GenerateByteDump({dataBuffer.begin(), stream.GetCursor()}));
 
         readBuffer.consume(buffer.size());
       },

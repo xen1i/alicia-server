@@ -19,6 +19,7 @@
 
 #include "server/lobby/LoginHandler.hpp"
 #include "server/lobby/LobbyDirector.hpp"
+#include "server/ServerInstance.hpp"
 
 #include "libserver/data/helper/ProtocolHelper.hpp"
 
@@ -32,7 +33,6 @@ LoginHandler::LoginHandler(
   CommandServer& server)
   : _server(server)
   , _lobbyDirector(lobbyDirector)
-  , _dataDirector(_lobbyDirector.GetDataDirector())
 {
 }
 
@@ -45,7 +45,7 @@ void LoginHandler::Tick()
     const auto& loginContext = _clientLogins[clientId];
 
     // Load the user.
-    auto user = _dataDirector.GetUsers().Get(loginContext.userName);
+    auto user = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(loginContext.userName);
     if (not user)
       continue;
 
@@ -86,7 +86,7 @@ void LoginHandler::Tick()
 
     // Preload all the user data.
 
-    auto userRecord = _dataDirector.GetUsers().Get(
+    auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
       loginContext.userName);
     if (not userRecord)
       continue;
@@ -97,7 +97,7 @@ void LoginHandler::Tick()
       characterUid = user.characterUid();
     });
 
-    auto characterRecord = _dataDirector.GetCharacters().Get(
+    auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(
       characterUid);
     if (not characterRecord)
       continue;
@@ -106,17 +106,17 @@ void LoginHandler::Tick()
 
     characterRecord->Immutable([this, &isCharacterLoaded](const soa::data::Character& character)
     {
-      if (not _dataDirector.GetItems().Get(character.inventory()))
+      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.inventory()))
         return;
-      if (not _dataDirector.GetItems().Get(character.characterEquipment()))
+      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.characterEquipment()))
         return;
-      if (not _dataDirector.GetItems().Get(character.mountEquipment()))
-        return;
-
-      if (not _dataDirector.GetHorses().Get(character.horses()))
+      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.mountEquipment()))
         return;
 
-      if (not _dataDirector.GetRanches().Get(character.ranchUid()))
+      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(character.horses()))
+        return;
+
+      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetRanches().Get(character.ranchUid()))
         return;
 
       isCharacterLoaded = true;
@@ -180,12 +180,12 @@ void LoginHandler::HandleUserCreateCharacter(
 {
   const auto& loginContext = _clientLogins[clientId];
 
-  auto userRecord = _dataDirector.GetUsers().Get(loginContext.userName);
+  auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(loginContext.userName);
   if (not userRecord)
     throw std::runtime_error("User record does not exist");
 
   // Create a new horse for the character.
-  auto horseRecord = _dataDirector.CreateHorse();
+  auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
   // The UID of the newly created horse.
   auto characterMountUid{soa::data::InvalidUid};
 
@@ -213,7 +213,7 @@ void LoginHandler::HandleUserCreateCharacter(
   });
 
   // Create a new ranch for the character.
-  auto ranchRecord = _dataDirector.CreateRanch();
+  auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
   // The UID of the newly created ranch.
   auto characterRanchUid{soa::data::InvalidUid};
 
@@ -229,7 +229,7 @@ void LoginHandler::HandleUserCreateCharacter(
 
   // And finally create the character with the new horse,
   // new ranch and the appearance sent from the client.
-  auto characterRecord = _dataDirector.CreateCharacter();
+  auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
   auto userCharacterUid{soa::data::InvalidUid};
 
   characterRecord.Mutable([
@@ -274,11 +274,11 @@ void LoginHandler::QueueUserLoginAccepted(
   const ClientId clientId,
   const std::string& userName)
 {
-  auto userRecord = _dataDirector.GetUsers().Get(userName);
+  auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(userName);
   if (not userRecord)
     throw std::runtime_error("User record unavailable");
 
-  const auto lobbyServerTime = UnixTimeToFileTime(
+  const auto lobbyServerTime = soa::util::UnixTimeToFileTime(
     std::chrono::system_clock::now());
 
   LobbyCommandLoginOK response {
@@ -336,7 +336,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
   // Get the character record and fill the protocol data.
   // Also get the UID of the horse mounted by the character.
-  auto characterRecord = _dataDirector.GetCharacters().Get(userCharacterUid);
+  auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(userCharacterUid);
   if (not characterRecord)
     throw std::runtime_error("Character record unavailable");
 
@@ -358,7 +358,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
 
     // Character equipment.
-    auto characterEquipmentItems = _dataDirector.GetItems().Get(
+    auto characterEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
       character.characterEquipment());
     if (not characterEquipmentItems)
       throw std::runtime_error("Character equipment items unavailable");
@@ -368,7 +368,7 @@ void LoginHandler::QueueUserLoginAccepted(
       *characterEquipmentItems);
 
     // Mount equipment.
-    auto mountEquipmentItems = _dataDirector.GetItems().Get(
+    auto mountEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
       character.mountEquipment());
     if (not mountEquipmentItems)
       throw std::runtime_error("Character equipment items unavailable");
@@ -385,7 +385,7 @@ void LoginHandler::QueueUserLoginAccepted(
   });
 
   // Get the mounted horse record and fill the protocol data.
-  auto mountRecord = _dataDirector.GetHorses().Get(characterMountUid);
+  auto mountRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(characterMountUid);
   if (not mountRecord)
     throw std::runtime_error("Horse mount record unavailable");
 

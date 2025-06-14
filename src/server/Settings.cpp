@@ -26,7 +26,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace alicia
+namespace soa
 {
 
 void Settings::LoadFromFile(const std::filesystem::path& filePath)
@@ -190,7 +190,7 @@ std::pair<asio::ip::address_v4, uint16_t> Settings::ParseAddressAndPort(const nl
     const std::string address = jsonObject.at("address").get<std::string>();
     const uint16_t port = jsonObject.at("port").get<uint16_t>();
 
-    const auto resolvedAddress = ResolveHostName(address);
+    const auto resolvedAddress = util::ResolveHostName(address);
     return std::make_pair(
       resolvedAddress,
       port);
@@ -202,4 +202,4 @@ std::pair<asio::ip::address_v4, uint16_t> Settings::ParseAddressAndPort(const nl
   }
 }
 
-} // namespace alicia
+} // namespace soa

@@ -21,11 +21,14 @@
 #define LOBBYDIRECTOR_HPP
 
 #include "LoginHandler.hpp"
-#include "server/Settings.hpp"
 
-#include "libserver/data/DataDirector.hpp"
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
+
+namespace soa
+{
+class ServerInstance;
+} // namespace soa
 
 namespace alicia
 {
@@ -36,9 +39,7 @@ class LobbyDirector final
 
 public:
   //!
-  explicit LobbyDirector(
-    soa::DataDirector& dataDirector,
-    Settings::LobbySettings settings = {});
+  explicit LobbyDirector(soa::ServerInstance& serverInstance);
 
   LobbyDirector(const LobbyDirector&) = delete;
   LobbyDirector& operator=(const LobbyDirector&) = delete;
@@ -50,8 +51,10 @@ public:
   void Terminate();
   void Tick();
 
-  soa::DataDirector& GetDataDirector();
-  Settings::LobbySettings& GetSettings();
+  soa::ServerInstance& GetServerInstance();
+  soa::Settings::LobbySettings& GetSettings();
+
+  void UpdateInventory(uint32_t characterUid);
 
 private:
   //!
@@ -73,6 +76,9 @@ private:
   void HandleShowInventory(
     ClientId clientId,
     const LobbyCommandShowInventory& showInventory);
+
+  void QueueShowInventory(
+    ClientId clientId);
 
   //!
   void HandleAchievementCompleteList(
@@ -129,13 +135,9 @@ private:
     const LobbyCommandGuildPartyList& message);
 
   //!
-  Settings::LobbySettings _settings;
-
+  soa::ServerInstance& _serverInstance;
   //!
-  CommandServer _server;
-
-  //!
-  soa::DataDirector& _dataDirector;
+  CommandServer _commandServer;
   //!
   LoginHandler _loginHandler;
 

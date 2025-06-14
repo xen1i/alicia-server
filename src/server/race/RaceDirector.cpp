@@ -1,5 +1,3 @@
-//
-// Created by alborrajo on 30/12/2024.
 /**
  * Alicia Server - dedicated server software
  * Copyright (C) 2024 Story Of Alicia
@@ -20,6 +18,7 @@
  **/
 
 #include "server/race/RaceDirector.hpp"
+#include "server/ServerInstance.hpp"
 
 #include "libserver/registry/RoomRegistry.hpp"
 
@@ -28,46 +27,42 @@
 namespace alicia
 {
 
-RaceDirector::RaceDirector(
-  soa::DataDirector& dataDirector,
-  Settings::RaceSettings settings)
-  : _settings(std::move(settings))
-  , _dataDirector(dataDirector)
-  , _server()
+RaceDirector::RaceDirector(soa::ServerInstance& serverInstance)
+  : _serverInstance(serverInstance)
 {
-  _server.RegisterCommandHandler<RaceCommandEnterRoom>(
+  _commandServer.RegisterCommandHandler<RaceCommandEnterRoom>(
     CommandId::RaceEnterRoom,
     [this](ClientId clientId, const auto& message)
     {
       HandleEnterRoom(clientId, message);
     });
 
-  _server.RegisterCommandHandler<RaceCommandChangeRoomOptions>(
+  _commandServer.RegisterCommandHandler<RaceCommandChangeRoomOptions>(
     CommandId::RaceChangeRoomOptions,
     [this](ClientId clientId, const auto& message)
     {
       HandleChangeRoomOptions(clientId, message);
     });
 
-  _server.RegisterCommandHandler<RaceCommandStartRace>(
+  _commandServer.RegisterCommandHandler<RaceCommandStartRace>(
     CommandId::RaceStartRace,
     [this](ClientId clientId, const auto& message)
     {
       HandleStartRace(clientId, message);
     });
 
-  _server.RegisterCommandHandler<UserRaceTimer>(
+  _commandServer.RegisterCommandHandler<UserRaceTimer>(
     CommandId::UserRaceTimer,
     [this](ClientId clientId, const auto& message)
     {
       HandleRaceTimer(clientId, message);
     });
 
-  _server.RegisterCommandHandler<RaceCommandLoadingComplete>(
+  _commandServer.RegisterCommandHandler<RaceCommandLoadingComplete>(
   CommandId::RaceLoadingComplete,
   [this](ClientId clientId, const auto& message)
   {
-    _server.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, CommandId::RaceLoadingCompleteNotify, [](){
+    _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, CommandId::RaceLoadingCompleteNotify, [](){
       return RaceCommandLoadingCompleteNotify{
       .member0 = 1};
     });
@@ -78,19 +73,29 @@ void RaceDirector::Initialize()
 {
   spdlog::debug(
     "Race server listening on {}:{}",
-    _settings.address.to_string(),
-    _settings.port);
+    GetSettings().address.to_string(),
+    GetSettings().port);
 
   // Host the server
-  _server.BeginHost(_settings.address, _settings.port);
+  _commandServer.BeginHost(GetSettings().address, GetSettings().port);
 }
 
 void RaceDirector::Terminate()
 {
-  _server.EndHost();
+  _commandServer.EndHost();
 }
 
 void RaceDirector::Tick() {}
+
+soa::ServerInstance& RaceDirector::GetServerInstance()
+{
+  return _serverInstance;
+}
+
+soa::Settings::RaceSettings& RaceDirector::GetSettings()
+{
+  return GetServerInstance().GetSettings()._raceSettings;
+}
 
 /*
 
@@ -119,7 +124,7 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
 
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
-  _server.SetCode(clientId, {});
+  _commandServer.SetCode(clientId, {});
 
   auto& roomRegistry = soa::RoomRegistry::Get();
   auto& room = roomRegistry.GetRoom(enterRoom.roomUid);
@@ -201,7 +206,7 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
     }
   };
 
-  _server.QueueCommand<decltype(response)>(
+  _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::RaceEnterRoomOK,
     [response]()
@@ -224,7 +229,7 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
     .option5 = changeRoomOptions.raceStarted};
 
   // TODO: Send to all clients in the room
-  _server.QueueCommand<decltype(response)>(
+  _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::RaceChangeRoomOptionsNotify,
     [response]()
@@ -252,12 +257,12 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
         .unk7 = 1,
       }
     },
-    .ip = _settings.address.to_uint(),
-    .port = htons(_settings.port),
+    .ip = GetSettings().address.to_uint(),
+    .port = htons(GetSettings().port),
   };
 
   // TODO: Send to all clients in the room
-  _server.QueueCommand<decltype(response)>(
+  _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::RaceStartRaceNotify,
     [response]()
@@ -272,7 +277,7 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
     .unk0 = raceTimer.timestamp + 10000,
     .unk1 = raceTimer.timestamp + 20000};
 
-  _server.QueueCommand<decltype(response)>(
+  _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::UserRaceTimerOK,
     [response]()

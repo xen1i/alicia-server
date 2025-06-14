@@ -23,9 +23,13 @@
 #include "server/Settings.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
-#include "libserver/data/DataDirector.hpp"
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
+
+namespace soa
+{
+class ServerInstance;
+} // namespace soa
 
 namespace alicia
 {
@@ -34,13 +38,14 @@ class RanchDirector
 {
 public:
   //!
-  explicit RanchDirector(
-    soa::DataDirector& dataDirector,
-    Settings::RanchSettings settings = {});
+  explicit RanchDirector(soa::ServerInstance& serverInstance);
 
   void Initialize();
   void Terminate();
   void Tick();
+
+  soa::ServerInstance& GetServerInstance();
+  soa::Settings::RanchSettings& GetSettings();
 
 private:
   //!
@@ -134,11 +139,9 @@ private:
     const RanchCommandUseItem& command);
 
   //!
-  Settings::RanchSettings _settings;
+  soa::ServerInstance& _serverInstance;
   //!
-  soa::DataDirector& _dataDirector;
-  //!
-  CommandServer _server;
+  CommandServer _commandServer;
 
   struct ClientContext
   {

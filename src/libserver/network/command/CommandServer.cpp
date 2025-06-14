@@ -335,7 +335,7 @@ void CommandServer::HandleClientRead(
           commandDataSize,
           padding,
           actualCommandDataSize,
-          GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
+          soa::util::GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
       }
     }
     else

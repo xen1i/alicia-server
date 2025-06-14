@@ -22,9 +22,13 @@
 
 #include "server/Settings.hpp"
 
-#include "libserver/data/DataDirector.hpp"
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
+
+namespace soa
+{
+class ServerInstance;
+} // namespace soa
 
 namespace alicia
 {
@@ -33,13 +37,14 @@ class RaceDirector
 {
 public:
   //!
-  RaceDirector(
-    soa::DataDirector& dataDirector,
-    Settings::RaceSettings settings = {});
+  explicit RaceDirector(soa::ServerInstance& serverInstance);
 
   void Initialize();
   void Terminate();
   void Tick();
+
+  soa::ServerInstance& GetServerInstance();
+  soa::Settings::RaceSettings& GetSettings();
 
 private:
   //!
@@ -63,20 +68,18 @@ private:
     const UserRaceTimer& raceTimer);
 
   //!
-  Settings::RaceSettings _settings;
+  soa::ServerInstance& _serverInstance;
   //!
-  soa::DataDirector& _dataDirector;
-  //!
-  CommandServer _server;
+  CommandServer _commandServer;
 
   //!
-  std::unordered_map<ClientId, soa::data::Uid> _clientCharacters;
+  std::unordered_map<ClientId, uint32_t> _clientCharacters;
 
   struct RoomInstance
   {
     // Add race-specific data here
   };
-  std::unordered_map<soa::data::Uid, RoomInstance> _rooms;
+  std::unordered_map<uint32_t, RoomInstance> _rooms;
 };
 
 } // namespace alicia

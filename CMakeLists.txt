@@ -50,7 +50,7 @@ target_link_libraries(alicia-libserver
 # alicia-server target
 add_executable(alicia-server
         src/server/main.cpp
-        src/server/Scheduler.cpp
+        src/server/ServerInstance.cpp
         src/server/Settings.cpp
         src/server/lobby/LobbyDirector.cpp
         src/server/lobby/LoginHandler.cpp

@@ -68,7 +68,6 @@ private:
   CommandServer& _server;
   //!
   LobbyDirector& _lobbyDirector;
-  soa::DataDirector& _dataDirector;
 };
 
 } // namespace alicia

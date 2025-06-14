@@ -60,7 +60,7 @@ struct LobbyCommandLogin
 struct LobbyCommandLoginOK
 {
   // filetime
-  WinFileTime lobbyTime{};
+  soa::util::WinFileTime lobbyTime{};
   uint32_t val0{};
 
   uint32_t selfUid{};
