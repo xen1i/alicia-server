@@ -609,10 +609,71 @@ void RanchDirector::HandleUpdateMountNickname(
   ClientId clientId,
   const RanchCommandUpdateMountNickname& command)
 {
-  // TODO: Actually do something
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    clientContext.characterUid);
+
+  bool canRenameHorse = false;
+  characterRecord->Mutable([this, &canRenameHorse, horseUid = command.horseUid](soa::data::Character& character)
+  {
+    const bool ownsHorse = std::ranges::contains(character.horses(), horseUid);
+    if (not ownsHorse)
+      return;
+
+    constexpr soa::data::Tid HorseRenameItem = 45003;
+    const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
+      character.inventory());
+
+    // Find the horse rename item.
+    auto horseRenameItemUid = soa::data::InvalidUid;
+    for (const auto& itemRecord : *itemRecords)
+    {
+      itemRecord.Immutable([&horseRenameItemUid](const soa::data::Item& item)
+      {
+        if (item.tid() == HorseRenameItem)
+        {
+          horseRenameItemUid = item.uid();
+        }
+      });
+
+      // Break early if the item was found.
+      if (horseRenameItemUid != soa::data::InvalidUid)
+        break;
+    }
+
+    // Find the item in the inventory.
+    const auto itemInventoryIter = std::ranges::find(
+      character.inventory(), horseRenameItemUid);
+
+    // Remove the item from the inventory.
+    character.inventory().erase(itemInventoryIter);
+    canRenameHorse = true;
+  });
+
+  if (not canRenameHorse)
+  {
+    RanchCommandUpdateMountNicknameCancel response{};
+    _commandServer.QueueCommand<decltype(response)>(
+      clientId,
+      CommandId::RanchUpdateMountNicknameCancel,
+      [response]()
+      {
+        return response;
+      });
+    return;
+  }
+
+  auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+    command.horseUid);
+
+  horseRecord->Mutable([horseName = command.name](soa::data::Horse& horse)
+  {
+    horse.name() = horseName;
+  });
+
   RanchCommandUpdateMountNicknameOK response{
-    .unk0 = command.unk0,
-    .nickname = command.nickname,
+    .horseUid = command.horseUid,
+    .nickname = command.name,
     .unk1 = command.unk1,
     .unk2 = 0};
 
@@ -723,7 +784,9 @@ void RanchDirector::HandleGetItemFromStorage(
       const auto storedItemRecord = GetServerInstance().GetDataDirector().GetStoredItems().Get(
         response.storedItemUid);
 
+      // Collection of the items received from the stored item.
       std::vector<soa::data::Uid> items;
+
       storedItemRecord->Immutable([this, &items, &response](const soa::data::StoredItem& storedItem)
       {
         items = storedItem.items();
@@ -891,27 +954,24 @@ void RanchDirector::HandleWearEquipment(
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  bool successful = false;
-  characterRecord->Mutable([&command, &successful](soa::data::Character& character)
-                           {
-    const bool ownsItem = std::ranges::contains(
+  bool equipSuccessful = false;
+  characterRecord->Mutable([&command, &equipSuccessful](soa::data::Character& character)
+  {
+    const bool hasEquippedItem = std::ranges::contains(
       character.inventory(), command.uid);
-    const bool ownsHorse = std::ranges::contains(
+    const bool hasMountedHorse = std::ranges::contains(
       character.horses(), command.uid);
 
     // Make sure the equip UID is either a valid item or a horse.
-    successful = ownsItem || ownsHorse;
+    equipSuccessful = hasEquippedItem || hasMountedHorse;
 
-    if (ownsHorse)
-    {
+    if (hasMountedHorse)
       character.mountUid() = command.uid;
-    }
-    else if (ownsItem)
-    {
+    else if (hasEquippedItem)
       character.characterEquipment().emplace_back(command.uid);
-    } });
+  });
 
-  if (successful)
+  if (equipSuccessful)
   {
     RanchCommandWearEquipmentOK response{
       .itemUid = command.uid,
@@ -955,8 +1015,8 @@ void RanchDirector::HandleRemoveEquipment(
     const bool ownsItem = std::ranges::contains(
       character.inventory(), command.uid);
 
-    // You can't unequip horse, you can only switch
-    // to a different one (at least in Alicia 1.0).
+    // You can't really unequip a horse. You can only switch to a different one.
+    // At least in Alicia 1.0.
 
     if (ownsItem)
     {
@@ -978,6 +1038,7 @@ void RanchDirector::HandleRemoveEquipment(
     {
       return response;
     });
+
   BroadcastEquipmentUpdate(clientId);
 }
 
@@ -1005,6 +1066,7 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
     // Mount
     const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
       character.mountUid());
+
     mountRecord->Immutable([&notify](const soa::data::Horse& mount)
     {
       protocol::BuildProtocolHorse(notify.mount, mount);

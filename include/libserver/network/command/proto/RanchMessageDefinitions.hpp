@@ -942,8 +942,8 @@ struct RanchCommandBreedingWishlistCancel
 //! Serverbound get messenger info command.
 struct RanchCommandUpdateMountNickname
 {
-  uint32_t unk0{};
-  std::string nickname{};
+  uint32_t horseUid{};
+  std::string name{};
   uint32_t unk1{};
 
   //! Writes the command to a provided sink stream.
@@ -964,7 +964,7 @@ struct RanchCommandUpdateMountNickname
 //! Clientbound get messenger info response.
 struct RanchCommandUpdateMountNicknameOK
 {
-  uint32_t unk0{};
+  uint32_t horseUid{};
   std::string nickname{};
   uint32_t unk1{};
   uint32_t unk2{};

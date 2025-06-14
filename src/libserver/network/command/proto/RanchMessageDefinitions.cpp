@@ -892,8 +892,8 @@ void RanchCommandUpdateMountNickname::Read(
   RanchCommandUpdateMountNickname& command,
   SourceStream& stream)
 {
-  stream.Read(command.unk0)
-    .Read(command.nickname)
+  stream.Read(command.horseUid)
+    .Read(command.name)
     .Read(command.unk1);
 }
 
@@ -915,7 +915,7 @@ void RanchCommandUpdateMountNicknameOK::Write(
   const RanchCommandUpdateMountNicknameOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.unk0)
+  stream.Write(command.horseUid)
     .Write(command.nickname)
     .Write(command.unk1)
     .Write(command.unk2);
