@@ -37,6 +37,7 @@ void ServerInstance::Initialize()
   _shouldRun.store(true, std::memory_order::release);
 
   _settings.LoadFromFile("config/config.json5");
+  _settings.LoadFromEnvironment();
 
   // Initialize the directors and tick them on their own threads.
   // Directors will terminate their tick loop once `_shouldRun` flag is set to false.

@@ -197,8 +197,8 @@ void RanchDirector::BroadcastSetIntroductionNotify(
   }
 
   RanchCommandSetIntroductionNotify notify{
-    .characterUid =  characterUid,
-    .introduction =  introduction};
+    .characterUid = characterUid,
+    .introduction = introduction};
 
   for (const ClientId& ranchClientId : _ranches[ranchUid]._clients)
   {

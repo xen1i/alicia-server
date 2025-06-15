@@ -75,6 +75,8 @@ public:
     std::string connectionString;
   } _dataSourceSettings;
 
+  //
+  void LoadFromEnvironment();
   // Updates settings from json configuration file
   void LoadFromFile(const std::filesystem::path& filePath);
 

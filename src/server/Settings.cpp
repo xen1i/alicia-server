@@ -21,6 +21,8 @@
 
 #include <libserver/util/Util.hpp>
 
+#include <charconv>
+#include <format>
 #include <fstream>
 #include <iostream>
 
@@ -28,6 +30,93 @@
 
 namespace soa
 {
+
+void Settings::LoadFromEnvironment()
+{
+  const auto getEnvValue = [](const std::string& key)
+  {
+    std::string value;
+    value.resize(128);
+
+    size_t valueLength{0};
+    getenv_s(&valueLength, value.data(), value.size(), key.data());
+    value.resize(valueLength);
+    return value;
+  };
+
+  const auto getAddressAndPortVariables = [&getEnvValue](
+    const std::string& addressVariableName,
+    const std::string& portVariableName,
+    asio::ip::address_v4& address,
+    uint16_t& port)
+  {
+    try
+    {
+      // Get the address.
+      const auto addressValue = getEnvValue(addressVariableName);
+      if (addressValue.empty())
+        return;
+
+      address = util::ResolveHostName(addressValue);
+    }
+    catch (const std::exception& x)
+    {
+      spdlog::error(" Couldn't resolve the host for '{}'", addressVariableName);
+    }
+
+    try
+    {
+      // Get the port.
+      const std::string portValue = getEnvValue(portVariableName);
+      if (portValue.empty())
+        return;
+
+      std::from_chars(
+        portValue.c_str(),
+        portValue.c_str() + portValue.length(),
+        port);
+    }
+    catch (const std::exception& x)
+    {
+      spdlog::error("Couldn't resolve the port for '{}'.", portVariableName);
+    }
+  };
+
+  // Lobby address and port.
+  getAddressAndPortVariables(
+        std::format("LOBBY_SERVER_ADDRESS"),
+        std::format("LOBBY_SERVER_PORT"),
+        _lobbySettings.address,
+        _lobbySettings.port);
+
+  // Lobby advertised address and port for ranch.
+  getAddressAndPortVariables(
+      std::format("LOBBY_ADVERTISED_RANCH_ADDRESS"),
+      std::format("LOBBY_ADVERTISED_RANCH_PORT"),
+      _lobbySettings.ranchAdvAddress,
+      _lobbySettings.ranchAdvPort);
+
+  // Lobby advertised address and port for race.
+  getAddressAndPortVariables(
+      std::format("LOBBY_ADVERTISED_RACE_ADDRESS"),
+      std::format("LOBBY_ADVERTISED_RACE_PORT"),
+      _lobbySettings.ranchAdvAddress,
+      _lobbySettings.ranchAdvPort);
+
+  // Ranch address and port.
+  getAddressAndPortVariables(
+        std::format("RANCH_SERVER_ADDRESS"),
+        std::format("RANCH_SERVER_PORT"),
+        _ranchSettings.address,
+        _ranchSettings.port);
+
+  // Race address and port.
+  getAddressAndPortVariables(
+        std::format("RACE_SERVER_ADDRESS"),
+        std::format("RACE_SERVER_PORT"),
+        _raceSettings.address,
+        _raceSettings.port);
+}
 
 void Settings::LoadFromFile(const std::filesystem::path& filePath)
 {

@@ -40,10 +40,15 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
 
 asio::ip::address_v4 ResolveHostName(const std::string& host)
 {
-  const auto address = asio::ip::make_address(host);
-  // If host is an IP address, parse that directly.
-  if (address.is_v4())
+  try
+  {
+    // Try to parse the address directly.
+    const auto address = asio::ip::make_address(host);
     return address.to_v4();
+  }
+  catch (const std::exception& ignored)
+  {
+  }
 
   asio::io_context ioContext;
   asio::ip::tcp::resolver resolver(ioContext);
