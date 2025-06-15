@@ -49,21 +49,12 @@ void BuildProtocolHorse(
   protocolHorse.val16 = 0xb8a167e4,
   protocolHorse.val17 = 0;
 
+  static uint32_t progress = 0;
+  progress++;
   protocolHorse.vals0 = {
-    .stamina = 0x7d0,
-    .attractiveness = 0x3c,
-    .hunger = 0x21c,
-    .val0 = 0x00,
-    .val1 = 0x03E8,
-    .val2 = 0x00,
-    .val3 = 0x00,
-    .val4 = 0x00,
-    .val5 = 0x03E8,
-    .val6 = 0x1E,
-    .val7 = 0x0A,
-    .val8 = 0x0A,
-    .val9 = 0x0A,
-    .val10 = 0x00,
+    .stamina = 0xFFFF,
+    .attractiveness = 0xFFFF,
+    .hunger = 0xFFFF,
   };
 
   protocolHorse.vals1 = {

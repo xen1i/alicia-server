@@ -358,7 +358,6 @@ void LoginHandler::QueueUserLoginAccepted(
 
     response.bitfield = 0x0e06;
 
-
     // Character equipment.
     auto characterEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
       character.characterEquipment());

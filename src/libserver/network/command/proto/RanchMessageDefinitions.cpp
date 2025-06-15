@@ -58,10 +58,10 @@ void RanchCommandUseItem::Read(
   RanchCommandUseItem& command,
   SourceStream& stream)
 {
-  stream.Read(command.unk0)
-    .Read(command.unk1)
-    .Read(command.unk2)
-    .Read(command.unk3);
+  stream.Read(command.itemUid)
+    .Read(command.always1)
+    .Read(command.always1too)
+    .Read(command.play);
 }
 
 void RanchCommandUseItemOK::ActionTwoBytes::Write(
@@ -69,7 +69,7 @@ void RanchCommandUseItemOK::ActionTwoBytes::Write(
   SinkStream& stream)
 {
   stream.Write(action.unk0)
-    .Write(action.unk1);
+    .Write(action.play);
 }
 
 void RanchCommandUseItemOK::ActionTwoBytes::Read(
@@ -97,7 +97,7 @@ void RanchCommandUseItemOK::Write(
   const RanchCommandUseItemOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.unk0)
+  stream.Write(command.itemUid)
     .Write(command.unk1);
 
   stream.Write(command.type);
@@ -895,6 +895,22 @@ void RanchCommandUpdateMountNicknameCancel::Write(
 
 void RanchCommandUpdateMountNicknameCancel::Read(
   RanchCommandUpdateMountNicknameCancel& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
+void RanchCommandUpdateMountInfoNotify::Write(
+  const RanchCommandUpdateMountInfoNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.action)
+    .Write(command.member1)
+    .Write(command.horse);
+}
+
+void RanchCommandUpdateMountInfoNotify::Read(
+  RanchCommandUpdateMountInfoNotify& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented.");

@@ -184,6 +184,8 @@ enum class CommandId : uint16_t
   RanchUpdateMountNicknameOK = 0x198,
   RanchUpdateMountNicknameCancel = 0x199,
 
+  RanchUpdateMountInfoNotify = 0x1e7,
+
   RanchRequestStorage = 0x299,
   RanchRequestStorageOK = 0x29a,
   RanchRequestStorageCancel = 0x29b,

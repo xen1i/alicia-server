@@ -183,32 +183,51 @@ void RanchDirector::BroadcastSetIntroductionNotify(
   uint32_t characterUid,
   const std::string& introduction)
 {
-  // Find the ranch the character is on.
-  auto ranchUid = soa::data::InvalidUid;
-  ClientId characterClientId = 0;
-  for (const auto& [clientId, clientContext] : _clientContext)
-  {
-    if (clientContext.characterUid == characterUid)
-    {
-      ranchUid = clientContext.ranchUid;
-      characterClientId = clientId;
-      break;
-    }
-  }
+  const auto& clientContext = GetClientContextByCharacterUid(characterUid);
 
   RanchCommandSetIntroductionNotify notify{
     .characterUid = characterUid,
     .introduction = introduction};
 
-  for (const ClientId& ranchClientId : _ranches[ranchUid]._clients)
+  for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
   {
     // Prevent broadcast to self.
-    if (ranchClientId == characterClientId)
+    if (ranchClientId == clientContext.characterUid)
       continue;
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
       CommandId::RanchSetIntroductionNotify,
+      [notify]()
+      {
+        return notify;
+      });
+  }
+}
+
+void RanchDirector::BroadcastUpdateMountInfoNotify(
+  soa::data::Uid characterUid,
+  soa::data::Uid horseUid)
+{
+  const auto& clientContext = GetClientContextByCharacterUid(characterUid);
+  const auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+    horseUid);
+
+  RanchCommandUpdateMountInfoNotify notify{};
+  horseRecord->Immutable([&notify](const soa::data::Horse& horse)
+  {
+    protocol::BuildProtocolHorse(notify.horse, horse);
+  });
+
+  for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
+  {
+    // // Prevent broadcast to self.
+    // if (ranchClientId == clientContext.characterUid)
+    //   continue;
+
+    _commandServer.QueueCommand<decltype(notify)>(
+      ranchClientId,
+      CommandId::RanchUpdateMountInfoNotify,
       [notify]()
       {
         return notify;
@@ -224,6 +243,17 @@ soa::ServerInstance& RanchDirector::GetServerInstance()
 soa::Settings::RanchSettings& RanchDirector::GetSettings()
 {
   return GetServerInstance().GetSettings()._ranchSettings;
+}
+
+RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(soa::data::Uid characterUid)
+{
+  for (auto& [clientId, clientContext] : _clientContext)
+  {
+    if (clientContext.characterUid == characterUid)
+      return clientContext;
+  }
+
+  throw std::runtime_error("Character not associated with any client");
 }
 
 void RanchDirector::HandleEnterRanch(
@@ -663,7 +693,7 @@ void RanchDirector::HandleUpdateMountNickname(
 
   bool canRenameHorse = false;
   characterRecord->Mutable([this, &canRenameHorse, horseUid = command.horseUid](soa::data::Character& character)
-  {
+                           {
     const bool ownsHorse = std::ranges::contains(character.horses(), horseUid);
     if (not ownsHorse)
       return;
@@ -695,8 +725,7 @@ void RanchDirector::HandleUpdateMountNickname(
 
     // Remove the item from the inventory.
     character.inventory().erase(itemInventoryIter);
-    canRenameHorse = true;
-  });
+    canRenameHorse = true; });
 
   if (not canRenameHorse)
   {
@@ -732,6 +761,8 @@ void RanchDirector::HandleUpdateMountNickname(
     {
       return response;
     });
+
+  BroadcastUpdateMountInfoNotify(clientContext.characterUid, response.horseUid);
 }
 
 void RanchDirector::HandleRequestStorage(
@@ -923,6 +954,10 @@ std::string RanchDirector::HandleCommand(
   if (command.empty())
     return "No command provided.";
 
+  if (command[0] == "test")
+  {
+    BroadcastUpdateMountInfoNotify(clientContext.characterUid, 1);
+  }
   if (command[0] == "give")
   {
     if (command.size() < 2)
@@ -1145,10 +1180,180 @@ void RanchDirector::HandleUseItem(
 {
   RanchCommandUseItemOK response
   {
-    response.unk0 = command.unk0,
-    response.unk1 = command.unk1,
+    response.itemUid = command.itemUid,
+    response.unk1 = command.always1,
     response.type = RanchCommandUseItemOK::ActionType::Empty
   };
+
+  // feed, Action 1 through 3
+  //   success - both bytes zero
+  //   failure - Action empty
+  // toys, always Action 1 to Action 3,
+  //   play success indicated by the second byte
+  // brushes, always empty response
+  //   success - Action empty
+
+  spdlog::info("Play - itemUid: {}, mem1: {}, mem2: {}, {} play",
+  command.itemUid,
+  command.always1,
+  command.always1too,
+  command.play == RanchCommandUseItem::Play::Bad
+    ? "Bad"
+    : command.play == RanchCommandUseItem::Play::Good
+      ? "Good"
+      : command.play == RanchCommandUseItem::Play::CriticalGood
+        ? "Critical good"
+        : "Perfect");
+
+  static uint32_t combo = 0;
+
+  spdlog::info("Trying combo {}", combo);
+  switch (combo++)
+  {
+    case 0:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Empty;
+      break;
+    }
+    case 1:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 0;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 2:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 0;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 3:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 0;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 4:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action4;
+      response.actionOneByte.unk0 = 0;
+      break;
+    }
+    case 5:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 0x00;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 6:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 0x00;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 7:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 0x00;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 8:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action4;
+      response.actionOneByte.unk0 = 1;
+      break;
+    }
+    case 9:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 10:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 11:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 12:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 13:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 14:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 1;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 15:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 16:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 17:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Bad;
+      break;
+    }
+    case 18:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action1;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 19:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action2;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+    case 20:
+    {
+      response.type = RanchCommandUseItemOK::ActionType::Action3;
+      response.actionOneByte.unk0 = 0xFF;
+      response.actionTwoBytes.play = RanchCommandUseItem::Play::Perfect;
+      break;
+    }
+  }
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

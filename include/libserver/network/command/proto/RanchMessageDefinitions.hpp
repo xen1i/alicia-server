@@ -33,10 +33,18 @@ namespace alicia
 //!
 struct RanchCommandUseItem
 {
-  uint32_t unk0{};
-  uint16_t unk1{};
-  uint32_t unk2{};
-  uint32_t unk3{};
+  uint32_t itemUid{};
+  uint16_t always1{};
+  uint32_t always1too{};
+
+  enum class Play : uint32_t
+  {
+    Bad = 0,
+    Good = 1,
+    CriticalGood = 2,
+    Perfect = 3,
+  };
+  Play play{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -68,7 +76,7 @@ struct RanchCommandUseItemOK
   struct ActionTwoBytes
   {
     uint8_t unk0{};
-    uint8_t unk1{};
+    RanchCommandUseItem::Play play{};
 
     static void Write(
       const ActionTwoBytes& action,
@@ -90,7 +98,7 @@ struct RanchCommandUseItemOK
       SourceStream& stream);
   };
 
-  uint32_t unk0{};
+  uint32_t itemUid{};
   uint16_t unk1{};
 
   // Action points to different structures depending on type
@@ -1007,6 +1015,38 @@ struct RanchCommandUpdateMountNicknameCancel
   //! @param stream Source stream.
   static void Read(
     RanchCommandUpdateMountNicknameCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandUpdateMountInfoNotify
+{
+  enum class Action
+  {
+    Default = 0,
+    UpdateMount = 4,
+    SetMountStateAndBreedData = 5,
+    SomeItemManip0 = 9,
+    SomeItemManip1 = 10,
+    SomeItemManip2 = 12,
+    SomeItemManip3 = 13,
+  };
+
+  Action action{Action::UpdateMount};
+  uint8_t member1{};
+  Horse horse{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandUpdateMountInfoNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandUpdateMountInfoNotify& command,
     SourceStream& stream);
 };
 

@@ -458,6 +458,8 @@ void LobbyDirector::HandleRequestPersonalInfo(ClientId clientId, const LobbyComm
     .type = command.type,
   };
 
+  response.six.member1 = 1;
+
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::LobbyPersonalInfo,

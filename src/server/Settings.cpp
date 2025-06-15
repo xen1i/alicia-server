@@ -21,6 +21,7 @@
 
 #include <libserver/util/Util.hpp>
 
+#include <stdlib.h>
 #include <charconv>
 #include <format>
 #include <fstream>
@@ -36,11 +37,13 @@ void Settings::LoadFromEnvironment()
   const auto getEnvValue = [](const std::string& key)
   {
     std::string value;
-    value.resize(128);
+    // muslc does not support getenv_s,
+    // we need it for Alpine :(
+    const char* envValue = getenv(key.data());
+    if (envValue == nullptr)
+      return value;
 
-    size_t valueLength{0};
-    getenv_s(&valueLength, value.data(), value.size(), key.data());
-    value.resize(valueLength);
+    value = std::string_view(envValue);
     return value;
   };
 
@@ -54,31 +57,28 @@ void Settings::LoadFromEnvironment()
     {
       // Get the address.
       const auto addressValue = getEnvValue(addressVariableName);
-      if (addressValue.empty())
-        return;
-
-      address = util::ResolveHostName(addressValue);
+      if (not addressValue.empty())
+      {
+        address = util::ResolveHostName(addressValue);
+      }
     }
     catch (const std::exception& x)
     {
       spdlog::error(" Couldn't resolve the host for '{}'", addressVariableName);
     }
 
-    try
+    // Get the port.
+    const std::string portValue = getEnvValue(portVariableName);
+    if (not portValue.empty())
     {
-      // Get the port.
-      const std::string portValue = getEnvValue(portVariableName);
-      if (portValue.empty())
-        return;
-
-      std::from_chars(
+      const auto result = std::from_chars(
         portValue.c_str(),
         portValue.c_str() + portValue.length(),
         port);
-    }
-    catch (const std::exception& x)
-    {
-      spdlog::error("Couldn't resolve the port for '{}'.", portVariableName);
+      if (result.ec != std::errc{})
+      {
+        spdlog::error("Couldn't resolve the port for '{}'.", portVariableName);
+      }
     }
   };
 

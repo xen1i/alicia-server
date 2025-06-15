@@ -48,10 +48,24 @@ public:
     uint32_t characterUid,
     const std::string& introduction);
 
+  //!
+  void BroadcastUpdateMountInfoNotify(
+    soa::data::Uid characterUid,
+    soa::data::Uid horseUid);
+
   soa::ServerInstance& GetServerInstance();
   soa::Settings::RanchSettings& GetSettings();
 
 private:
+  struct ClientContext
+  {
+    soa::data::Uid characterUid;
+    soa::data::Uid ranchUid;
+    uint8_t busyState{0};
+  };
+
+  ClientContext& GetClientContextByCharacterUid(soa::data::Uid characterUid);
+
   //!
   void HandleEnterRanch(
     ClientId clientId,
@@ -151,14 +165,6 @@ private:
   soa::ServerInstance& _serverInstance;
   //!
   CommandServer _commandServer;
-
-  struct ClientContext
-  {
-    soa::data::Uid characterUid;
-    soa::data::Uid ranchUid;
-    uint8_t busyState{0};
-  };
-
   //!
   std::unordered_map<ClientId, ClientContext> _clientContext;
 
