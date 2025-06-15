@@ -1144,7 +1144,7 @@ struct RanchCommandGetItemFromStorageCancel
 
 struct RanchCommandCheckStorageItem
 {
-  uint32_t uid{};
+  uint32_t storedItemUid{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1264,7 +1264,7 @@ struct RanchCommandChatNotify
 
 struct RanchCommandWearEquipment
 {
-  uint32_t uid{};
+  uint32_t itemUid{};
   uint8_t member{};
 
   //! Writes the command to a provided sink stream.
@@ -1324,7 +1324,7 @@ struct RanchCommandWearEquipmentCancel
 
 struct RanchCommandRemoveEquipment
 {
-  uint32_t uid{};
+  uint32_t itemUid{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1399,6 +1399,26 @@ struct RanchCommandUpdateEquipmentNotify
   //! @param stream Source stream.
   static void Read(
     RanchCommandUpdateEquipmentNotify& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandSetIntroductionNotify
+{
+  uint32_t characterUid{};
+  std::string introduction{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandSetIntroductionNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandSetIntroductionNotify& command,
     SourceStream& stream);
 };
 

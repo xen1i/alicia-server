@@ -51,7 +51,7 @@ void RanchCommandUseItem::Write(
   const RanchCommandUseItem& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUseItem::Read(
@@ -120,7 +120,7 @@ void RanchCommandUseItemOK::Write(
       break;
     }
     default:
-      throw std::logic_error("Not implemented.");
+      throw std::runtime_error("Not implemented.");
   }
 }
 
@@ -128,7 +128,7 @@ void RanchCommandUseItemOK::Read(
   RanchCommandUseItemOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUseItemCancel::Write(
@@ -143,14 +143,14 @@ void RanchCommandUseItemCancel::Read(
   RanchCommandUseItemCancel& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandMountFamilyTree::Write(
   const RanchCommandMountFamilyTree& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandMountFamilyTree::Read(
@@ -177,7 +177,7 @@ void RanchCommandMountFamilyTreeOK::Read(
   RanchCommandMountFamilyTreeOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandMountFamilyTreeCancel::Write(
@@ -196,7 +196,7 @@ void RanchCommandEnterRanch::Write(
   const RanchCommandEnterRanch& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandEnterRanch::Read(
@@ -268,7 +268,7 @@ void RanchCommandEnterRanchOK::Read(
   RanchCommandEnterRanchOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandEnterRanchCancel::Write(
@@ -294,7 +294,7 @@ void RanchCommandEnterRanchNotify::Read(
   RanchCommandEnterRanchNotify& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRanchSnapshot::FullSpatial::Write(
@@ -389,7 +389,7 @@ void RanchCommandRanchSnapshot::Write(
   const RanchCommandRanchSnapshot& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRanchSnapshot::Read(
@@ -451,14 +451,14 @@ void RanchCommandRanchSnapshotNotify::Read(
   RanchCommandRanchSnapshotNotify& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRanchCmdAction::Write(
   const RanchCommandRanchCmdAction& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRanchCmdAction::Read(
@@ -485,14 +485,14 @@ void RanchCommandRanchCmdActionNotify::Read(
   RanchCommandRanchCmdActionNotify& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUpdateBusyState::Write(
   const RanchCommandUpdateBusyState& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUpdateBusyState::Read(
@@ -514,7 +514,7 @@ void RanchCommandUpdateBusyStateNotify::Read(
   RanchCommandUpdateBusyStateNotify& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandLeaveRanch::Write(
@@ -552,7 +552,7 @@ void RanchCommandLeaveRanchNotify::Read(
   RanchCommandLeaveRanchNotify& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandHeartbeat::Write(
@@ -569,7 +569,7 @@ void RanchCommandRanchStuff::Write(
   const RanchCommandRanchStuff& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRanchStuff::Read(
@@ -593,14 +593,14 @@ void RanchCommandRanchStuffOK::Read(
   RanchCommandRanchStuffOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandSearchStallion::Write(
   const RanchCommandSearchStallion& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandSearchStallion::Read(
@@ -686,7 +686,7 @@ void RanchCommandSearchStallionOK::Read(
   RanchCommandSearchStallionOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandEnterBreedingMarket::Write(
@@ -724,8 +724,8 @@ void RanchCommandEnterBreedingMarketOK::Write(
       .Write(availableHorse.tid)
       .Write(availableHorse.combo)
       .Write(availableHorse.unk1)
-      .Write(availableHorse.lineage)
-      .Write(availableHorse.unk3);
+      .Write(availableHorse.unk2)
+      .Write(availableHorse.lineage);
   }
 }
 
@@ -733,14 +733,14 @@ void RanchCommandEnterBreedingMarketOK::Read(
   RanchCommandEnterBreedingMarketOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandTryBreeding::Write(
   const RanchCommandTryBreeding& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandTryBreeding::Read(
@@ -767,7 +767,7 @@ void RanchCommandTryBreedingCancel::Read(
   RanchCommandTryBreedingCancel& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandTryBreedingOK::Write(
@@ -809,7 +809,7 @@ void RanchCommandTryBreedingOK::Read(
   RanchCommandTryBreedingOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandBreedingWishlist::Write(
@@ -854,20 +854,9 @@ void RanchCommandBreedingWishlistOK::Write(
       .Write(wishlistElement.unk6)
       .Write(wishlistElement.unk7)
       .Write(wishlistElement.unk8)
-      .Write(wishlistElement.stats.agility)
-      .Write(wishlistElement.stats.control)
-      .Write(wishlistElement.stats.speed)
-      .Write(wishlistElement.stats.strength)
-      .Write(wishlistElement.stats.spirit)
-      .Write(wishlistElement.parts.skinId)
-      .Write(wishlistElement.parts.maneId)
-      .Write(wishlistElement.parts.tailId)
-      .Write(wishlistElement.parts.faceId)
-      .Write(wishlistElement.appearance.scale)
-      .Write(wishlistElement.appearance.legLength)
-      .Write(wishlistElement.appearance.legVolume)
-      .Write(wishlistElement.appearance.bodyLength)
-      .Write(wishlistElement.appearance.bodyVolume)
+      .Write(wishlistElement.stats)
+      .Write(wishlistElement.parts)
+      .Write(wishlistElement.appearance)
       .Write(wishlistElement.unk9)
       .Write(wishlistElement.unk10)
       .Write(wishlistElement.unk11);
@@ -878,14 +867,14 @@ void RanchCommandBreedingWishlistOK::Read(
   RanchCommandBreedingWishlistOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUpdateMountNickname::Write(
   const RanchCommandUpdateMountNickname& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUpdateMountNickname::Read(
@@ -908,7 +897,7 @@ void RanchCommandUpdateMountNicknameCancel::Read(
   RanchCommandUpdateMountNicknameCancel& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandUpdateMountNicknameOK::Write(
@@ -925,14 +914,14 @@ void RanchCommandUpdateMountNicknameOK::Read(
   RanchCommandUpdateMountNicknameOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRequestStorage::Write(
   const RanchCommandRequestStorage& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRequestStorage::Read(RanchCommandRequestStorage& command, SourceStream& stream)
@@ -957,7 +946,7 @@ void RanchCommandRequestStorageOK::Write(
 
 void RanchCommandRequestStorageOK::Read(RanchCommandRequestStorageOK& command, SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRequestStorageCancel::Write(
@@ -971,14 +960,14 @@ void RanchCommandRequestStorageCancel::Read(
   RanchCommandRequestStorageCancel& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandGetItemFromStorage::Write(
   const RanchCommandGetItemFromStorage& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandGetItemFromStorage::Read(
@@ -1005,7 +994,7 @@ void RanchCommandGetItemFromStorageOK::Read(
   RanchCommandGetItemFromStorageOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandGetItemFromStorageCancel::Write(
@@ -1020,14 +1009,28 @@ void RanchCommandGetItemFromStorageCancel::Read(
   RanchCommandGetItemFromStorageCancel& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
+}
+
+void RanchCommandCheckStorageItem::Write(
+  const RanchCommandGetItemFromStorage& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
+void RanchCommandCheckStorageItem::Read(
+  RanchCommandGetItemFromStorage& command,
+  SourceStream& stream)
+{
+  stream.Read(command.storedItemUid);
 }
 
 void RanchCommandRequestNpcDressList::Write(
   const RanchCommandRequestNpcDressList& command,
   SinkStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRequestNpcDressList::Read(
@@ -1053,7 +1056,7 @@ void RanchCommandRequestNpcDressListOK::Read(
   RanchCommandRequestNpcDressListOK& command,
   SourceStream& stream)
 {
-  throw std::logic_error("Not implemented.");
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandRequestNpcDressListCancel::Write(
@@ -1114,7 +1117,7 @@ void RanchCommandWearEquipment::Read(
   RanchCommandWearEquipment& command,
   SourceStream& stream)
 {
-  stream.Read(command.uid)
+  stream.Read(command.itemUid)
     .Read(command.member);
 }
 
@@ -1159,7 +1162,7 @@ void RanchCommandRemoveEquipment::Read(
   RanchCommandRemoveEquipment& command,
   SourceStream& stream)
 {
-  stream.Read(command.uid);
+  stream.Read(command.itemUid);
 }
 
 void RanchCommandRemoveEquipmentOK::Write(
@@ -1214,6 +1217,21 @@ void RanchCommandUpdateEquipmentNotify::Write(
 
 void RanchCommandUpdateEquipmentNotify::Read(
   RanchCommandUpdateEquipmentNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandSetIntroductionNotify::Write(
+  const RanchCommandSetIntroductionNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.characterUid)
+    .Write(command.introduction);
+}
+
+void RanchCommandSetIntroductionNotify::Read(
+  RanchCommandSetIntroductionNotify& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented");

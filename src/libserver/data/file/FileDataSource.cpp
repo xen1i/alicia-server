@@ -135,6 +135,9 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
 
   character.uid = json["uid"].get<data::Uid>();
   character.name = json["name"].get<std::string>();
+
+  character.introduction = json["introduction"].get<std::string>();
+
   character.level = json["level"].get<uint32_t>();
   character.carrots = json["carrots"].get<int32_t>();
   character.cash = json["cash"].get<uint32_t>();
@@ -173,6 +176,9 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
   nlohmann::json json;
   json["uid"] = character.uid();
   json["name"] = character.name();
+
+  json["introduction"] = character.introduction();
+
   json["level"] = character.level();
   json["carrots"] = character.carrots();
   json["cash"] = character.cash();

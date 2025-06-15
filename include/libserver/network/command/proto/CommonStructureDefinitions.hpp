@@ -354,7 +354,7 @@ struct RanchCharacter
   Gender gender{};
   uint8_t unk0{};
   uint8_t unk1{};
-  std::string description{};
+  std::string introduction{};
 
   Character character{};
   Horse mount{};

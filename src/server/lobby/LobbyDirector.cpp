@@ -120,6 +120,20 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
       HandleRequestSpecialEventList(clientId, message);
     });
 
+  _commandServer.RegisterCommandHandler<LobbyCommandRequestPersonalInfo>(
+    CommandId::LobbyRequestPersonalInfo,
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleRequestPersonalInfo(clientId, message);
+    });
+
+  _commandServer.RegisterCommandHandler<LobbyCommandSetIntroduction>(
+    CommandId::LobbySetIntroduction,
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleSetIntroduction(clientId, message);
+    });
+
   _commandServer.RegisterCommandHandler<LobbyCommandEnterRanch>(
     CommandId::LobbyEnterRanch,
     [this](ClientId clientId, const auto& message)
@@ -434,6 +448,40 @@ void LobbyDirector::HandleRequestSpecialEventList(
     });
 }
 
+void LobbyDirector::HandleRequestPersonalInfo(ClientId clientId, const LobbyCommandRequestPersonalInfo& command)
+{
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    command.characterUid);
+
+  LobbyCommandPersonalInfo response{
+    .characterUid = command.characterUid,
+    .type = command.type,
+  };
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyPersonalInfo,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void LobbyDirector::HandleSetIntroduction(ClientId clientId, const LobbyCommandSetIntroduction& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    clientContext.characterUid);
+
+  characterRecord->Mutable([&command](soa::data::Character& character)
+  {
+    character.introduction() = command.introduction;
+  });
+
+  GetServerInstance().GetRanchDirector().BroadcastSetIntroductionNotify(
+    clientContext.characterUid, command.introduction);
+}
+
 void LobbyDirector::HandleEnterRanch(
   ClientId clientId,
   const LobbyCommandEnterRanch& requestEnterRanch)
@@ -515,8 +563,16 @@ void LobbyDirector::HandleInquiryTreecash(
   ClientId clientId,
   const LobbyCommandInquiryTreecash& message)
 {
-  LobbyCommandInquiryTreecashOK response{
-    .cash = 1'000};
+  const auto& clientContext = _clientContext[clientId];
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+     clientContext.characterUid);
+
+  LobbyCommandInquiryTreecashOK response{};
+
+  characterRecord->Immutable([&response](const soa::data::Character& character)
+  {
+    response.cash = character.cash();
+  });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

@@ -347,6 +347,8 @@ void LoginHandler::QueueUserLoginAccepted(
   {
     response.selfUid = character.uid();
     response.nickName = character.name();
+
+    response.introduction = character.introduction();
     response.profileGender = Gender::Unspecified;
 
     response.level = character.level();

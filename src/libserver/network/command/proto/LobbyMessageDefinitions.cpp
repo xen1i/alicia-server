@@ -54,7 +54,7 @@ void LobbyCommandLoginOK::Write(
     .Write(command.nickName)
     .Write(command.motd)
     .Write(static_cast<uint8_t>(command.profileGender))
-    .Write(command.status);
+    .Write(command.introduction);
 
   // Character equipment
   stream.Write(static_cast<uint8_t>(command.characterEquipment.size()));
@@ -938,6 +938,145 @@ void LobbyCommandEnterRandomRanch::Read(
   SourceStream& stream)
 {
   // Empty.
+}
+
+void LobbyCommandRequestPersonalInfo::Write(
+  const LobbyCommandRequestPersonalInfo& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandRequestPersonalInfo::Read(
+  LobbyCommandRequestPersonalInfo& command,
+  SourceStream& stream)
+{
+  stream.Read(command.characterUid)
+    .Read(command.type);
+}
+
+void LobbyCommandPersonalInfo::Basic::Write(const Basic& command, SinkStream& stream)
+{
+  stream.Write(command.member1)
+    .Write(command.member2)
+    .Write(command.member3)
+    .Write(command.member4)
+    .Write(command.member5)
+    .Write(command.member6)
+    .Write(command.member7)
+    .Write(command.member8)
+    .Write(command.member9)
+    .Write(command.member10)
+    .Write(command.member11)
+    .Write(command.member12)
+    .Write(command.member13)
+    .Write(command.member14)
+    .Write(command.member15)
+    .Write(command.member16)
+    .Write(command.member17)
+    .Write(command.member18)
+    .Write(command.member19)
+    .Write(command.member20)
+    .Write(command.member21)
+    .Write(command.member22)
+    .Write(command.member23)
+    .Write(command.member24)
+    .Write(command.member25)
+    .Write(command.member26)
+    .Write(command.member27)
+    .Write(command.member28)
+    .Write(command.member29);
+}
+
+void LobbyCommandPersonalInfo::Basic::Read(Basic& command, SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandPersonalInfo::Courses::Write(const Courses& command, SinkStream& stream)
+{
+  stream.Write(command.member1)
+    .Write(command.member2)
+    .Write(command.member3);
+
+  stream.Write(static_cast<uint8_t>(command.member4.size()));
+  for (const auto& entry : command.member4)
+  {
+    stream.Write(entry.member1)
+      .Write(entry.member2)
+      .Write(entry.member3);
+
+    for (const auto& byte : entry.member4)
+    {
+      stream.Write(byte);
+    }
+  }
+}
+
+void LobbyCommandPersonalInfo::Courses::Read(Courses& command, SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandPersonalInfo::Eight::Write(const Eight& command, SinkStream& stream)
+{
+  stream.Write(static_cast<uint8_t>(command.member1.size()));
+  for (const auto& entry : command.member1)
+  {
+    stream.Write(entry.member1)
+      .Write(entry.member2);
+  }
+}
+
+void LobbyCommandPersonalInfo::Eight::Read(Eight& command, SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandPersonalInfo::Write(const LobbyCommandPersonalInfo& command, SinkStream& stream)
+{
+  stream.Write(command.characterUid)
+    .Write(command.type);
+
+  switch (command.type)
+  {
+    case LobbyCommandRequestPersonalInfo::Type::Basic:
+    {
+      stream.Write(command.six);
+      break;
+    }
+    case LobbyCommandRequestPersonalInfo::Type::Courses:
+    {
+      stream.Write(command.seven);
+      break;
+    }
+    case LobbyCommandRequestPersonalInfo::Type::Eight:
+    {
+      stream.Write(command.eight);
+      break;
+    }
+  }
+}
+
+void LobbyCommandPersonalInfo::Read(
+  LobbyCommandPersonalInfo& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandSetIntroduction::Write(
+  const LobbyCommandSetIntroduction& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandSetIntroduction::Read(
+  LobbyCommandSetIntroduction& command,
+  SourceStream& stream)
+{
+  stream.Read(command.introduction);
 }
 
 } // namespace alicia

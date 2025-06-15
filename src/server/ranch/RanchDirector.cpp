@@ -179,6 +179,43 @@ void RanchDirector::Tick()
 {
 }
 
+void RanchDirector::BroadcastSetIntroductionNotify(
+  uint32_t characterUid,
+  const std::string& introduction)
+{
+  // Find the ranch the character is on.
+  auto ranchUid = soa::data::InvalidUid;
+  ClientId characterClientId = 0;
+  for (const auto& [clientId, clientContext] : _clientContext)
+  {
+    if (clientContext.characterUid == characterUid)
+    {
+      ranchUid = clientContext.ranchUid;
+      characterClientId = clientId;
+      break;
+    }
+  }
+
+  RanchCommandSetIntroductionNotify notify{
+    .characterUid =  characterUid,
+    .introduction =  introduction};
+
+  for (const ClientId& ranchClientId : _ranches[ranchUid]._clients)
+  {
+    // Prevent broadcast to self.
+    if (ranchClientId == characterClientId)
+      continue;
+
+    _commandServer.QueueCommand<decltype(notify)>(
+      ranchClientId,
+      CommandId::RanchSetIntroductionNotify,
+      [notify]()
+      {
+        return notify;
+      });
+  }
+}
+
 soa::ServerInstance& RanchDirector::GetServerInstance()
 {
   return _serverInstance;
@@ -208,7 +245,8 @@ void RanchDirector::HandleEnterRanch(
       .unk1 = 1}};
 
   // Get the ranch the user is connecting to.
-  auto ranchRecord = GetServerInstance().GetDataDirector().GetRanches().Get(enterRanch.ranchUid);
+  const auto ranchRecord = GetServerInstance().GetDataDirector().GetRanches().Get(
+    enterRanch.ranchUid);
   if (not ranchRecord)
   {
     throw std::runtime_error(
@@ -268,14 +306,16 @@ void RanchDirector::HandleEnterRanch(
       ranchCharacter.uid = character.uid();
       ranchCharacter.name = character.name();
       ranchCharacter.gender = Gender::Unspecified;
+      ranchCharacter.introduction = character.introduction();
+
       ranchCharacter.unk0 = 1;
       ranchCharacter.unk1 = 1;
-      ranchCharacter.description = "this is a ranch player";
 
       protocol::BuildProtocolCharacter(ranchCharacter.character, character);
 
       // Character's equipment.
-      auto equipment = GetServerInstance().GetDataDirector().GetItems().Get(character.characterEquipment());
+      const auto equipment = GetServerInstance().GetDataDirector().GetItems().Get(
+        character.characterEquipment());
       if (not equipment)
       {
         throw std::runtime_error(
@@ -287,7 +327,8 @@ void RanchDirector::HandleEnterRanch(
       protocol::BuildProtocolItems(ranchCharacter.characterEquipment, *equipment);
 
       // Character's mount.
-      auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid());
+      const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+        character.mountUid());
       if (not mountRecord)
       {
         throw std::runtime_error(
@@ -965,23 +1006,23 @@ void RanchDirector::HandleWearEquipment(
   characterRecord->Mutable([&command, &equipSuccessful](soa::data::Character& character)
   {
     const bool hasEquippedItem = std::ranges::contains(
-      character.inventory(), command.uid);
+      character.inventory(), command.itemUid);
     const bool hasMountedHorse = std::ranges::contains(
-      character.horses(), command.uid);
+      character.horses(), command.itemUid);
 
     // Make sure the equip UID is either a valid item or a horse.
     equipSuccessful = hasEquippedItem || hasMountedHorse;
 
     if (hasMountedHorse)
-      character.mountUid() = command.uid;
+      character.mountUid() = command.itemUid;
     else if (hasEquippedItem)
-      character.characterEquipment().emplace_back(command.uid);
+      character.characterEquipment().emplace_back(command.itemUid);
   });
 
   if (equipSuccessful)
   {
     RanchCommandWearEquipmentOK response{
-      .itemUid = command.uid,
+      .itemUid = command.itemUid,
       .member = command.member};
 
     _commandServer.QueueCommand<decltype(response)>(
@@ -997,7 +1038,7 @@ void RanchDirector::HandleWearEquipment(
   }
 
   RanchCommandWearEquipmentCancel response{
-    .itemUid = command.uid,
+    .itemUid = command.itemUid,
     .member = command.member};
 
   _commandServer.QueueCommand<decltype(response)>(
@@ -1020,7 +1061,7 @@ void RanchDirector::HandleRemoveEquipment(
   characterRecord->Mutable([&command](soa::data::Character& character)
   {
     const bool ownsItem = std::ranges::contains(
-      character.inventory(), command.uid);
+      character.inventory(), command.itemUid);
 
     // You can't really unequip a horse. You can only switch to a different one.
     // At least in Alicia 1.0.
@@ -1028,7 +1069,7 @@ void RanchDirector::HandleRemoveEquipment(
     if (ownsItem)
     {
       const auto range = std::ranges::remove(
-        character.characterEquipment(), command.uid);
+        character.characterEquipment(), command.itemUid);
       character.characterEquipment().erase(range.begin(), range.end());
     }
   });
@@ -1036,7 +1077,7 @@ void RanchDirector::HandleRemoveEquipment(
   // We really don't need to cancel the unequip.
   // Always respond with OK.
   RanchCommandRemoveEquipmentOK response{
-    .uid = command.uid};
+    .uid = command.itemUid};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

@@ -106,6 +106,15 @@ private:
     const LobbyCommandRequestSpecialEventList& requestQuestList);
 
   //!
+  void HandleRequestPersonalInfo(
+    ClientId clientId,
+    const LobbyCommandRequestPersonalInfo& command);
+
+  void HandleSetIntroduction(
+    ClientId clientId,
+    const LobbyCommandSetIntroduction& command);
+
+  //!
   void HandleEnterRanch(
     ClientId clientId,
     const LobbyCommandEnterRanch& requestEnterRanch);

@@ -44,6 +44,10 @@ public:
   void Terminate();
   void Tick();
 
+  void BroadcastSetIntroductionNotify(
+    uint32_t characterUid,
+    const std::string& introduction);
+
   soa::ServerInstance& GetServerInstance();
   soa::Settings::RanchSettings& GetSettings();
 

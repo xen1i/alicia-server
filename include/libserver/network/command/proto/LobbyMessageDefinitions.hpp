@@ -67,7 +67,7 @@ struct LobbyCommandLoginOK
   std::string nickName{};
   std::string motd{};
   Gender profileGender{Gender::Unspecified};
-  std::string status{};
+  std::string introduction{};
 
   std::vector<Item> characterEquipment{};
   std::vector<Item> mountEquipment{};
@@ -1133,7 +1133,141 @@ struct LobbyCommandEnterRandomRanch
     SourceStream& stream);
 };
 
-// TODO: AcCmdCLRequestPersonalInfo, others
+struct LobbyCommandRequestPersonalInfo
+{
+  enum class Type : uint32_t
+  {
+    Basic = 6,
+    Courses = 7,
+    Eight = 8
+  };
+
+  uint32_t characterUid{};
+  Type type{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandRequestPersonalInfo& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandRequestPersonalInfo& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandPersonalInfo
+{
+  uint32_t characterUid{};
+  LobbyCommandRequestPersonalInfo::Type type{};
+
+  struct Basic
+  {
+    uint32_t member1{};
+    uint32_t member2{};
+    uint32_t member3{};
+    uint32_t member4{};
+    uint32_t member5{};
+    uint16_t member6{};
+    uint16_t member7{};
+    uint16_t member8{};
+    uint16_t member9{};
+    uint32_t member10{};
+    uint32_t member11{};
+    uint32_t member12{};
+    uint32_t member13{};
+    uint16_t member14{};
+    uint16_t member15{};
+    uint16_t member16{};
+    std::string member17{};
+    uint32_t member18{};
+    uint32_t member19{};
+    std::string member20{};
+    uint16_t member21{};
+    uint16_t member22{};
+    uint16_t member23{};
+    uint32_t member24{};
+    uint32_t member25{};
+    uint32_t member26{};
+    std::string member27{};
+    uint8_t member28{};
+    uint8_t member29{};
+
+    static void Write(const Basic& command, SinkStream& stream);
+    static void Read(Basic& command, SourceStream& stream);
+  } six{};
+
+  struct Courses
+  {
+    uint32_t member1{};
+    uint32_t member2{};
+    uint32_t member3{};
+
+    struct Unk
+    {
+      uint16_t member1{};
+      uint32_t member2{};
+      uint32_t member3{};
+      std::array<std::byte, 12> member4{};
+    };
+    // max 255
+    std::vector<Unk> member4{};
+
+    static void Write(const Courses& command, SinkStream& stream);
+    static void Read(Courses& command, SourceStream& stream);
+  } seven{};
+
+  struct Eight
+  {
+    struct Unk
+    {
+      uint32_t member1{};
+      uint32_t member2{};
+    };
+    // max 255
+    std::vector<Unk> member1{};
+
+    static void Write(const Eight& command, SinkStream& stream);
+    static void Read(Eight& command, SourceStream& stream);
+  } eight{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandPersonalInfo& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandPersonalInfo& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandSetIntroduction
+{
+  std::string introduction{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandSetIntroduction& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandSetIntroduction& command,
+    SourceStream& stream);
+};
 
 } // namespace alicia
 

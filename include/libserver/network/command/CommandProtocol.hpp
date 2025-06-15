@@ -140,6 +140,11 @@ enum class CommandId : uint16_t
 
   LobbyEnterRandomRanch = 0x109,
 
+  LobbyRequestPersonalInfo = 0xeb,
+  LobbyPersonalInfo = 0xec,
+
+  LobbySetIntroduction = 0x171,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,
   RanchEnterRanchNotify = 0x12e,
@@ -207,6 +212,8 @@ enum class CommandId : uint16_t
   RanchUseItemCancel = 0x1e2,
 
   RanchUpdateEquipmentNotify = 0x14e,
+
+  RanchSetIntroductionNotify = 0x174,
 
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,

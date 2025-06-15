@@ -171,6 +171,8 @@ struct Character
   //! A name of the character.
   dao::Field<std::string> name{};
 
+  dao::Field<std::string> introduction{};
+
   dao::Field<uint32_t> level{};
   dao::Field<int32_t> carrots{};
   dao::Field<uint32_t> cash{};
