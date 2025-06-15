@@ -140,7 +140,7 @@ void LoginHandler::HandleUserLogin(
   const LobbyCommandLogin& login)
 {
   // Validate the command fields.
-  if (login.loginId.empty())
+  if (login.loginId.empty() || login.authKey.empty())
   {
     spdlog::debug(
       "LoginHandler::HandleUserLogin - Rejecting login for client {}."
