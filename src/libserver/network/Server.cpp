@@ -170,7 +170,16 @@ void Server::Begin(const asio::ip::address& address, uint16_t port)
   const asio::ip::tcp::endpoint server_endpoint(address, port);
 
   _acceptor.open(server_endpoint.protocol());
-  _acceptor.bind(server_endpoint);
+
+  try
+  {
+    _acceptor.bind(server_endpoint);
+  }
+  catch (const std::exception& x)
+  {
+    spdlog::error("Failed to host server on {}:{}: {}", address.to_string(), port, x.what());
+  }
+
   _acceptor.listen();
 
   // Run the accept loop.
