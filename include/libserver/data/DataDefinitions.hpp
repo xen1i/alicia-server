@@ -217,9 +217,9 @@ struct Horse
   struct Parts
   {
     dao::Field<uint32_t> skinId{0u};
+    dao::Field<uint32_t> faceId{0u};
     dao::Field<uint32_t> maneId{0u};
     dao::Field<uint32_t> tailId{0u};
-    dao::Field<uint32_t> faceId{0u};
   } parts{};
 
   struct Appearance

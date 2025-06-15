@@ -221,9 +221,9 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
 
   for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
   {
-    // // Prevent broadcast to self.
-    // if (ranchClientId == clientContext.characterUid)
-    //   continue;
+    // Prevent broadcast to self.
+    if (ranchClientId == clientContext.characterUid)
+      continue;
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
@@ -932,7 +932,9 @@ void RanchDirector::HandleChat(
     .message = chat.message};
 
   characterRecord->Immutable([&response](const soa::data::Character& character)
-                             { response.author = character.name(); });
+  {
+    response.author = character.name();
+  });
 
   for (const auto ranchClientId : ranchInstance._clients)
   {
@@ -954,9 +956,41 @@ std::string RanchDirector::HandleCommand(
   if (command.empty())
     return "No command provided.";
 
-  if (command[0] == "test")
+  if (command[0] == "horse")
   {
+    if (command.size() < 2)
+      return "Invalid command sub-literal. (//horse <[a]appearance/[p]arts>)";
+
+    if (command[1] == "p")
+    {
+      if (command.size() < 6)
+        return "Invalid command arguments. (//horse p <skinId> <faceId> <maneId> <tailId>)";
+      soa::data::Horse::Parts parts{
+        .skinId = static_cast<uint32_t>(std::atoi(command[2].c_str())),
+        .faceId = static_cast<uint32_t>(std::atoi(command[3].c_str())),
+        .maneId = static_cast<uint32_t>(std::atoi(command[4].c_str())),
+        .tailId = static_cast<uint32_t>(std::atoi(command[5].c_str()))};
+
+      characterRecord->Immutable([this, &parts](const soa::data::Character& character)
+      {
+        GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&parts](soa::data::Horse& horse)
+        {
+          if (parts.faceId() != 0)
+            horse.parts.faceId() = parts.faceId();
+          if (parts.maneId() != 0)
+            horse.parts.maneId() = parts.maneId();
+          if (parts.skinId() != 0)
+            horse.parts.skinId() = parts.skinId();
+          if (parts.tailId() != 0)
+            horse.parts.tailId() = parts.tailId();
+        });
+      });
+
+      return "Parts set! Restart the client.";
+    }
+
     BroadcastUpdateMountInfoNotify(clientContext.characterUid, 1);
+    return "OK";
   }
   if (command[0] == "give")
   {

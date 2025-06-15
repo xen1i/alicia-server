@@ -138,12 +138,15 @@ enum class CommandId : uint16_t
   LobbyGuildPartyList = 0x3c2,
   LobbyGuildPartyListOK = 0x3c3,
 
+  LobbyGuildPartyNotify = 0x3c7,
+
   LobbyEnterRandomRanch = 0x109,
 
   LobbyRequestPersonalInfo = 0xeb,
   LobbyPersonalInfo = 0xec,
 
   LobbySetIntroduction = 0x171,
+
 
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,

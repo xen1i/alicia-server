@@ -313,9 +313,9 @@ void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   auto parts = json["parts"];
   horse.parts = data::Horse::Parts{
     .skinId = parts["skinId"].get<uint32_t>(),
+    .faceId = parts["faceId"].get<uint32_t>(),
     .maneId = parts["maneId"].get<uint32_t>(),
-    .tailId = parts["tailId"].get<uint32_t>(),
-    .faceId = parts["faceId"].get<uint32_t>()};
+    .tailId = parts["tailId"].get<uint32_t>()};
 
   auto appearance = json["appearance"];
   horse.appearance = data::Horse::Appearance{
@@ -369,9 +369,9 @@ void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
   nlohmann::json parts;
   parts["skinId"] = horse.parts.skinId();
+  parts["faceId"] = horse.parts.faceId();
   parts["maneId"] = horse.parts.maneId();
   parts["tailId"] = horse.parts.tailId();
-  parts["faceId"] = horse.parts.faceId();
   json["parts"] = parts;
 
   nlohmann::json appearance;

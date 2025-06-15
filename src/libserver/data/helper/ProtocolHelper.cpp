@@ -49,8 +49,6 @@ void BuildProtocolHorse(
   protocolHorse.val16 = 0xb8a167e4,
   protocolHorse.val17 = 0;
 
-  static uint32_t progress = 0;
-  progress++;
   protocolHorse.vals0 = {
     .stamina = 0xFFFF,
     .attractiveness = 0xFFFF,

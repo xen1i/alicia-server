@@ -199,9 +199,9 @@ void LoginHandler::HandleUserCreateCharacter(
 
     // The default parts and appearance of each horse TID
     // can be found in the `MountPartSet` table.
+    horse.parts.skinId() = 4;
     horse.parts.faceId() = 1;
     horse.parts.maneId() = 1;
-    horse.parts.skinId() = 4;
     horse.parts.tailId() = 1;
     horse.appearance.bodyLength() = 5;
     horse.appearance.bodyVolume() = 5;
