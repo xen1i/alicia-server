@@ -113,10 +113,15 @@ const std::unordered_map<CommandId, std::string_view> commands = {
 
   {CommandId::LobbySetIntroduction, "LobbySetIntroduction"},
 
-  {CommandId::RanchEnterRanch, "RanchEnterRanch"},
-  {CommandId::RanchEnterRanchCancel, "RanchEnterRanchCancel"},
-  {CommandId::RanchEnterRanchNotify, "RanchEnterRanchNotify"},
+  {CommandId::RanchEnterRanch, "RanchEnter"},
+  {CommandId::RanchEnterCancel, "RanchEnterCancel"},
+  {CommandId::RanchEnterNotify, "RanchEnterNotify"},
   {CommandId::RanchEnterRanchOK, "RanchEnterRanchOK"},
+
+  {CommandId::RanchLeaveRanch, "RanchLeave"},
+  {CommandId::RanchLeaveOK, "RanchLeave"},
+
+  {CommandId::RanchLeaveNotify, "RanchLeaveNotify"},
 
   {CommandId::RanchHeartbeat, "RanchHeartbeat"},
 

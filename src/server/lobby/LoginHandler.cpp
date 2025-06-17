@@ -286,6 +286,9 @@ void LoginHandler::QueueUserLoginAccepted(
       {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
     .val0 = 0xCA794,
+    .motd = std::format(
+      "Welcome to Story of Alicia. Online players: {}",
+      _lobbyDirector._clientContext.size()),
     .val1 = 0x0,
     .val2 = 0x0,
     .val3 = 0x0,

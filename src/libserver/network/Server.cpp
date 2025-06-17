@@ -84,12 +84,12 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   writeSupplier(_writeBuffer);
   _writeHandler(_writeBuffer);
 
-  // Send the whole buffer.
-  asio::async_write(
-    _socket,
+  _socket.async_write_some(
     _writeBuffer.data(),
-    [&](boost::system::error_code error, std::size_t size)
+    [this](boost::system::error_code error, std::size_t size)
     {
+      std::scoped_lock lock(_send_mutex);
+      
       try
       {
         if (error)

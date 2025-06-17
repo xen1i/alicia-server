@@ -32,18 +32,24 @@ namespace alicia
 
 RanchDirector::RanchDirector(soa::ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
+  , _commandServer(*this)
 {
   // Handlers
 
-  // EnterRanch handler
-  _commandServer.RegisterCommandHandler<RanchCommandEnterRanch>(
+  _commandServer.RegisterCommandHandler<RanchCommandRanchEnter>(
     CommandId::RanchEnterRanch,
     [this](ClientId clientId, const auto& message)
     {
-      HandleEnterRanch(clientId, message);
+      HandleRanchEnter(clientId, message);
     });
 
-  // Snapshot handler
+  _commandServer.RegisterCommandHandler<RanchCommandRanchLeave>(
+    CommandId::RanchLeaveRanch,
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleRanchLeave(clientId);
+    });
+
   _commandServer.RegisterCommandHandler<RanchCommandRanchSnapshot>(
     CommandId::RanchSnapshot,
     [this](ClientId clientId, const auto& message)
@@ -51,7 +57,6 @@ RanchDirector::RanchDirector(soa::ServerInstance& serverInstance)
       HandleSnapshot(clientId, message);
     });
 
-  // RanchCmdAction handler
   _commandServer.RegisterCommandHandler<RanchCommandRanchCmdAction>(
     CommandId::RanchCmdAction,
     [this](ClientId clientId, const auto& message)
@@ -59,7 +64,6 @@ RanchDirector::RanchDirector(soa::ServerInstance& serverInstance)
       HandleCmdAction(clientId, message);
     });
 
-  // RanchStuff handler
   _commandServer.RegisterCommandHandler<RanchCommandRanchStuff>(
     CommandId::RanchStuff,
     [this](ClientId clientId, const auto& message)
@@ -179,6 +183,16 @@ void RanchDirector::Tick()
 {
 }
 
+void RanchDirector::HandleClientConnected(ClientId clientId)
+{
+}
+
+void RanchDirector::HandleClientDisconnected(ClientId clientId)
+{
+  HandleRanchLeave(clientId);
+  _clientContext.erase(clientId);
+}
+
 void RanchDirector::BroadcastSetIntroductionNotify(
   uint32_t characterUid,
   const std::string& introduction)
@@ -222,8 +236,8 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
   for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
   {
     // Prevent broadcast to self.
-    // if (ranchClientId == clientContext.characterUid)
-    //   continue;
+    if (ranchClientId == clientContext.characterUid)
+      continue;
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
@@ -256,9 +270,9 @@ RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(soa:
   throw std::runtime_error("Character not associated with any client");
 }
 
-void RanchDirector::HandleEnterRanch(
+void RanchDirector::HandleRanchEnter(
   ClientId clientId,
-  const RanchCommandEnterRanch& enterRanch)
+  const RanchCommandRanchEnter& enterRanch)
 {
   // todo verify the OTP against the character UID
 
@@ -375,23 +389,12 @@ void RanchDirector::HandleEnterRanch(
           .mountUid = horse.uid(),
           .val1 = 0x12};
       });
-      spdlog::info("aa");
     });
 
     if (enterRanch.characterUid == characterUid)
     {
       enteringRanchPlayer = ranchCharacter;
     }
-  }
-
-  spdlog::debug("{} is entering ranch with:", enterRanch.characterUid);
-  for (const auto& ranchCharacter : response.characters)
-  {
-    spdlog::debug(
-      "Character '{}' ({}), index {}",
-      ranchCharacter.name,
-      ranchCharacter.uid,
-      ranchCharacter.ranchIndex);
   }
 
   // Todo: Roll the code for the connecting client.
@@ -414,22 +417,38 @@ void RanchDirector::HandleEnterRanch(
   // to the ranch and broadcast join notification.
   for (ClientId ranchClient : ranchInstance._clients)
   {
-    spdlog::debug(
-      "Sending notification to {}, player {} ('{}') index {} is entering the ranch.",
-      _clientContext[ranchClient].characterUid,
-      ranchJoinNotification.character.name,
-      ranchJoinNotification.character.uid,
-      ranchJoinNotification.character.ranchIndex);
-
     _commandServer.QueueCommand<decltype(ranchJoinNotification)>(
       ranchClient,
-      CommandId::RanchEnterRanchNotify,
+      CommandId::RanchEnterNotify,
       [ranchJoinNotification](){
         return ranchJoinNotification;
       });
   }
 
   ranchInstance._clients.emplace(clientId);
+}
+
+void RanchDirector::HandleRanchLeave(ClientId clientId)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto& ranchInstance = _ranches[clientContext.ranchUid];
+
+  RanchCommandLeaveRanchNotify notify{
+    .characterId = clientContext.characterUid};
+
+  ranchInstance._worldTracker.RemoveCharacter(notify.characterId);
+  ranchInstance._clients.erase(clientId);
+
+  for (const ClientId& ranchClientId : ranchInstance._clients)
+  {
+    _commandServer.QueueCommand<decltype(notify)>(
+      ranchClientId,
+      CommandId::RanchLeaveNotify,
+      [notify]()
+      {
+        return notify;
+      });
+  }
 }
 
 void RanchDirector::HandleSnapshot(
@@ -964,6 +983,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
     return {
       "List of available commands:",
 
+      "//online\n"
+      "Lists online players",
+
       "//give item <count> <tid>\n"
       "  - count - Count of items\n"
       "  - tid - TID of item",
@@ -993,10 +1015,32 @@ std::vector<std::string> RanchDirector::HandleCommand(
       };
   }
 
+  if (command[0] == "online")
+  {
+    std::vector<std::string> response;
+    response.emplace_back() = std::format(
+      "Players online ({}):",
+      _clientContext.size());
+
+    for (const auto& clientContext : _clientContext)
+    {
+      const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+        clientContext.second.characterUid);
+      characterRecord->Immutable([&response, &clientContext, clientId](const soa::data::Character& character)
+      {
+        response.emplace_back() = std::format(
+          "{}{}", character.name(), clientContext.first == clientId ? " (you)" : "");
+      });
+    }
+    return response;
+  }
+
   if (command[0] == "horse")
   {
     if (command.size() < 2)
       return {"Invalid command sub-literal. (//horse <appearance/parts>)"};
+
+    auto mountUid = soa::data::InvalidUid;
 
     if (command[1] == "parts")
     {
@@ -1008,7 +1052,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         .maneId = static_cast<uint32_t>(std::atoi(command[4].c_str())),
         .tailId = static_cast<uint32_t>(std::atoi(command[5].c_str()))};
 
-      characterRecord->Immutable([this, &parts](const soa::data::Character& character)
+      characterRecord->Immutable([this, &mountUid, &parts](const soa::data::Character& character)
       {
         GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&parts](soa::data::Horse& horse)
         {
@@ -1021,6 +1065,8 @@ std::vector<std::string> RanchDirector::HandleCommand(
           if (parts.tailId() != 0)
             horse.parts.tailId() = parts.tailId();
         });
+
+        mountUid = character.mountUid();
       });
 
       return {"Parts set! Restart the client."};
@@ -1037,7 +1083,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         .bodyLength = static_cast<uint32_t>(std::atoi(command[5].c_str())),
         .bodyVolume = static_cast<uint32_t>(std::atoi(command[6].c_str()))};
 
-      characterRecord->Immutable([this, &appearance](const soa::data::Character& character)
+      characterRecord->Immutable([this, &mountUid, &appearance](const soa::data::Character& character)
       {
         GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&appearance](
           soa::data::Horse& horse)
@@ -1053,10 +1099,11 @@ std::vector<std::string> RanchDirector::HandleCommand(
           if (appearance.bodyVolume() != 0)
             horse.appearance.bodyVolume() = appearance.bodyVolume();
         });
+        mountUid = character.mountUid();
       });
     }
 
-    BroadcastUpdateMountInfoNotify(clientContext.characterUid, 1);
+    BroadcastUpdateMountInfoNotify(clientContext.characterUid, mountUid);
     return {"Parts set! Restart the client."};
   }
   if (command[0] == "give")

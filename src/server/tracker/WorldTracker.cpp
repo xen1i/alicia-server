@@ -28,6 +28,11 @@ EntityId WorldTracker::AddCharacter(soa::data::Uid character)
   return _nextEntityId++;
 }
 
+void WorldTracker::RemoveCharacter(soa::data::Uid character)
+{
+  _characters.erase(character);
+}
+
 EntityId WorldTracker::GetCharacterEntityId(soa::data::Uid character)
 {
   const auto itr = _characters.find(character);

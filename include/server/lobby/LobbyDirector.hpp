@@ -34,6 +34,7 @@ namespace alicia
 {
 
 class LobbyDirector final
+  : public CommandServer::EventInterface
 {
   friend LoginHandler;
 
@@ -50,6 +51,9 @@ public:
   void Initialize();
   void Terminate();
   void Tick();
+
+  void HandleClientConnected(ClientId clientId) override;
+  void HandleClientDisconnected(ClientId client) override;
 
   soa::ServerInstance& GetServerInstance();
   soa::Settings::LobbySettings& GetSettings();

@@ -97,24 +97,25 @@ int32_t CommandClient::GetRollingCodeInt() const
   return *reinterpret_cast<const int32_t*>(_rollingCode.data());
 }
 
-CommandServer::CommandServer()
-  : _server(
-      [this](ClientId clientId)
-      {
-        HandleClientConnect(clientId);
-      },
-      [this](ClientId clientId)
-      {
-        HandleClientDisconnect(clientId);
-      },
-      [this](ClientId clientId, asio::streambuf& readBuffer)
-      {
-        HandleClientRead(clientId, readBuffer);
-      },
-      [this](ClientId clientId, asio::streambuf& writeBuffer)
-      {
-        HandleClientWrite(clientId, writeBuffer);
-      })
+CommandServer::CommandServer(EventInterface& events)
+  : _eventInterface(events)
+  , _server(
+    [this](ClientId clientId)
+    {
+      HandleClientConnect(clientId);
+    },
+    [this](ClientId clientId)
+    {
+      HandleClientDisconnect(clientId);
+    },
+    [this](ClientId clientId, asio::streambuf& readBuffer)
+    {
+      HandleClientRead(clientId, readBuffer);
+    },
+    [this](ClientId clientId, asio::streambuf& writeBuffer)
+    {
+      HandleClientWrite(clientId, writeBuffer);
+    })
 {
 }
 
@@ -192,10 +193,12 @@ void CommandServer::SendCommand(ClientId client, CommandId command, CommandSuppl
 
 void CommandServer::HandleClientConnect(ClientId clientId)
 {
+  _eventInterface.HandleClientConnected(clientId);
 }
 
 void CommandServer::HandleClientDisconnect(ClientId clientId)
 {
+  _eventInterface.HandleClientDisconnected(clientId);
 }
 
 void CommandServer::HandleClientRead(

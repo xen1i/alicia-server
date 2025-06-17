@@ -192,15 +192,15 @@ void RanchCommandMountFamilyTreeCancel::Read(
 {
 }
 
-void RanchCommandEnterRanch::Write(
-  const RanchCommandEnterRanch& command,
+void RanchCommandRanchEnter::Write(
+  const RanchCommandRanchEnter& command,
   SinkStream& stream)
 {
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandEnterRanch::Read(
-  RanchCommandEnterRanch& command,
+void RanchCommandRanchEnter::Read(
+  RanchCommandRanchEnter& command,
   SourceStream& stream)
 {
   stream.Read(command.characterUid)
@@ -517,28 +517,32 @@ void RanchCommandUpdateBusyStateNotify::Read(
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandLeaveRanch::Write(
-  const RanchCommandLeaveRanch& command,
+void RanchCommandRanchLeave::Write(
+  const RanchCommandRanchLeave& command,
   SinkStream& stream)
 {
+  throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandLeaveRanch::Read(
-  RanchCommandLeaveRanch& command,
+void RanchCommandRanchLeave::Read(
+  RanchCommandRanchLeave& command,
   SourceStream& stream)
 {
+  // Empty.
 }
 
 void RanchCommandLeaveRanchOK::Write(
   const RanchCommandLeaveRanchOK& command,
   SinkStream& stream)
 {
+  // Empty.
 }
 
 void RanchCommandLeaveRanchOK::Read(
   RanchCommandLeaveRanchOK& command,
   SourceStream& stream)
 {
+  throw std::runtime_error("Not implemented.");
 }
 
 void RanchCommandLeaveRanchNotify::Write(

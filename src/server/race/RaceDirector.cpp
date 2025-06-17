@@ -29,6 +29,7 @@ namespace alicia
 
 RaceDirector::RaceDirector(soa::ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
+  , _commandServer(*this)
 {
   _commandServer.RegisterCommandHandler<RaceCommandEnterRoom>(
     CommandId::RaceEnterRoom,
@@ -86,6 +87,14 @@ void RaceDirector::Terminate()
 }
 
 void RaceDirector::Tick() {}
+
+void RaceDirector::HandleClientDisconnected(ClientId client)
+{
+}
+
+void RaceDirector::HandleClientConnected(ClientId clientId)
+{
+}
 
 soa::ServerInstance& RaceDirector::GetServerInstance()
 {

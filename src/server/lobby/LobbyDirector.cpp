@@ -39,6 +39,7 @@ namespace alicia
 
 LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
+  , _commandServer(*this)
   , _loginHandler(*this, _commandServer)
 {
   _commandServer.RegisterCommandHandler<LobbyCommandLogin>(
@@ -174,7 +175,7 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
     CommandId::LobbyEnterRandomRanch,
     [this](ClientId clientId, auto& command)
     {
-      const auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
+      auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
       std::uniform_int_distribution<soa::data::Uid> uidDistribution(
         0, randomRanchUids.size() - 1);
 
@@ -209,6 +210,15 @@ void LobbyDirector::Terminate()
 void LobbyDirector::Tick()
 {
   _loginHandler.Tick();
+}
+
+void LobbyDirector::HandleClientConnected(ClientId clientId)
+{
+}
+
+void LobbyDirector::HandleClientDisconnected(ClientId client)
+{
+  _clientContext.erase(client);
 }
 
 soa::ServerInstance& LobbyDirector::GetServerInstance()

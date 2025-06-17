@@ -77,6 +77,7 @@ private:
 
   //! A read buffer.
   asio::streambuf _readBuffer{};
+  std::mutex _send_mutex;
   //! A write buffer.
   asio::streambuf _writeBuffer{};
 

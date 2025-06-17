@@ -55,8 +55,15 @@ private:
 class CommandServer
 {
 public:
+  class EventInterface
+  {
+  public:
+    virtual void HandleClientConnected(ClientId clientId) = 0;
+    virtual void HandleClientDisconnected(ClientId client) = 0;
+  };
+
   //! Default constructor;
-  explicit CommandServer();
+  explicit CommandServer(EventInterface& events);
   ~CommandServer();
 
   //! Begins the server.
@@ -122,6 +129,8 @@ private:
 
   std::unordered_map<CommandId, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
+
+  EventInterface& _eventInterface;
 
   Server _server;
   std::thread _serverThread;

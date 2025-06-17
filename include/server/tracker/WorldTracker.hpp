@@ -42,6 +42,8 @@ public:
   //!
   EntityId AddCharacter(soa::data::Uid character);
   //!
+  void RemoveCharacter(soa::data::Uid character);
+  //!
   [[nodiscard]] EntityId GetCharacterEntityId(soa::data::Uid character);
   //!
   EntityId AddHorse(soa::data::Uid mount);

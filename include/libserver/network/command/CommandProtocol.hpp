@@ -147,11 +147,15 @@ enum class CommandId : uint16_t
 
   LobbySetIntroduction = 0x171,
 
-
   RanchEnterRanch = 0x12b,
-  RanchEnterRanchCancel = 0x12d,
-  RanchEnterRanchNotify = 0x12e,
   RanchEnterRanchOK = 0x12c,
+  RanchEnterCancel = 0x12d,
+
+  RanchEnterNotify = 0x12e,
+
+  RanchLeaveRanch = 0x12f,
+  RanchLeaveOK = 0x130,
+  RanchLeaveNotify = 0x132,
 
   RanchHeartbeat = 0x9e,
 

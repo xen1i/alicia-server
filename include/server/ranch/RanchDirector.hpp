@@ -20,6 +20,7 @@
 #ifndef RANCHDIRECTOR_HPP
 #define RANCHDIRECTOR_HPP
 
+#include "libserver/network/command/CommandServer.hpp"
 #include "server/Settings.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
@@ -34,7 +35,8 @@ class ServerInstance;
 namespace alicia
 {
 
-class RanchDirector
+class RanchDirector final
+  : public CommandServer::EventInterface
 {
 public:
   //!
@@ -44,6 +46,10 @@ public:
   void Terminate();
   void Tick();
 
+  void HandleClientConnected(ClientId clientId) override;
+  void HandleClientDisconnected(ClientId client) override;
+
+  //!
   void BroadcastSetIntroductionNotify(
     uint32_t characterUid,
     const std::string& introduction);
@@ -67,9 +73,13 @@ private:
   ClientContext& GetClientContextByCharacterUid(soa::data::Uid characterUid);
 
   //!
-  void HandleEnterRanch(
+  void HandleRanchEnter(
     ClientId clientId,
-    const RanchCommandEnterRanch& enterRanch);
+    const RanchCommandRanchEnter& enterRanch);
+
+  //!
+  void HandleRanchLeave(
+    ClientId clientId);
 
   //!
   void HandleSnapshot(

@@ -213,7 +213,7 @@ struct RanchCommandMountFamilyTreeCancel
     SourceStream& stream);
 };
 
-struct RanchCommandEnterRanch
+struct RanchCommandRanchEnter
 {
   uint32_t characterUid{};
   uint32_t otp{};
@@ -223,14 +223,14 @@ struct RanchCommandEnterRanch
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandEnterRanch& command,
+    const RanchCommandRanchEnter& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandEnterRanch& command,
+    RanchCommandRanchEnter& command,
     SourceStream& stream);
 };
 
@@ -509,20 +509,20 @@ struct RanchCommandUpdateBusyStateNotify
 };
 
 //! Serverbound get messenger info command.
-struct RanchCommandLeaveRanch
+struct RanchCommandRanchLeave
 {
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandLeaveRanch& command,
+    const RanchCommandRanchLeave& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandLeaveRanch& command,
+    RanchCommandRanchLeave& command,
     SourceStream& stream);
 };
 
