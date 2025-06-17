@@ -135,7 +135,7 @@ private:
     ClientId clientId,
     const RanchCommandChat& command);
 
-  std::string HandleCommand(
+  std::vector<std::string> HandleCommand(
     ClientId clientId,
     const std::string& message);
 

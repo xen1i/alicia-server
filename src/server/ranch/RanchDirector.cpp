@@ -222,8 +222,8 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
   for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
   {
     // Prevent broadcast to self.
-    if (ranchClientId == clientContext.characterUid)
-      continue;
+    // if (ranchClientId == clientContext.characterUid)
+    //   continue;
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
@@ -919,12 +919,15 @@ void RanchDirector::HandleChat(
 
   if (chat.message.starts_with("//"))
   {
-    RanchCommandChatNotify response{
-      .author = "system",
-      .isBlue = true};
-    response.message = HandleCommand(clientId, chat.message);
+    for (const auto& response : HandleCommand(clientId, chat.message))
+    {
+      RanchCommandChatNotify notify{
+        .author = "system",
+        .message = response,
+        .isBlue = true,};
+      SendChat(clientId, notify);
+    }
 
-    SendChat(clientId, response);
     return;
   }
 
@@ -942,7 +945,7 @@ void RanchDirector::HandleChat(
   }
 }
 
-std::string RanchDirector::HandleCommand(
+std::vector<std::string> RanchDirector::HandleCommand(
   ClientId clientId,
   const std::string& message)
 {
@@ -954,17 +957,51 @@ std::string RanchDirector::HandleCommand(
     message.substr(2), ' ');
 
   if (command.empty())
-    return "No command provided.";
+    return {"No command provided."};
+
+  if (command[0] == "help")
+  {
+    return {
+      "List of available commands:",
+
+      "//give item <count> <tid>\n"
+      "  - count - Count of items\n"
+      "  - tid - TID of item",
+
+      "//horse parts <skinId>\n"
+      "              <faceId>\n"
+      "              <maneId>\n"
+      "              <tailId>\n"
+      "  - skinId - ID of the coat\n"
+      "  - faceId - ID of the face\n"
+      "  - maneId - ID of the mane\n"
+      "  - tailId - ID of the tail",
+
+      "//horse appearance <scale>\n"
+      "                   <legLength>\n"
+      "                   <legVolume>\n"
+      "                   <bodyLength>\n"
+      "                   <bodyVolume>\n"
+      "  - scale - Defaults to 5\n"
+      "  - legLength - Defaults to 5\n"
+      "  - legVolume - Defaults to 5\n"
+      "  - bodyLength - Defaults to 5\n"
+      "  - bodyVolume - Defaults to 5",
+
+      "Note: to ignore any parameter,\n"
+      "       simply specify 0 as the value.",
+      };
+  }
 
   if (command[0] == "horse")
   {
     if (command.size() < 2)
-      return "Invalid command sub-literal. (//horse <[a]appearance/[p]arts>)";
+      return {"Invalid command sub-literal. (//horse <appearance/parts>)"};
 
-    if (command[1] == "p")
+    if (command[1] == "parts")
     {
       if (command.size() < 6)
-        return "Invalid command arguments. (//horse p <skinId> <faceId> <maneId> <tailId>)";
+        return {"Invalid command arguments. (//horse parts <skinId> <faceId> <maneId> <tailId>)"};
       soa::data::Horse::Parts parts{
         .skinId = static_cast<uint32_t>(std::atoi(command[2].c_str())),
         .faceId = static_cast<uint32_t>(std::atoi(command[3].c_str())),
@@ -986,21 +1023,51 @@ std::string RanchDirector::HandleCommand(
         });
       });
 
-      return "Parts set! Restart the client.";
+      return {"Parts set! Restart the client."};
+    }
+
+    if (command[1] == "appearance")
+    {
+      if (command.size() < 7)
+        return {"Invalid command arguments. (//horse appearance <scale> <legLength> <legVolume> <bodyLength> <bodyVolume>)"};
+      soa::data::Horse::Appearance appearance{
+        .scale = static_cast<uint32_t>(std::atoi(command[2].c_str())),
+        .legLength = static_cast<uint32_t>(std::atoi(command[3].c_str())),
+        .legVolume = static_cast<uint32_t>(std::atoi(command[4].c_str())),
+        .bodyLength = static_cast<uint32_t>(std::atoi(command[5].c_str())),
+        .bodyVolume = static_cast<uint32_t>(std::atoi(command[6].c_str()))};
+
+      characterRecord->Immutable([this, &appearance](const soa::data::Character& character)
+      {
+        GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&appearance](
+          soa::data::Horse& horse)
+        {
+          if (appearance.scale() != 0)
+            horse.appearance.scale() = appearance.scale();
+          if (appearance.legLength() != 0)
+            horse.appearance.legLength() = appearance.legLength();
+          if (appearance.legVolume() != 0)
+            horse.appearance.legVolume() = appearance.legVolume();
+          if (appearance.bodyLength() != 0)
+            horse.appearance.bodyLength() = appearance.bodyLength();
+          if (appearance.bodyVolume() != 0)
+            horse.appearance.bodyVolume() = appearance.bodyVolume();
+        });
+      });
     }
 
     BroadcastUpdateMountInfoNotify(clientContext.characterUid, 1);
-    return "OK";
+    return {"Parts set! Restart the client."};
   }
   if (command[0] == "give")
   {
     if (command.size() < 2)
-      return "Invalid command sub-literal. (//give <item/horse>)";
+      return {"Invalid command sub-literal. (//give <item/horse>)"};
 
     if (command[1] == "item")
     {
       if (command.size() < 4)
-        return "Invalid command arguments. (//give item <count> <uid>)";
+        return {"Invalid command arguments. (//give item <count> <tid>)"};
 
       uint32_t itemCount = std::atoi(command[2].c_str());
       soa::data::Uid createdItemTid = std::atoi(command[3].c_str());
@@ -1035,19 +1102,19 @@ std::string RanchDirector::HandleCommand(
         character.gifts().emplace_back(giftUid);
       });
 
-      return "Item given. Check your gifts in inventory!";
+      return {"Item given. Check your gifts in inventory!"};
     }
 
     if (command[1] == "horse")
     {
       if (command.size() < 3)
       {
-        return "Not implemented";
+        return {"Not implemented"};
       }
     }
   }
 
-  return "Invalid command";
+  return {"Invalid command"};
 }
 
 void RanchDirector::SendChat(
@@ -1059,6 +1126,7 @@ void RanchDirector::SendChat(
     CommandId::RanchChatNotify,
     [chat]()
     {
+      spdlog::info("suply");
       return chat;
     });
 }
