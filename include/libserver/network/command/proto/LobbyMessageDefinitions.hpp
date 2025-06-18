@@ -166,17 +166,17 @@ struct LobbyCommandLoginOK
   } val13{};
 
   uint32_t val14{};
-  Struct5 val15{};
+  Guild guild{};
   uint8_t val16{};
 
   // Something with rental horse
-  Struct6 val17{};
+  Rent val17{};
 
   uint32_t val18{};
   uint32_t val19{};
   uint32_t val20{};
 
-  Struct7 val21{};
+  Pet pet{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -677,7 +677,7 @@ struct LobbyCommandRequestDailyQuestListOK
 //! Serverbound enter ranch command.
 struct LobbyCommandEnterRanch
 {
-  uint32_t unk0;
+  uint32_t characterUid;
   std::string unk1;
   uint8_t unk2;
 
@@ -700,7 +700,7 @@ struct LobbyCommandEnterRanch
 struct LobbyCommandEnterRanchOK
 {
   uint32_t ranchUid{};
-  uint32_t code{}; // probably some auth token that has to be double checked in the ranch server
+  uint32_t otp{};
   uint32_t ip{};
   uint16_t port{};
 
@@ -1168,32 +1168,34 @@ struct LobbyCommandPersonalInfo
   struct Basic
   {
     uint32_t member1{};
-    uint32_t member2{};
-    uint32_t member3{};
+    //! Whole number, divided by 10 for the floating point.
+    uint32_t topSpeed{};
+    //! Whole number, divided by 10 for the floating point.
+    uint32_t longestGlidingDistance{};
     uint32_t member4{};
     uint32_t member5{};
-    uint16_t member6{};
-    uint16_t member7{};
-    uint16_t member8{};
-    uint16_t member9{};
-    uint32_t member10{};
+    uint16_t speedSingleWinCombo{};
+    uint16_t speedTeamWinCombo{};
+    uint16_t magicSingleWinCombo{};
+    uint16_t magicTeamWinCombo{};
+    float averageRank{};
     uint32_t member11{};
     uint32_t member12{};
-    uint32_t member13{};
-    uint16_t member14{};
-    uint16_t member15{};
-    uint16_t member16{};
-    std::string member17{};
-    uint32_t member18{};
+    uint32_t highestCarnivalPrize{};
+    uint32_t member14{};
+    uint32_t member15{};
+    uint32_t member16{};
+    std::string introduction{};
+    uint32_t level{18};
     uint32_t member19{};
-    std::string member20{};
-    uint16_t member21{};
-    uint16_t member22{};
-    uint16_t member23{};
+    std::string member20{"twenty"};
+    uint16_t perfectBoostCombo{};
+    uint16_t perfectJumpCombo{};
+    uint16_t magicDefenseCombo{};
     uint32_t member24{};
     uint32_t member25{};
     uint32_t member26{};
-    std::string member27{};
+    std::string guildName{};
     uint8_t member28{};
     uint8_t member29{};
 

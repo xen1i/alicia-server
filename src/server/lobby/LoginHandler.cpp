@@ -287,7 +287,7 @@ void LoginHandler::QueueUserLoginAccepted(
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
     .val0 = 0xCA794,
     .motd = std::format(
-      "Welcome to Story of Alicia. Online players: {}",
+      "Welcome to Story of Alicia. Players online: {}",
       _lobbyDirector._clientContext.size()),
     .val1 = 0x0,
     .val2 = 0x0,
@@ -323,7 +323,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
     .val11 = {4, 0x2B, 4},
     .val14 = 0xca1b87db,
-    .val15 = {.val1 = 1},
+    .guild = {.val1 = 1},
     .val16 = 4,
     .val18 = 0x3a,
     .val19 = 0x38e,
@@ -395,10 +395,10 @@ void LoginHandler::QueueUserLoginAccepted(
 
   mountRecord->Immutable([&response](const soa::data::Horse& horse)
   {
-    response.val17 = {
-      .mountUid = horse.uid(),
-      .val1 = 0x12,
-      .val2 = 0x16e67e4};
+//    response.val17 = {
+//      .mountUid = horse.uid(),
+//      .tid = 0x12,
+//      .val2 = 0x16e67e4};
 
     protocol::BuildProtocolHorse(response.horse, horse);
   });

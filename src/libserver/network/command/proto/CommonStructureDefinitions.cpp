@@ -343,56 +343,88 @@ void Horse::Read(Horse& value, SourceStream& stream)
     .Read(value.val17);
 }
 
-void Struct5::Write(const Struct5& value, SinkStream& stream)
+void Guild::Write(const Guild& value, SinkStream& stream)
 {
-  stream.Write(value.val0)
+  stream.Write(value.uid)
     .Write(value.val1)
     .Write(value.val2)
-    .Write(value.val3)
+    .Write(value.name)
     .Write(value.val4)
     .Write(value.val5)
     .Write(value.val6);
 }
 
-void Struct5::Read(Struct5& value, SourceStream& stream)
+void Guild::Read(Guild& value, SourceStream& stream)
 {
-  stream.Read(value.val0)
+  stream.Read(value.uid)
     .Read(value.val1)
     .Read(value.val2)
-    .Read(value.val3)
+    .Read(value.name)
     .Read(value.val4)
     .Read(value.val5)
     .Read(value.val6);
 }
 
-void Struct6::Write(const Struct6& value, SinkStream& stream)
+void Rent::Write(const Rent& value, SinkStream& stream)
 {
   stream.Write(value.mountUid)
     .Write(value.val1)
     .Write(value.val2);
 }
 
-void Struct6::Read(Struct6& value, SourceStream& stream)
+void Rent::Read(Rent& value, SourceStream& stream)
 {
   stream.Read(value.mountUid)
     .Read(value.val1)
     .Read(value.val2);
 }
 
-void Struct7::Write(const Struct7& value, SinkStream& stream)
+void Pet::Write(const Pet& value, SinkStream& stream)
 {
-  stream.Write(value.val0)
-    .Write(value.val1)
-    .Write(value.val2)
+  stream.Write(value.uid)
+    .Write(value.tid)
+    .Write(value.name)
     .Write(value.val3);
 }
 
-void Struct7::Read(Struct7& value, SourceStream& stream)
+void Pet::Read(Pet& value, SourceStream& stream)
 {
-  stream.Read(value.val0)
-    .Read(value.val1)
-    .Read(value.val2)
+  stream.Read(value.uid)
+    .Read(value.tid)
+    .Read(value.name)
     .Read(value.val3);
+}
+
+void PetInfo::Write(const PetInfo& value, SinkStream& stream)
+{
+  stream.Write(value.member1)
+    .Write(value.itemUid)
+    .Write(value.pet)
+    .Write(value.member4);
+}
+
+void PetInfo::Read(PetInfo& value, SourceStream& stream)
+{
+  stream.Read(value.member1)
+    .Read(value.itemUid)
+    .Read(value.pet)
+    .Read(value.member4);
+}
+
+void PetBirthInfo::Write(const PetBirthInfo& value, SinkStream& stream)
+{
+  stream.Write(value.eggItem)
+    .Write(value.member2)
+    .Write(value.member3)
+    .Write(value.petInfo);
+}
+
+void PetBirthInfo::Read(PetBirthInfo& value, SourceStream& stream)
+{
+  stream.Read(value.eggItem)
+    .Read(value.member2)
+    .Read(value.member3)
+    .Read(value.petInfo);
 }
 
 void RanchHorse::Write(const RanchHorse& value, SinkStream& stream)
@@ -425,31 +457,31 @@ void RanchCharacter::Write(const RanchCharacter& ranchCharacter, SinkStream& str
     stream.Write(item);
   }
 
-  // Struct5
-  const auto& struct5 = ranchCharacter.playerRelatedThing;
-  stream.Write(struct5.val0)
+  // Guild
+  const auto& struct5 = ranchCharacter.guild;
+  stream.Write(struct5.uid)
     .Write(struct5.val1)
     .Write(struct5.val2)
-    .Write(struct5.val3)
+    .Write(struct5.name)
     .Write(struct5.val4)
     .Write(struct5.val5)
     .Write(struct5.val6);
 
   stream.Write(ranchCharacter.ranchIndex)
-    .Write(ranchCharacter.unk2)
+    .Write(ranchCharacter.isBusy)
     .Write(ranchCharacter.unk3);
 
-  // Struct6
-  const auto& struct6 = ranchCharacter.anotherPlayerRelatedThing;
+  // Rent
+  const auto& struct6 = ranchCharacter.rent;
   stream.Write(struct6.mountUid)
     .Write(struct6.val1)
     .Write(struct6.val2);
 
-  // Struct7
-  const auto& struct7 = ranchCharacter.yetAnotherPlayerRelatedThing;
-  stream.Write(struct7.val0)
-    .Write(struct7.val1)
-    .Write(struct7.val2)
+  // Pet
+  const auto& struct7 = ranchCharacter.pet;
+  stream.Write(struct7.uid)
+    .Write(struct7.tid)
+    .Write(struct7.name)
     .Write(struct7.val3);
 
   stream.Write(ranchCharacter.unk4)
@@ -475,14 +507,14 @@ void RanchCharacter::Read(RanchCharacter& value, SourceStream& stream)
     stream.Read(item);
   }
 
-  stream.Read(value.playerRelatedThing);
+  stream.Read(value.guild);
 
   stream.Read(value.ranchIndex)
-    .Read(value.unk2)
+    .Read(value.isBusy)
     .Read(value.unk3);
 
-  stream.Read(value.anotherPlayerRelatedThing)
-    .Read(value.yetAnotherPlayerRelatedThing);
+  stream.Read(value.rent)
+    .Read(value.pet);
 
   stream.Read(value.unk4)
     .Read(value.unk5);

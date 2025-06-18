@@ -192,19 +192,19 @@ void LobbyCommandLoginOK::Write(
 
   stream.Write(command.val14);
 
-  // Struct5
-  const auto& struct5 = command.val15;
-  stream.Write(struct5.val0)
+  // Guild
+  const auto& struct5 = command.guild;
+  stream.Write(struct5.uid)
     .Write(struct5.val1)
     .Write(struct5.val2)
-    .Write(struct5.val3)
+    .Write(struct5.name)
     .Write(struct5.val4)
     .Write(struct5.val5)
     .Write(struct5.val6);
 
   stream.Write(command.val16);
 
-  // Struct6
+  // Rent
   const auto& struct6 = command.val17;
   stream.Write(struct6.mountUid)
     .Write(struct6.val1)
@@ -214,11 +214,11 @@ void LobbyCommandLoginOK::Write(
     .Write(command.val19)
     .Write(command.val20);
 
-  // Struct7
-  const auto& struct7 = command.val21;
-  stream.Write(struct7.val0)
-    .Write(struct7.val1)
-    .Write(struct7.val2)
+  // Pet
+  const auto& struct7 = command.pet;
+  stream.Write(struct7.uid)
+    .Write(struct7.tid)
+    .Write(struct7.name)
     .Write(struct7.val3);
 }
 
@@ -604,7 +604,7 @@ void LobbyCommandEnterRanch::Read(
   LobbyCommandEnterRanch& command,
   SourceStream& stream)
 {
-  stream.Read(command.unk0)
+  stream.Read(command.characterUid)
     .Read(command.unk1)
     .Read(command.unk2);
 }
@@ -614,7 +614,7 @@ void LobbyCommandEnterRanchOK::Write(
   SinkStream& stream)
 {
   stream.Write(command.ranchUid)
-    .Write(command.code)
+    .Write(command.otp)
     .Write(command.ip)
     .Write(command.port);
 }
@@ -958,32 +958,32 @@ void LobbyCommandRequestPersonalInfo::Read(
 void LobbyCommandPersonalInfo::Basic::Write(const Basic& command, SinkStream& stream)
 {
   stream.Write(command.member1)
-    .Write(command.member2)
-    .Write(command.member3)
+    .Write(command.topSpeed)
+    .Write(command.longestGlidingDistance)
     .Write(command.member4)
     .Write(command.member5)
-    .Write(command.member6)
-    .Write(command.member7)
-    .Write(command.member8)
-    .Write(command.member9)
-    .Write(command.member10)
+    .Write(command.speedSingleWinCombo)
+    .Write(command.speedTeamWinCombo)
+    .Write(command.magicSingleWinCombo)
+    .Write(command.magicTeamWinCombo)
+    .Write(command.averageRank)
     .Write(command.member11)
     .Write(command.member12)
-    .Write(command.member13)
+    .Write(command.highestCarnivalPrize)
     .Write(command.member14)
     .Write(command.member15)
     .Write(command.member16)
-    .Write(command.member17)
-    .Write(command.member18)
+    .Write(command.introduction)
+    .Write(command.level)
     .Write(command.member19)
     .Write(command.member20)
-    .Write(command.member21)
-    .Write(command.member22)
-    .Write(command.member23)
+    .Write(command.perfectBoostCombo)
+    .Write(command.perfectJumpCombo)
+    .Write(command.magicDefenseCombo)
     .Write(command.member24)
     .Write(command.member25)
     .Write(command.member26)
-    .Write(command.member27)
+    .Write(command.guildName)
     .Write(command.member28)
     .Write(command.member29);
 }

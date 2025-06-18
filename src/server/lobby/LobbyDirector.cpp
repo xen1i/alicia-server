@@ -468,7 +468,6 @@ void LobbyDirector::HandleRequestPersonalInfo(ClientId clientId, const LobbyComm
     .type = command.type,
   };
 
-  response.six.member1 = 1;
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -500,12 +499,19 @@ void LobbyDirector::HandleEnterRanch(
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
-    clientContext.characterUid);
+    requestEnterRanch.characterUid);
 
   if (not characterRecord)
   {
-    throw std::runtime_error(
-      std::format("Character [{}] not available", clientContext.characterUid));
+    LobbyCommandEnterRanchCancel response{};
+
+    _commandServer.QueueCommand<decltype(response)>(
+      clientId,
+      CommandId::LobbyEnterRanchCancel,
+      [response]()
+      {
+        return response;
+      });
   }
 
   auto ranchUid = soa::data::InvalidUid;
@@ -523,8 +529,9 @@ void LobbyDirector::QueueEnterRanchOK(
 {
   LobbyCommandEnterRanchOK response{
     .ranchUid =  ranchUid,
-    .code = 0x44332211,
-    .ip = static_cast<uint32_t>(htonl(GetSettings().ranchAdvAddress.to_uint())),
+    .otp = 0x44332211,
+    .ip = static_cast<uint32_t>(htonl(
+      GetSettings().ranchAdvAddress.to_uint())),
     .port = GetSettings().ranchAdvPort};
 
   _commandServer.QueueCommand<decltype(response)>(

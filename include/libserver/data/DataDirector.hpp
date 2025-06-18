@@ -35,6 +35,8 @@ public:
   using UserStorage = DataStorage<std::string, data::User>;
   using CharacterStorage = DataStorage<data::Uid, data::Character>;
   using ItemStorage = DataStorage<data::Uid, data::Item>;
+  using PetStorage = DataStorage<data::Uid, data::Pet>;
+  using GuildStorage = DataStorage<data::Uid, data::Guild>;
   using StoredItemStorage = DataStorage<data::Uid, data::StoredItem>;
   using HorseStorage = DataStorage<data::Uid, data::Horse>;
   using RanchStorage = DataStorage<data::Uid, data::Ranch>;
@@ -60,20 +62,7 @@ public:
       return std::make_pair(character.uid(), std::move(character));
     });
   }
-
   CharacterStorage& GetCharacters();
-
-  Record<data::Horse> CreateHorse()
-  {
-    return _horseStorage.Create([this]() {
-      data::Horse horse;
-      _dataSource->CreateHorse(horse);
-
-      return std::make_pair(horse.uid(), std::move(horse));
-    });
-  }
-
-  ItemStorage& GetItems();
 
   Record<data::Item> CreateItem()
   {
@@ -84,8 +73,29 @@ public:
       return std::make_pair(item.uid(), std::move(item));
     });
   }
+  ItemStorage& GetItems();
 
-  StoredItemStorage& GetStoredItems();
+  Record<data::Pet> CreatePet()
+  {
+    return _petStorage.Create([this]() {
+      data::Pet pet;
+      _dataSource->CreatePet(pet);
+
+      return std::make_pair(pet.uid(), std::move(pet));
+    });
+  }
+  PetStorage& GetPets();
+
+  Record<data::Guild> CreateGuild()
+  {
+    return _guildStorage.Create([this]() {
+      data::Guild guild;
+      _dataSource->CreateGuild(guild);
+
+      return std::make_pair(guild.uid(), std::move(guild));
+    });
+  }
+  GuildStorage& GetGuilds();
 
   Record<data::StoredItem> CreateStoredItem()
   {
@@ -96,7 +106,17 @@ public:
       return std::make_pair(item.uid(), std::move(item));
     });
   }
+  StoredItemStorage& GetStoredItems();
 
+  Record<data::Horse> CreateHorse()
+  {
+    return _horseStorage.Create([this]() {
+      data::Horse horse;
+      _dataSource->CreateHorse(horse);
+
+      return std::make_pair(horse.uid(), std::move(horse));
+    });
+  }
   HorseStorage& GetHorses();
 
   Record<data::Ranch> CreateRanch()
@@ -108,18 +128,28 @@ public:
       return std::make_pair(ranch.uid(), std::move(ranch));
     });
   }
-
   RanchStorage& GetRanches();
 
 private:
+  //! An underlying data source of the data director.
   std::unique_ptr<FileDataSource> _dataSource;
 
+  //! A user storage.
   UserStorage _userStorage;
+  //! A character storage.
   CharacterStorage _characterStorage;
-  HorseStorage _horseStorage;
-  RanchStorage _ranchStorage;
+  //! A item storage.
   ItemStorage _itemStorage;
+  //! A stored item storage.
   StoredItemStorage _storedItemStorage;
+  //! A pet storage.
+  PetStorage _petStorage;
+  //! A guild storage.
+  GuildStorage _guildStorage;
+  //! A horse storage.
+  HorseStorage _horseStorage;
+  //! A ranch storage.
+  RanchStorage _ranchStorage;
 };
 
 } // namespace soa

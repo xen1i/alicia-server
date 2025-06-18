@@ -69,10 +69,10 @@ struct Racer
   struct
   {
     uint8_t unk0{};
-    Struct6 anotherPlayerRelatedThing{};
+    Rent rent{};
   } unk8{};
-  Struct7 yetAnotherPlayerRelatedThing{};
-  Struct5 playerRelatedThing{};
+  Pet pet{};
+  Guild guild{};
   RanchUnk11 unk9{};
   uint8_t unk10{};
   uint8_t unk11{};
@@ -303,7 +303,7 @@ struct RaceCommandStartRaceNotify
     // List size specified with a uint8_t. Max size 20
     std::vector<uint32_t> unk4{};
 
-    // If unk2 == 3?
+    // If isBusy == 3?
     uint16_t unk5{};
     uint16_t unk6{};
     uint16_t unk7{};
@@ -494,6 +494,48 @@ struct RaceCommandChatNotify
   //! @param stream Source stream.
   static void Read(
     RaceCommandChatNotify& command,
+    SourceStream& stream);
+};
+
+struct RaceCommandUpdatePet
+{
+  PetInfo petInfo{};
+  //! optional
+  uint32_t member2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandUpdatePet& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandUpdatePet& command,
+    SourceStream& stream);
+};
+
+struct RaceCommandUpdatePetCancel
+{
+  PetInfo petInfo{};
+  uint32_t member2{};
+  uint8_t member3{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandUpdatePetCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandUpdatePetCancel& command,
     SourceStream& stream);
 };
 

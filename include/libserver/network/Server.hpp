@@ -142,9 +142,6 @@ private:
   //! A client write handler.
   ClientWriteHandler _clientWriteHandler;
 
-  //! A flag indicating whether the server should run.
-  std::atomic<bool> _shouldRun = false;
-
   asio::io_context _io_ctx;
   asio::ip::tcp::acceptor _acceptor;
 

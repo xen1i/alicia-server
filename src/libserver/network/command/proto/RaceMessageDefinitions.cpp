@@ -59,20 +59,20 @@ void WriteRacer(SinkStream& stream, const Racer& racer)
   }
 
   stream.Write(racer.unk8.unk0)
-    .Write(racer.unk8.anotherPlayerRelatedThing.mountUid)
-    .Write(racer.unk8.anotherPlayerRelatedThing.val1)
-    .Write(racer.unk8.anotherPlayerRelatedThing.val2);
-  stream.Write(racer.yetAnotherPlayerRelatedThing.val0)
-    .Write(racer.yetAnotherPlayerRelatedThing.val1)
-    .Write(racer.yetAnotherPlayerRelatedThing.val2)
-    .Write(racer.yetAnotherPlayerRelatedThing.val3);
-  stream.Write(racer.playerRelatedThing.val0)
-    .Write(racer.playerRelatedThing.val1)
-    .Write(racer.playerRelatedThing.val2)
-    .Write(racer.playerRelatedThing.val3)
-    .Write(racer.playerRelatedThing.val4)
-    .Write(racer.playerRelatedThing.val5)
-    .Write(racer.playerRelatedThing.val6);
+    .Write(racer.unk8.rent.mountUid)
+    .Write(racer.unk8.rent.val1)
+    .Write(racer.unk8.rent.val2);
+  stream.Write(racer.pet.uid)
+    .Write(racer.pet.tid)
+    .Write(racer.pet.name)
+    .Write(racer.pet.val3);
+  stream.Write(racer.guild.uid)
+    .Write(racer.guild.val1)
+    .Write(racer.guild.val2)
+    .Write(racer.guild.name)
+    .Write(racer.guild.val4)
+    .Write(racer.guild.val5)
+    .Write(racer.guild.val6);
   stream.Write(racer.unk9);
   stream.Write(racer.unk10)
     .Write(racer.unk11)
@@ -470,5 +470,38 @@ void RaceCommandChatNotify::Read(
 {
   throw std::runtime_error("Not implemented");
 }
+
+void RaceCommandUpdatePet::Write(
+  const RaceCommandUpdatePet& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RaceCommandUpdatePet::Read(
+  RaceCommandUpdatePet& command,
+  SourceStream& stream)
+{
+  stream.Read(command.petInfo);
+  if (stream.GetCursor() - stream.Size() > 4)
+    stream.Read(command.member2);
+}
+
+void RaceCommandUpdatePetCancel::Write(
+  const RaceCommandUpdatePetCancel& command,
+  SinkStream& stream)
+{
+  stream.Write(command.petInfo)
+    .Write(command.member2)
+    .Write(command.member3);
+}
+
+void RaceCommandUpdatePetCancel::Read(
+  RaceCommandUpdatePetCancel& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
 
 } // namespace alicia

@@ -135,11 +135,11 @@ void CommandServer::BeginHost(const asio::ip::address& address, uint16_t port)
 
 void CommandServer::EndHost()
 {
+  if (not _serverThread.joinable())
+    return;
+
   _server.End();
-  if (_serverThread.joinable())
-  {
-    _serverThread.join();
-  }
+  _serverThread.join();
 }
 
 void CommandServer::SetCode(ClientId client, XorCode code)

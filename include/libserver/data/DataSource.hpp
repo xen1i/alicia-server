@@ -40,7 +40,8 @@ public:
   //! @param user User to store.
   virtual void StoreUser(std::string name, const data::User& user) = 0;
 
-  //! Creates
+  //! Creates the user in the data source.
+  //! @para character Character to create.
   virtual void CreateCharacter(data::Character& character) = 0;
   //! Retrieves the user from the data source.
   //! @param character Character to retrieve.
@@ -49,7 +50,8 @@ public:
   //! @param character Character to store.
   virtual void StoreCharacter(data::Uid uid, const data::Character& character) = 0;
 
-  //! Creates
+  //! Creates the item in the data source.
+  //! @para item Item to create.
   virtual void CreateItem(data::Item& item) = 0;
   //! Retrieves the item from the data source.
   //! @param item Item to retrieve.
@@ -58,26 +60,49 @@ public:
   //! @param item Item to store.
   virtual void StoreItem(data::Uid uid, const data::Item& item) = 0;
 
-  //! Creates
-  virtual void CreateStoredItem(data::StoredItem& item) = 0;
-  //! Retrieves the stored item from the data source.
-  //! @param item Item to retrieve.
-  virtual void RetrieveStoredItem(data::Uid uid, data::StoredItem& item) = 0;
-  //! Stores the stored item on the data source.
-  //! @param item Item to store.
-  virtual void StoreStoredItem(data::Uid uid, const data::StoredItem& item) = 0;
-
-  //! Creates
+  //! Creates the horse in the data source.
+  //! @para horse Horse to create.
   virtual void CreateHorse(data::Horse& horse) = 0;
   //! Retrieves the horse from the data source.
   //! @param horse Horse to retrieve.
   virtual void RetrieveHorse(data::Uid uid, data::Horse& horse) = 0;
-  //! Creates
-  virtual void CreateRanch(data::Ranch& ranch) = 0;
-
   //! Stores the horse on the data source.
   //! @param horse Horse to store.
   virtual void StoreHorse(data::Uid uid, const data::Horse& horse) = 0;
+
+  //! Creates the pet in the data source.
+  //! @para pet Pet to create.
+  virtual void CreatePet(data::Pet& pet) = 0;
+  //! Retrieves the pet from the data source.
+  //! @param horse Pet to retrieve.
+  virtual void RetrievePet(data::Uid uid, data::Pet& pet) = 0;
+  //! Stores the pet on the data source.
+  //! @param horse Pet to store.
+  virtual void StorePet(data::Uid uid, const data::Pet& pet) = 0;
+
+  //! Creates the guild in the data source.
+  //! @para guild Guild to create.
+  virtual void CreateGuild(data::Guild& guild) = 0;
+  //! Retrieves the guild from the data source.
+  //! @param horse Guild to retrieve.
+  virtual void RetrieveGuild(data::Uid uid, data::Guild& guild) = 0;
+  //! Stores the guild on the data source.
+  //! @param horse Guild to store.
+  virtual void StoreGuild(data::Uid uid, const soa::data::Guild& guild) = 0;
+
+  //! Creates the stored item in the data source.
+  //! @para character Stored item to create.
+  virtual void CreateStoredItem(data::StoredItem& storedItem) = 0;
+  //! Retrieves the stored storedItem from the data source.
+  //! @param storedItem Item to retrieve.
+  virtual void RetrieveStoredItem(data::Uid uid, data::StoredItem& storedItem) = 0;
+  //! Stores the stored storedItem on the data source.
+  //! @param storedItem Item to store.
+  virtual void StoreStoredItem(data::Uid uid, const data::StoredItem& storedItem) = 0;
+
+  //! Creates the ranch in the data source.
+  //! @para character Ranch to create.
+  virtual void CreateRanch(data::Ranch& ranch) = 0;
   //! Retrieves the ranch from the data source.
   //! @param ranch Ranch to retrieve.
   virtual void RetrieveRanch(data::Uid uid, data::Ranch& ranch) = 0;

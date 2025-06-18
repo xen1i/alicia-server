@@ -224,6 +224,23 @@ enum class CommandId : uint16_t
 
   RanchSetIntroductionNotify = 0x174,
 
+  RanchCreateGuild = 0x2be,
+  RanchCreateGuildOK = 0x2bf,
+  RanchCreateGuildCancel = 0x2c0,
+
+  RanchRequestGuildInfo = 0x2e2,
+  RanchRequestGuildInfoOK = 0x2e3,
+  RanchRequestGuildInfoCancel = 0x2e4,
+
+  RanchUpdatePet = 0x392,
+  RanchUpdatePetCancel = 0x439,
+
+  RanchRequestPetBirth = 0x39a,
+  RanchRequestPetBirthOK = 0x39b,
+  RanchRequestPetBirthCancel = 0x39c,
+
+  RanchPetBirthNotify = 0x39d,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,

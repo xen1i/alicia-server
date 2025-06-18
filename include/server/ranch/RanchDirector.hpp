@@ -161,6 +161,22 @@ private:
     ClientId clientId,
     const RanchCommandRemoveEquipment& command);
 
+  void HandleCreateGuild(
+    ClientId clientId,
+    const RanchCommandCreateGuild& command);
+
+  void HandleRequestGuildInfo(
+    ClientId clientId,
+    const RanchCommandRequestGuildInfo& command);
+
+  void HandleUpdatePet(
+    ClientId clientId,
+    const RaceCommandUpdatePet& command);
+
+  void HandleRequestPetBirth(
+    ClientId clientId,
+    const RanchCommandRequestPetBirth& command);
+
   //! Broadcasts an equipment update of the character owned by the client
   //! to the currently connected ranch.
   //! @param clientId ID of the client.

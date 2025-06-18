@@ -135,32 +135,42 @@ struct User
 //! Item
 struct Item
 {
-  //! Slot type of the item.
-  enum class Slot
-  {
-    CharacterEquipment,
-    HorseEquipment,
-    Storage,
-  };
-
   //! A unique identifier.
   dao::Field<Uid> uid{InvalidUid};
   //! A type identifier.
   dao::Field<Tid> tid{InvalidTid};
   //! Amount of an item.
   dao::Field<uint32_t> count{};
-  //! Slot of the item.
-  dao::Field<Slot> slot{Slot::Storage};
 };
 
+//! Pet
+struct Pet
+{
+  //! A unique identifier.
+  dao::Field<Uid> uid{InvalidUid};
+  //! A type identifier.
+  dao::Field<Tid> tid{InvalidTid};
+  //!
+  dao::Field<std::string> name;
+};
+
+//! Stored item
 struct StoredItem
 {
+  //! A unique identifier.
   dao::Field<Uid> uid{InvalidUid};
   dao::Field<std::vector<Uid>> items{};
   dao::Field<std::string> sender;
   dao::Field<std::string> message;
   dao::Field<bool> checked;
   dao::Field<bool> expired;
+};
+
+//! Guild
+struct Guild
+{
+  dao::Field<Uid> uid{InvalidUid};
+  dao::Field<std::string> name;
 };
 
 //! User
@@ -194,6 +204,9 @@ struct Character
     dao::Field<uint32_t> thighVolume{0u};
     dao::Field<uint32_t> legVolume{0u};
   } appearance{};
+
+  dao::Field<Uid> petUid;
+  dao::Field<Uid> guildUid;
 
   dao::Field<std::vector<Uid>> gifts;
   dao::Field<std::vector<Uid>> purchases;

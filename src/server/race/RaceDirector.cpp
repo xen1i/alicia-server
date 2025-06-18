@@ -116,7 +116,7 @@ Rooms will not be in data director.
     std::string description;
     uint8_t unk0;
     uint8_t unk1;
-    uint8_t unk2;
+    uint8_t isBusy;
     uint16_t missionId;
     uint8_t unk4;
     uint16_t bitset;
@@ -192,10 +192,10 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
         },
         .unk8 = {
           .unk0 = 0,
-          //.anotherPlayerRelatedThing = {.mountUid = character->mountUid, .val1 = 0x12}
+          //.rent = {.mountUid = character->mountUid, .tid = 0x12}
         },
-        .yetAnotherPlayerRelatedThing = {},
-        .playerRelatedThing = {.val1 = 1},
+        .pet = {},
+        .guild = {.val1 = 1},
         .unk9 = {.unk0 = 1, .unk1 = 1}
       }
     },

@@ -41,6 +41,42 @@ DataDirector::DataDirector()
       {
         _dataSource->StoreCharacter(key, character);
       })
+    , _itemStorage(
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->RetrieveItem(key, item);
+        },
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->StoreItem(key, item);
+        })
+    , _storedItemStorage(
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->RetrieveStoredItem(key, item);
+        },
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->StoreStoredItem(key, item);
+        })
+    , _petStorage(
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->RetrievePet(key, item);
+        },
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->StorePet(key, item);
+        })
+    , _guildStorage(
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->RetrieveGuild(key, item);
+        },
+        [&](const auto& key, auto& item)
+        {
+          _dataSource->StoreGuild(key, item);
+        })
   , _horseStorage(
       [&](const auto& key, auto& horse)
       {
@@ -58,24 +94,6 @@ DataDirector::DataDirector()
       [&](const auto& key, auto& ranch)
       {
         _dataSource->StoreRanch(key, ranch);
-      })
-  , _itemStorage(
-      [&](const auto& key, auto& item)
-      {
-        _dataSource->RetrieveItem(key, item);
-      },
-      [&](const auto& key, auto& item)
-      {
-        _dataSource->StoreItem(key, item);
-      })
-  , _storedItemStorage(
-      [&](const auto& key, auto& item)
-      {
-        _dataSource->RetrieveStoredItem(key, item);
-      },
-      [&](const auto& key, auto& item)
-      {
-        _dataSource->StoreStoredItem(key, item);
       })
 {
   _dataSource = std::make_unique<FileDataSource>();
@@ -122,6 +140,16 @@ DataDirector::CharacterStorage& DataDirector::GetCharacters()
 DataDirector::ItemStorage& DataDirector::GetItems()
 {
   return _itemStorage;
+}
+
+DataDirector::PetStorage& DataDirector::GetPets()
+{
+  return _petStorage;
+}
+
+DataDirector::GuildStorage& DataDirector::GetGuilds()
+{
+  return _guildStorage;
 }
 
 DataDirector::StoredItemStorage& DataDirector::GetStoredItems()

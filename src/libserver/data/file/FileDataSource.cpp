@@ -39,20 +39,27 @@ std::filesystem::path ProduceDataPath(
 
 void soa::FileDataSource::Initialize(const std::filesystem::path& path)
 {
-  _path = path;
-  _usersPath = _path / "users";
-  create_directories(_usersPath);
-  _charactersPath = _path / "characters";
-  create_directories(_charactersPath);
-  _horsesPath = _path / "horses";
-  create_directories(_horsesPath);
-  _ranchesPath = _path / "ranches";
-  create_directories(_ranchesPath);
-  _itemsPath = _path / "items";
-  create_directories(_itemsPath);
-  _metaFilePath = _path;
-  create_directories(_metaFilePath);
+  _dataPath = path;
+  _metaFilePath = _dataPath;
 
+  const auto prepareDataPath = [this](
+    std::filesystem::path folder)
+  {
+    const auto path = _dataPath / folder;
+    create_directories(path);
+
+    return path;
+  };
+
+  _userDataPath = prepareDataPath("users");
+  _characterDataPath = prepareDataPath("characters");
+  _itemDataPath = prepareDataPath("items");
+  _petDataPath = prepareDataPath("pets");
+  _guildDataPath = prepareDataPath("guilds");
+  _storedItemPath = prepareDataPath("storedItems");
+  _horseDataPath = prepareDataPath("horses");
+  _ranchDataPath = prepareDataPath("ranches");
+  
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
   std::ifstream metaFile(metaFilePath);
@@ -85,7 +92,7 @@ void soa::FileDataSource::Terminate()
 void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-    _usersPath, name);
+    _userDataPath, name);
 
   user.name = name;
 
@@ -101,10 +108,10 @@ void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
 
 void soa::FileDataSource::StoreUser(std::string name, const data::User& user)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-    _usersPath, name);
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _userDataPath, name);
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataFilePath);
   if (not file.is_open())
     return;
 
@@ -125,7 +132,7 @@ void soa::FileDataSource::CreateCharacter(data::Character& character)
 void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-    _charactersPath, std::format("{}", uid));
+    _characterDataPath, std::format("{}", uid));
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
@@ -155,6 +162,12 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
     .thighVolume = appearance["thighVolume"].get<uint32_t>(),
     .legVolume = appearance["legVolume"].get<uint32_t>()};
 
+  character.petUid = json["petUid"].get<data::Uid>();
+  character.guildUid = json["guildUid"].get<data::Uid>();
+
+  character.gifts = json["gifts"].get<std::vector<data::Uid>>();
+  character.purchases = json["purchases"].get<std::vector<data::Uid>>();
+
   character.inventory = json["inventory"].get<std::vector<data::Uid>>();
   character.characterEquipment = json["characterEquipment"].get<std::vector<data::Uid>>();
   character.mountEquipment = json["horseEquipment"].get<std::vector<data::Uid>>();
@@ -166,10 +179,10 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
 
 void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-    _charactersPath, std::format("{}", uid));
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _characterDataPath, std::format("{}", uid));
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataFilePath);
   if (not file.is_open())
     return;
 
@@ -198,6 +211,12 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
   appearance["legVolume"] = character.appearance.legVolume();
   json["appearance"] = appearance;
 
+  json["petUid"] = character.petUid();
+  json["guildUid"] = character.guildUid();
+
+  json["gifts"] = character.gifts();
+  json["purchases"] = character.purchases();
+
   json["inventory"] = character.inventory();
   json["characterEquipment"] = character.characterEquipment();
   json["horseEquipment"] = character.mountEquipment();
@@ -218,7 +237,7 @@ void soa::FileDataSource::CreateItem(data::Item& item)
 void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-    _itemsPath, std::format("{}", uid));
+    _itemDataPath, std::format("{}", uid));
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
@@ -233,10 +252,10 @@ void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
 
 void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-    _itemsPath, std::format("{}", uid));
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _itemDataPath, std::format("{}", uid));
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataFilePath);
   if (not file.is_open())
     return;
 
@@ -244,6 +263,80 @@ void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   json["uid"] = item.uid();
   json["tid"] = item.tid();
   json["count"] = item.count();
+  file << json.dump(2);
+}
+
+void soa::FileDataSource::CreatePet(soa::data::Pet& pet)
+{
+  _sequentialUid++;
+  pet.uid = _sequentialUid;
+}
+
+void soa::FileDataSource::RetrievePet(soa::data::Uid uid, soa::data::Pet& pet)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _petDataPath, std::format("{}", uid));
+
+  std::ifstream file(dataFilePath);
+  if (not file.is_open())
+    return;
+
+  const auto json = nlohmann::json::parse(file);
+
+  pet.uid = json["uid"].get<data::Uid>();
+  pet.tid = json["tid"].get<data::Tid>();
+  pet.name = json["name"].get<std::string>();
+}
+
+void soa::FileDataSource::StorePet(soa::data::Uid uid, const soa::data::Pet& pet)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _petDataPath, std::format("{}", uid));
+
+  std::ofstream file(dataFilePath);
+  if (not file.is_open())
+    return;
+
+  nlohmann::json json;
+  json["uid"] = pet.uid();
+  json["tid"] = pet.tid();
+  json["name"] = pet.name();
+  file << json.dump(2);
+}
+
+void soa::FileDataSource::CreateGuild(soa::data::Guild& guild)
+{
+  _sequentialUid++;
+  guild.uid = _sequentialUid;
+}
+
+void soa::FileDataSource::RetrieveGuild(soa::data::Uid uid, soa::data::Guild& guild)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _guildDataPath, std::format("{}", uid));
+
+  std::ifstream file(dataFilePath);
+  if (not file.is_open())
+    return;
+
+  const auto json = nlohmann::json::parse(file);
+
+  guild.uid = json["uid"].get<data::Uid>();
+  guild.name = json["name"].get<std::string>();
+}
+
+void soa::FileDataSource::StoreGuild(soa::data::Uid uid, const soa::data::Guild& guild)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _guildDataPath, std::format("{}", uid));
+
+  std::ofstream file(dataFilePath);
+  if (not file.is_open())
+    return;
+
+  nlohmann::json json;
+  json["uid"] = guild.uid();
+  json["name"] = guild.name();
   file << json.dump(2);
 }
 
@@ -256,7 +349,7 @@ void soa::FileDataSource::CreateStoredItem(data::StoredItem& item)
 void soa::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-  _itemsPath, std::format("{}", uid));
+    _storedItemPath, std::format("{}", uid));
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
@@ -274,10 +367,10 @@ void soa::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& it
 
 void soa::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem& item)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-  _itemsPath, std::format("{}", uid));
+  const std::filesystem::path dataPath = ProduceDataPath(
+    _storedItemPath, std::format("{}", uid));
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataPath);
   if (not file.is_open())
     return;
 
@@ -299,7 +392,7 @@ void soa::FileDataSource::CreateHorse(data::Horse& horse)
 void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-    _horsesPath, std::format("{}", uid));
+    _horseDataPath, std::format("{}", uid));
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
@@ -355,10 +448,10 @@ void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
 
 void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-    _horsesPath, std::format("{}", uid));
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _horseDataPath, std::format("{}", uid));
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataFilePath);
   if (not file.is_open())
     return;
 
@@ -421,7 +514,7 @@ void soa::FileDataSource::CreateRanch(data::Ranch& ranch)
 void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
-    _ranchesPath, std::format("{}", uid));
+    _ranchDataPath, std::format("{}", uid));
 
   std::ifstream file(dataFilePath);
   if (not file.is_open())
@@ -435,10 +528,10 @@ void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 
 void soa::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
 {
-  const std::filesystem::path userFilePath = ProduceDataPath(
-    _ranchesPath, std::format("{}", uid));
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _ranchDataPath, std::format("{}", uid));
 
-  std::ofstream file(userFilePath);
+  std::ofstream file(dataFilePath);
   if (not file.is_open())
     return;
 

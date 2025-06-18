@@ -131,7 +131,7 @@ void Client::ReadLoop() noexcept
         if (error)
         {
           throw std::runtime_error(
-            fmt::format("Network error (0x{}): {}", error.value(), error.what()));
+            fmt::format("Network error 0x{}", error.value()));
         }
 
         // Commit the received bytes, so they can be read by the handler.
@@ -214,14 +214,14 @@ Client& Server::GetClient(ClientId clientId)
 void Server::AcceptLoop() noexcept
 {
   _acceptor.async_accept(
-    [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
+    [&](const boost::system::error_code& error, asio::ip::tcp::socket client_socket)
     {
       try
       {
         if (error)
         {
           throw std::runtime_error(
-            fmt::format("Network exception (0x{}): {}", error.value(), error.what()));
+            fmt::format("Network exception 0x{}", error.value()));
         }
 
         // Sequential Id.

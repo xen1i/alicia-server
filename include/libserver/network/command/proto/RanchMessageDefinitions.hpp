@@ -248,9 +248,9 @@ struct RanchCommandEnterRanchOK
   std::vector<RanchHorse> horses{};
   std::vector<RanchCharacter> characters{};
 
-  uint64_t unk1{};
-  uint32_t unk2{};
-  uint32_t unk3{};
+  uint64_t unk1{0};
+  uint32_t scramblingConstant{0};
+  uint32_t unk3{0};
 
   struct Unk4
   {
@@ -1459,6 +1459,242 @@ struct RanchCommandSetIntroductionNotify
   //! @param stream Source stream.
   static void Read(
     RanchCommandSetIntroductionNotify& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandCreateGuild
+{
+  std::string name;
+  std::string description;
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandCreateGuild& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandCreateGuild& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandCreateGuildOK
+{
+  uint32_t uid{};
+  uint32_t member2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandCreateGuildOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandCreateGuildOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandCreateGuildCancel
+{
+  uint8_t status{};
+  uint32_t member2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandCreateGuildCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandCreateGuildCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestGuildInfo
+{
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestGuildInfo& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestGuildInfo& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestGuildInfoOK
+{
+  struct GuildInfo
+  {
+    uint32_t uid{};
+    uint8_t member1{};
+    uint32_t member2{};
+    uint32_t member3{};
+    uint8_t member4{};
+    uint32_t member5{};
+    std::string name{};
+    std::string description{};
+    uint32_t member8{};
+    uint32_t member9{};
+    uint32_t member10{};
+    uint32_t member11{};
+
+    static void Write(
+      const GuildInfo& command,
+      SinkStream& stream);
+
+    static void Read(
+      GuildInfo& command,
+      SourceStream& stream);
+  } guildInfo;
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestGuildInfoOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestGuildInfoOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestGuildInfoCancel
+{
+  uint8_t status{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestGuildInfoCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestGuildInfoCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandUpdatePet
+{
+  PetInfo petInfo{};
+  //! optional
+  uint32_t member2{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandUpdatePet& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandUpdatePet& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestPetBirth
+{
+  uint32_t member1{};
+  uint32_t member2{};
+  PetInfo petInfo{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestPetBirth& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestPetBirth& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestPetBirthOK
+{
+  PetBirthInfo petBirthInfo{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestPetBirthOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestPetBirthOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestPetBirthCancel
+{
+  PetInfo petInfo{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestPetBirthCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestPetBirthCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandRequestPetBirthNotify
+{
+  PetBirthInfo petBirthInfo{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandRequestPetBirthNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandRequestPetBirthNotify& command,
     SourceStream& stream);
 };
 

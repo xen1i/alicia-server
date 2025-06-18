@@ -190,6 +190,23 @@ const std::unordered_map<CommandId, std::string_view> commands = {
 
   {CommandId::RanchSetIntroductionNotify, "RanchSetIntroductionNotify"},
 
+  {CommandId::RanchCreateGuild, "RanchCreateGuild"},
+  {CommandId::RanchCreateGuildOK, "RanchCreateGuildOK"},
+  {CommandId::RanchCreateGuildCancel, "RanchCreateGuildCancel"},
+
+  {CommandId::RanchRequestGuildInfo, "RanchRequestGuildInfo"},
+  {CommandId::RanchRequestGuildInfoOK, "RanchRequestGuildInfoOK"},
+  {CommandId::RanchRequestGuildInfoCancel, "RanchRequestGuildInfoCancel"},
+
+  {CommandId::RanchUpdatePet, "RanchUpdatePet"},
+  {CommandId::RanchUpdatePetCancel, "RanchUpdatePetCancel"},
+
+  {CommandId::RanchRequestPetBirth, "RanchRequestPetBirth"},
+  {CommandId::RanchRequestPetBirthOK, "RanchRequestPetBirthOK"},
+  {CommandId::RanchRequestPetBirthCancel, "RanchRequestPetBirthCancel"},
+
+  {CommandId::RanchPetBirthNotify, "RanchPetBirthNotify"},
+
   {CommandId::RaceEnterRoom, "RaceEnterRoom"},
   {CommandId::RaceEnterRoomNotify, "RaceEnterRoomNotify"},
   {CommandId::RaceEnterRoomOK, "RaceEnterRoomOK"},

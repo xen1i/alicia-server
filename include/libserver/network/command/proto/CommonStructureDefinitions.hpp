@@ -298,42 +298,70 @@ struct Horse
 };
 
 //!
-struct Struct5
+struct Guild
 {
-  uint32_t val0{};
+  uint32_t uid{};
   uint8_t val1{};
   uint32_t val2{};
-  std::string val3{};
+  std::string name{};
   uint8_t val4{};
   uint32_t val5{};
   // ignored by the client?
   uint8_t val6{};
 
-  static void Write(const Struct5& value, SinkStream& stream);
-  static void Read(Struct5& value, SourceStream& stream);
+  static void Write(const Guild& value, SinkStream& stream);
+  static void Read(Guild& value, SourceStream& stream);
 };
 
 //!
-struct Struct6
+struct Rent
 {
   uint32_t mountUid{};
   uint32_t val1{};
   uint32_t val2{};
 
-  static void Write(const Struct6& value, SinkStream& stream);
-  static void Read(Struct6& value, SourceStream& stream);
+  static void Write(const Rent& value, SinkStream& stream);
+  static void Read(Rent& value, SourceStream& stream);
 };
 
 //!
-struct Struct7
+struct Pet
 {
-  uint32_t val0{};
-  uint32_t val1{};
-  std::string val2{};
+  uint32_t uid{};
+  uint32_t tid{};
+  std::string name{};
   uint32_t val3{};
 
-  static void Write(const Struct7& value, SinkStream& stream);
-  static void Read(Struct7& value, SourceStream& stream);
+  static void Write(const Pet& value, SinkStream& stream);
+  static void Read(Pet& value, SourceStream& stream);
+};
+
+//!
+struct PetInfo
+{
+  uint32_t member1{};
+  uint32_t itemUid{};
+  Pet pet{};
+  uint32_t member4{};
+
+  static void Write(const PetInfo& value, SinkStream& stream);
+  static void Read(PetInfo& value, SourceStream& stream);
+};
+
+//!
+struct PetBirthInfo
+{
+  Item eggItem{};
+  uint32_t member2{};
+  uint32_t member3{};
+  PetInfo petInfo{};
+
+  static void Write(
+    const PetBirthInfo& value,
+    SinkStream& stream);
+  static void Read(
+    PetBirthInfo& value,
+    SourceStream& stream);
 };
 
 //!
@@ -360,17 +388,17 @@ struct RanchCharacter
   Horse mount{};
   std::vector<Item> characterEquipment{};
 
-  Struct5 playerRelatedThing{};
+  Guild guild{};
 
   uint16_t ranchIndex{};
-  uint8_t unk2{};
-  uint8_t unk3{};
+  uint8_t isBusy{0};
+  uint8_t unk3{0};
 
-  Struct6 anotherPlayerRelatedThing{};
-  Struct7 yetAnotherPlayerRelatedThing{};
+  Rent rent{};
+  Pet pet{};
 
-  uint8_t unk4{};
-  uint8_t unk5{};
+  uint8_t unk4{0};
+  uint8_t unk5{0};
 
   static void Write(const RanchCharacter& ranchCharacter, SinkStream& stream);
   static void Read(RanchCharacter& value, SourceStream& stream);

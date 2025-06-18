@@ -48,6 +48,14 @@ public:
   void RetrieveStoredItem(data::Uid uid, data::StoredItem& item) override;
   void StoreStoredItem(data::Uid uid, const data::StoredItem& item) override;
 
+  void CreatePet(data::Pet& pet) override;
+  void RetrievePet(data::Uid uid, data::Pet& pet) override;
+  void StorePet(data::Uid uid, const data::Pet& pet) override;
+
+  void CreateGuild(data::Guild& guild) override;
+  void RetrieveGuild(data::Uid uid, data::Guild& guild) override;
+  void StoreGuild(data::Uid uid, const soa::data::Guild& guild) override;
+
   void CreateHorse(data::Horse& horse) override;
   void RetrieveHorse(data::Uid uid, data::Horse& horse) override;
   void StoreHorse(data::Uid uid, const data::Horse& horse) override;
@@ -57,12 +65,26 @@ public:
   void StoreRanch(data::Uid uid, const data::Ranch& ranch) override;
 
 private:
-  std::filesystem::path _path;
-  std::filesystem::path _usersPath;
-  std::filesystem::path _charactersPath;
-  std::filesystem::path _horsesPath;
-  std::filesystem::path _ranchesPath;
-  std::filesystem::path _itemsPath;
+  std::filesystem::path _dataPath;
+
+  //! A path to the user data files.
+  std::filesystem::path _userDataPath;
+  //! A path to the character data files.
+  std::filesystem::path _characterDataPath;
+  //! A path to the item data files.
+  std::filesystem::path _itemDataPath;
+  //! A path to the pet data files.
+  std::filesystem::path _petDataPath;
+  //! A path to the guild data files.
+  std::filesystem::path _guildDataPath;
+  //! A path to the stored item data files.
+  std::filesystem::path _storedItemPath;
+  //! A path to the horse data files.
+  std::filesystem::path _horseDataPath;
+  //! A path to the ranch data files.
+  std::filesystem::path _ranchDataPath;
+
+
   std::filesystem::path _metaFilePath;
 
   uint32_t _sequentialUid = 0;
