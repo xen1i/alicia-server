@@ -71,6 +71,10 @@ private:
     ClientId clientId,
     const UserRaceTimer& raceTimer);
 
+  void HandleReadyRace(
+    ClientId clientId,
+    const RaceCommandReadyRace& command);
+
   //!
   soa::ServerInstance& _serverInstance;
   //!

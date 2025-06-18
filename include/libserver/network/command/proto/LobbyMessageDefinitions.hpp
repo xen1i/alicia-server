@@ -89,7 +89,7 @@ struct LobbyCommandLoginOK
     GameMaster = 2
   };
   Role role{};
-  
+
   uint8_t val3{};
 
   //! Option type mask.
@@ -524,6 +524,88 @@ struct LobbyCommandEnterChannelCancel
     SourceStream& stream);
 };
 
+
+//! Serverbound room list command.
+struct LobbyCommandRoomList
+{
+  uint8_t page;
+
+  enum class Mode : uint8_t
+  {
+    Magic, Speed
+  } mode;
+  enum class Unk : uint8_t
+  {
+    Single, Team
+  } member3;
+
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandRoomList& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandRoomList& command,
+    SourceStream& stream);
+};
+
+//! Clientbound room list response.
+struct LobbyCommandRoomListOK
+{
+  uint8_t unk0;
+  uint8_t unk1;
+  uint8_t unk2;
+
+  struct Room
+  {
+    uint32_t id;
+    std::string name;
+    uint8_t playerCount;
+    uint8_t maxPlayers;
+    uint8_t isLocked;
+    uint8_t unk0;
+    uint8_t unk1;
+    uint16_t map;
+    uint8_t hasStarted;
+    uint16_t unk2;
+    uint8_t unk3;
+    uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
+    uint32_t unk4;
+
+    static void Write(const Room& value, SinkStream& stream);
+    static void Read(Room& value, SourceStream& stream);
+  };
+
+  std::vector<Room> rooms;
+
+  struct
+  {
+    uint32_t unk0;
+    std::string unk1;
+    uint16_t unk2;
+  } unk3;
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandRoomListOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandRoomListOK& command,
+    SourceStream& stream);
+};
+
 //! Serverbound make room command.
 struct LobbyCommandMakeRoom
 {
@@ -808,74 +890,6 @@ struct LobbyCommandGetMessengerInfoCancel
   //! @param stream Source stream.
   static void Read(
     LobbyCommandGetMessengerInfoCancel& command,
-    SourceStream& stream);
-};
-
-//! Serverbound room list command.
-struct LobbyCommandRoomList
-{
-  uint8_t unk0;
-  uint8_t unk1;
-  uint8_t unk2;
-
-  //! Writes the command to a provided sink stream.
-  //! @param command Command.
-  //! @param stream Sink stream.
-  static void Write(
-    const LobbyCommandRoomList& command,
-    SinkStream& stream);
-
-  //! Reader a command from a provided source stream.
-  //! @param command Command.
-  //! @param stream Source stream.
-  static void Read(
-    LobbyCommandRoomList& command,
-    SourceStream& stream);
-};
-
-struct Room
-{
-  uint32_t id;
-  std::string name;
-  uint8_t playerCount;
-  uint8_t maxPlayers;
-  uint8_t isLocked;
-  uint8_t unk0;
-  uint8_t unk1;
-  uint16_t map;
-  uint8_t hasStarted;
-  uint16_t unk2;
-  uint8_t unk3;
-  uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
-  uint32_t unk4;
-};
-
-//! Clientbound room list response.
-struct LobbyCommandRoomListOK
-{
-  uint8_t unk0;
-  uint8_t unk1;
-  uint8_t unk2;
-  std::vector<Room> rooms;
-  struct
-  {
-    uint32_t unk0;
-    std::string unk1;
-    uint16_t unk2;
-  } unk3;
-
-  //! Writes the command to a provided sink stream.
-  //! @param command Command.
-  //! @param stream Sink stream.
-  static void Write(
-    const LobbyCommandRoomListOK& command,
-    SinkStream& stream);
-
-  //! Reader a command from a provided source stream.
-  //! @param command Command.
-  //! @param stream Source stream.
-  static void Read(
-    LobbyCommandRoomListOK& command,
     SourceStream& stream);
 };
 

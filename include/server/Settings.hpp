@@ -51,23 +51,23 @@ public:
     uint16_t port = 10031;
   } _ranchSettings;
 
-  //! Messenger settings.
-  struct MessengerSettings
-  {
-    asio::ip::address_v4 address{
-      asio::ip::address_v4::any()
-    };
-    uint16_t port = 10032;
-  } _messengerSettings;
-
   //! Race settings.
   struct RaceSettings
   {
     asio::ip::address_v4 address{
       asio::ip::address_v4::any()
     };
-    uint16_t port = 10033;
+    uint16_t port = 10032;
   } _raceSettings;
+
+  //! Messenger settings.
+  struct MessengerSettings
+  {
+    asio::ip::address_v4 address{
+      asio::ip::address_v4::any()
+    };
+    uint16_t port = 10033;
+  } _messengerSettings;
 
   //! Data source settings.
   struct DataSource

@@ -66,6 +66,10 @@ private:
     ClientId clientId,
     const LobbyCommandEnterChannel& enterChannel);
 
+  void HandleRoomList(
+    ClientId,
+    const LobbyCommandRoomList& command);
+
   //!
   void HandleMakeRoom(
     ClientId clientId,

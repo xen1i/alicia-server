@@ -105,9 +105,9 @@ void RaceCommandEnterRoom::Read(
   RaceCommandEnterRoom& command,
   SourceStream& stream)
 {
-  stream.Read(command.roomUid)
+  stream.Read(command.characterUid)
     .Read(command.otp)
-    .Read(command.characterUid);
+    .Read(command.roomUid);
 }
 
 void RaceCommandEnterRoomOK::Write(
@@ -503,5 +503,33 @@ void RaceCommandUpdatePetCancel::Read(
   throw std::runtime_error("Not implemented");
 }
 
+void RaceCommandReadyRace::Write(
+  const RaceCommandReadyRace& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RaceCommandReadyRace::Read(
+  RaceCommandReadyRace& command,
+  SourceStream& stream)
+{
+  // Empty.
+}
+
+void RaceCommandReadyRaceNotify::Write(
+  const RaceCommandReadyRaceNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.characterUid)
+    .Write(command.ready);
+}
+
+void RaceCommandReadyRaceNotify::Read(
+  RaceCommandReadyRaceNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
 
 } // namespace alicia

@@ -463,6 +463,72 @@ void LobbyCommandEnterChannelCancel::Read(
 {
 }
 
+void LobbyCommandRoomList::Write(
+  const LobbyCommandRoomList& command,
+  SinkStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRoomList::Read(
+  LobbyCommandRoomList& command,
+  SourceStream& stream)
+{
+  stream.Read(command.page)
+    .Read(command.member3)
+    .Read(command.mode);
+}
+
+void LobbyCommandRoomListOK::Room::Write(
+  const Room& value,
+  SinkStream& stream)
+{
+  stream.Write(value.id)
+    .Write(value.name)
+    .Write(value.playerCount)
+    .Write(value.maxPlayers)
+    .Write(value.isLocked)
+    .Write(value.unk0)
+    .Write(value.unk1)
+    .Write(value.map)
+    .Write(value.hasStarted)
+    .Write(value.unk2)
+    .Write(value.unk3)
+    .Write(value.level)
+    .Write(value.unk4);
+}
+
+void LobbyCommandRoomListOK::Room::Read(
+  Room& value,
+  SourceStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRoomListOK::Write(
+  const LobbyCommandRoomListOK& command,
+  SinkStream& stream)
+{
+  stream.Write(command.unk0)
+    .Write(command.unk1)
+    .Write(command.unk2)
+    .Write(static_cast<uint8_t>(command.rooms.size()));
+  for (const auto& room : command.rooms)
+  {
+    stream.Write(room);
+  }
+  stream.Write(command.unk3.unk0)
+    .Write(command.unk3.unk1)
+    .Write(command.unk3.unk2);
+}
+
+void LobbyCommandRoomListOK::Read(
+  LobbyCommandRoomListOK& command,
+  SourceStream& stream)
+{
+  throw std::logic_error("Not implemented.");
+}
+
 void LobbyCommandMakeRoom::Write(
   const LobbyCommandMakeRoom& command,
   SinkStream& stream)
@@ -683,59 +749,6 @@ void LobbyCommandGetMessengerInfoCancel::Read(
 {
   throw std::logic_error("Not implemented.");
 }
-
-void LobbyCommandRoomList::Write(
-  const LobbyCommandRoomList& command,
-  SinkStream& stream)
-{
-  throw std::logic_error("Not implemented.");
-}
-
-void LobbyCommandRoomList::Read(
-  LobbyCommandRoomList& command,
-  SourceStream& stream)
-{
-  stream.Read(command.unk0)
-    .Read(command.unk1)
-    .Read(command.unk2);
-}
-
-void LobbyCommandRoomListOK::Write(
-  const LobbyCommandRoomListOK& command,
-  SinkStream& stream)
-{
-  stream.Write(command.unk0)
-    .Write(command.unk1)
-    .Write(command.unk2)
-    .Write(static_cast<uint8_t>(command.rooms.size()));
-  for (const auto& room : command.rooms)
-  {
-    stream.Write(room.id)
-      .Write(room.name)
-      .Write(room.playerCount)
-      .Write(room.maxPlayers)
-      .Write(room.isLocked)
-      .Write(room.unk0)
-      .Write(room.unk1)
-      .Write(room.map)
-      .Write(room.hasStarted)
-      .Write(room.unk2)
-      .Write(room.unk3)
-      .Write(room.level)
-      .Write(room.unk4);
-  }
-  stream.Write(command.unk3.unk0)
-    .Write(command.unk3.unk1)
-    .Write(command.unk3.unk2);
-}
-
-void LobbyCommandRoomListOK::Read(
-  LobbyCommandRoomListOK& command,
-  SourceStream& stream)
-{
-  throw std::logic_error("Not implemented.");
-}
-
 void LobbyCommandRequestSpecialEventList::Write(
   const LobbyCommandRequestSpecialEventList& command,
   SinkStream& stream)

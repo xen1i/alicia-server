@@ -51,6 +51,13 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
       _loginHandler.HandleUserLogin(clientId, message);
     });
 
+  _commandServer.RegisterCommandHandler<LobbyCommandRoomList>(
+    CommandId::LobbyRoomList,
+    [this](ClientId clientId, const auto& message)
+    {
+     HandleRoomList(clientId, message);
+    });
+
   _commandServer.RegisterCommandHandler<LobbyCommandCreateNickname>(
     CommandId::LobbyCreateNickname,
     [this](ClientId clientId, const auto& message)
@@ -254,6 +261,28 @@ void LobbyDirector::HandleEnterChannel(
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::LobbyEnterChannelOK,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void LobbyDirector::HandleRoomList(
+  ClientId clientId,
+  const LobbyCommandRoomList& command)
+{
+  LobbyCommandRoomListOK response;
+  response.unk0 = 1;
+  response.unk1 = 1;
+  response.unk2 = 1;
+
+  response.rooms.emplace_back(LobbyCommandRoomListOK::Room{
+    .id = 1,
+    .name = "test"});
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyRoomListOK,
     [response]()
     {
       return response;

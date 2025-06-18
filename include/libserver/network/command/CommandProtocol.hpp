@@ -79,6 +79,13 @@ enum class CommandId : uint16_t
   LobbyLoginOK = 0x8,
   LobbyLoginCancel = 0x9,
 
+  LobbyRoomList = 0x10,
+  LobbyRoomListOK = 0x11,
+
+  LobbyMakeRoom = 0x13,
+  LobbyMakeRoomOK = 0x14,
+  LobbyMakeRoomCancel = 0x15,
+
   LobbyHeartbeat = 0x12,
 
   LobbyCreateNicknameNotify = 0x6b,
@@ -88,10 +95,6 @@ enum class CommandId : uint16_t
   LobbyEnterChannel = 0x2b,
   LobbyEnterChannelOK = 0x2c,
   LobbyEnterChannelCancel = 0x2d,
-
-  LobbyMakeRoom = 0x13,
-  LobbyMakeRoomOK = 0x14,
-  LobbyMakeRoomCancel = 0x15,
 
   LobbyShowInventory = 0x007e,
   LobbyShowInventoryOK = 0x007f,
@@ -261,6 +264,9 @@ enum class CommandId : uint16_t
 
   RaceChat = 0x52,
   RaceChatNotify = 0x53,
+
+  RaceReady = 0x58,
+  RaceReadyNotify = 0x59,
 
   Count = 0xFFFF
 };

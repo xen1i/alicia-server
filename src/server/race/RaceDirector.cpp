@@ -18,6 +18,8 @@
  **/
 
 #include "server/race/RaceDirector.hpp"
+
+#include "libserver/data/helper/ProtocolHelper.hpp"
 #include "server/ServerInstance.hpp"
 
 #include "libserver/registry/RoomRegistry.hpp"
@@ -60,14 +62,21 @@ RaceDirector::RaceDirector(soa::ServerInstance& serverInstance)
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandLoadingComplete>(
-  CommandId::RaceLoadingComplete,
-  [this](ClientId clientId, const auto& message)
-  {
-    _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, CommandId::RaceLoadingCompleteNotify, [](){
-      return RaceCommandLoadingCompleteNotify{
-      .member0 = 1};
+    CommandId::RaceLoadingComplete,
+    [this](ClientId clientId, const auto& message)
+    {
+      _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, CommandId::RaceLoadingCompleteNotify, [](){
+        return RaceCommandLoadingCompleteNotify{
+        .member0 = 1};
+      });
     });
-  });
+
+  _commandServer.RegisterCommandHandler<RaceCommandReadyRace>(
+    CommandId::RaceReady,
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleReadyRace(clientId, message);
+    });
 }
 
 void RaceDirector::Initialize()
@@ -139,66 +148,6 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
   auto& room = roomRegistry.GetRoom(enterRoom.roomUid);
 
   RaceCommandEnterRoomOK response{
-    .racers = {
-      Racer {
-        .unk0 = 1,
-        .unk1 = 1,
-        .level = 0,
-        .exp = 1,
-        .uid = enterRoom.characterUid,
-        .name = "racer",
-        .unk5 = 1,
-        .unk6 = 1,
-        .bitset = 0,
-        .isNPC = false,
-        .playerRacer = PlayerRacer {
-          .characterEquipment = {},
-          .character = {},
-          .horse = {
-            .uid = 2,
-            .tid = 0x4e21,
-            .name = "default",
-            .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-              .appearance =
-                {.scale = 0x4,
-                  .legLength = 0x4,
-                  .legVolume = 0x5,
-                  .bodyLength = 0x3,
-                  .bodyVolume = 0x4},
-              .stats =
-                {
-                  .agility = 9,
-                  .control = 9,
-                  .speed = 9,
-                  .strength = 9,
-                  .spirit = 0x13
-                },
-              .rating = 0,
-              .clazz = 0x15,
-              .val0 = 1,
-              .grade = 5,
-              .growthPoints = 2,
-              .mastery =
-                {
-                  .spurMagicCount = 0x1fe,
-                  .jumpCount = 0x421,
-                  .slidingTime = 0x5f8,
-                  .glidingDistance = 0xcfa4,
-                },
-              .val16 = 0xb8a167e4,
-              .val17 = 0},
-          .unk0 = 0
-          // Horse equipment?
-        },
-        .unk8 = {
-          .unk0 = 0,
-          //.rent = {.mountUid = character->mountUid, .tid = 0x12}
-        },
-        .pet = {},
-        .guild = {.val1 = 1},
-        .unk9 = {.unk0 = 1, .unk1 = 1}
-      }
-    },
     .nowPlaying = 1,
     .unk1 = 1,
     .roomDescription = {
@@ -207,13 +156,33 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
       .description = room.description,
       .unk1 = room.unk0,
       .unk2 = room.unk1,
-      .unk3 = 20004,
+      .unk3 = 8,
       .unk4 = room.unk2,
       .missionId = room.missionId,
       .unk6 = room.unk3,
       .unk7 = room.unk4
     }
   };
+
+  auto& racer = response.racers.emplace_back();
+
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(enterRoom.characterUid);
+  characterRecord->Immutable([this, &racer](const soa::data::Character& character)
+  {
+    racer.uid = character.uid();
+    racer.name = character.name();
+
+    racer.playerRacer = PlayerRacer{
+    };
+
+    protocol::BuildProtocolCharacter(racer.playerRacer->character, character);
+
+    const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid());
+    mountRecord->Immutable([&racer](const soa::data::Horse& mount)
+    {
+      protocol::BuildProtocolHorse(racer.playerRacer->horse, mount);
+    });
+  });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -253,17 +222,17 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
   const RaceCommandStartRaceNotify response {
     .gamemode = 6,
     .unk3 = 1,
-    .map = 20004,
+    .map = 8,
     .racers = {
       {
         .oid = 1,
-        .name = "default",
+        .name = "regent",
         .unk2 = 1,
         .unk3 = 1,
         .unk4 = 1,
-        .p2dId = 1,
+        .p2dId = 3,
         .unk6 = 1,
-        .unk7 = 1,
+        .unk7 = 3,
       }
     },
     .ip = GetSettings().address.to_uint(),
@@ -293,6 +262,23 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
     {
       return response;
     });
+}
+
+void RaceDirector::HandleReadyRace(ClientId clientId, const RaceCommandReadyRace& command)
+{
+  RaceCommandReadyRaceNotify response{
+    .characterUid = 3,
+    .ready = true};
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::RaceReadyNotify,
+    [response]()
+    {
+      return response;
+    });
+
+  HandleStartRace(clientId, {});
 }
 
 } // namespace alicia
