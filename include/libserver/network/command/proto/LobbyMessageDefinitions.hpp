@@ -61,21 +61,35 @@ struct LobbyCommandLoginOK
 {
   // filetime
   soa::util::WinFileTime lobbyTime{};
-  uint32_t val0{};
+  uint32_t member0{};
 
-  uint32_t selfUid{};
-  std::string nickName{};
+  uint32_t uid{};
+  //! Max length 16
+  std::string name{};
+  //! Max length 255
   std::string motd{};
-  Gender profileGender{Gender::Unspecified};
+  Gender gender{Gender::Unspecified};
+  //! Max length 255
   std::string introduction{};
 
+  //! Max 16 elements.
   std::vector<Item> characterEquipment{};
+  //! Max 16 elements.
   std::vector<Item> mountEquipment{};
 
   uint16_t level{};
   int32_t carrots{};
+
   uint32_t val1{};
-  uint32_t val2{};
+
+  enum class Role : uint32_t
+  {
+    User = 0,
+    PowerUser = 1,
+    GameMaster = 2
+  };
+  Role role{};
+  
   uint8_t val3{};
 
   //! Option type mask.

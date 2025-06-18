@@ -171,7 +171,7 @@ private:
 
   void HandleUpdatePet(
     ClientId clientId,
-    const RaceCommandUpdatePet& command);
+    const RanchCommandUpdatePet& command);
 
   void HandleRequestPetBirth(
     ClientId clientId,

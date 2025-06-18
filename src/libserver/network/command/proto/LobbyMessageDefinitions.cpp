@@ -45,15 +45,15 @@ void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.lobbyTime.dwLowDateTime)
+   stream.Write(command.lobbyTime.dwLowDateTime)
     .Write(command.lobbyTime.dwHighDateTime)
-    .Write(command.val0);
+    .Write(command.member0);
 
   // Profile
-  stream.Write(command.selfUid)
-    .Write(command.nickName)
+  stream.Write(command.uid)
+    .Write(command.name)
     .Write(command.motd)
-    .Write(static_cast<uint8_t>(command.profileGender))
+    .Write(static_cast<uint8_t>(command.gender))
     .Write(command.introduction);
 
   // Character equipment
@@ -74,7 +74,7 @@ void LobbyCommandLoginOK::Write(
   stream.Write(command.level)
     .Write(command.carrots)
     .Write(command.val1)
-    .Write(command.val2)
+    .Write(command.role)
     .Write(command.val3);
 
   // Options

@@ -285,12 +285,11 @@ void LoginHandler::QueueUserLoginAccepted(
     .lobbyTime =
       {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
-    .val0 = 0xCA794,
+    .member0 = 0xCA794,
     .motd = std::format(
       "Welcome to Story of Alicia. Players online: {}",
       _lobbyDirector._clientContext.size()),
     .val1 = 0x0,
-    .val2 = 0x0,
     .val3 = 0x0,
     .optionType = OptionType::Value,
     .valueOptions = 0x64,
@@ -348,14 +347,16 @@ void LoginHandler::QueueUserLoginAccepted(
 
   characterRecord->Immutable([this, &response, &characterMountUid](const soa::data::Character& character)
   {
-    response.selfUid = character.uid();
-    response.nickName = character.name();
+    response.uid = character.uid();
+    response.name = character.name();
 
     response.introduction = character.introduction();
-    response.profileGender = Gender::Unspecified;
+    response.gender = Gender::Unspecified;
 
     response.level = character.level();
     response.carrots = character.carrots();
+    response.role = std::bit_cast<LobbyCommandLoginOK::Role>(
+      character.role());
     response.ageGroup = AgeGroup::Adult;
     response.hideAge = false;
 

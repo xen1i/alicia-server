@@ -187,6 +187,14 @@ struct Character
   dao::Field<int32_t> carrots{};
   dao::Field<uint32_t> cash{};
 
+  enum class Role
+  {
+    User,
+    PowerUser,
+    GameMaster
+  };
+  dao::Field<Role> role{};
+
   struct Parts
   {
     //! An ID of the character model.
