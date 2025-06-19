@@ -43,7 +43,7 @@ void server::FileDataSource::Initialize(const std::filesystem::path& path)
   _metaFilePath = _dataPath;
 
   const auto prepareDataPath = [this](
-    std::filesystem::path folder)
+                                 std::filesystem::path folder)
   {
     const auto path = _dataPath / folder;
     create_directories(path);
@@ -59,7 +59,7 @@ void server::FileDataSource::Initialize(const std::filesystem::path& path)
   _storedItemPath = prepareDataPath("storedItems");
   _horseDataPath = prepareDataPath("horses");
   _ranchDataPath = prepareDataPath("ranches");
-  
+
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
   std::ifstream metaFile(metaFilePath);

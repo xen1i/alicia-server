@@ -47,7 +47,8 @@ void LoginHandler::Tick()
     const auto& loginContext = _clientLogins[clientId];
 
     // Load the user.
-    auto user = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(loginContext.userName);
+    const auto user = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
+      loginContext.userName);
     if (not user)
       continue;
 
@@ -55,10 +56,12 @@ void LoginHandler::Tick()
 
     bool isAuthenticated = false;
     bool hasCharacter = false;
-    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](const data::User& user){
-      isAuthenticated = user.token() == loginContext.userToken;
-      hasCharacter = user.characterUid() != data::InvalidUid;
-    });
+    user->Immutable(
+      [&isAuthenticated, &hasCharacter, &loginContext](const data::User& user)
+      {
+        isAuthenticated = user.token() == loginContext.userToken;
+        hasCharacter = user.characterUid() != data::InvalidUid;
+      });
 
     // If the user succeeds in authentication queue user for further processing.
     if (isAuthenticated)
@@ -95,10 +98,11 @@ void LoginHandler::Tick()
       continue;
 
     auto characterUid = data::InvalidUid;
-    userRecord->Immutable([&characterUid](const data::User& user)
-    {
-      characterUid = user.characterUid();
-    });
+    userRecord->Immutable(
+      [&characterUid](const data::User& user)
+      {
+        characterUid = user.characterUid();
+      });
 
     auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(
       characterUid);
@@ -107,23 +111,24 @@ void LoginHandler::Tick()
 
     bool isCharacterLoaded = false;
 
-    characterRecord->Immutable([this, &isCharacterLoaded](const data::Character& character)
-    {
-      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.inventory()))
-        return;
-      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.characterEquipment()))
-        return;
-      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.mountEquipment()))
-        return;
+    characterRecord->Immutable(
+      [this, &isCharacterLoaded](const data::Character& character)
+      {
+        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.inventory()))
+          return;
+        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.characterEquipment()))
+          return;
+        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.mountEquipment()))
+          return;
 
-      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(character.horses()))
-        return;
+        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(character.horses()))
+          return;
 
-      if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetRanches().Get(character.ranchUid()))
-        return;
+        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetRanches().Get(character.ranchUid()))
+          return;
 
-      isCharacterLoaded = true;
-    });
+        isCharacterLoaded = true;
+      });
 
     if (not isCharacterLoaded)
       continue;
@@ -145,8 +150,7 @@ void LoginHandler::HandleUserLogin(
   // Validate the command fields.
   if (login.loginId.empty())
   {
-    if (login.loginId.empty() &&
-      not constants::IsDevelopmentMode)
+    if (login.loginId.empty() && not constants::IsDevelopmentMode)
     {
       spdlog::debug(
         "LoginHandler::HandleUserLogin - Rejecting login for client {}."
@@ -173,9 +177,7 @@ void LoginHandler::HandleUserLogin(
 
   // Queue the login.
   const auto [iterator, inserted] =
-    _clientLogins.try_emplace(clientId, LoginContext{
-      .userName = login.loginId,
-      .userToken = login.authKey});
+    _clientLogins.try_emplace(clientId, LoginContext{.userName = login.loginId, .userToken = login.authKey});
   assert(inserted && "Duplicate client login request.");
 
   _clientLoginRequestQueue.emplace(clientId);
@@ -187,91 +189,95 @@ void LoginHandler::HandleUserCreateCharacter(
 {
   const auto& loginContext = _clientLogins[clientId];
 
-  auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(loginContext.userName);
+  const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
+    loginContext.userName);
   if (not userRecord)
     throw std::runtime_error("User record does not exist");
 
   // Create a new horse for the character.
-  auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
+  const auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
   // The UID of the newly created horse.
   auto characterMountUid{data::InvalidUid};
 
-  horseRecord.Mutable([&characterMountUid](data::Horse& horse)
-  {
-    horse.name() = "default";
+  horseRecord.Mutable(
+    [&characterMountUid](data::Horse& horse)
+    {
+      horse.name() = "default";
 
-    // The TID of the horse specifies which body mesh is used for that horse.
-    // Can be found in the `MountPartInfo` table.
-    horse.tid() = 20002;
+      // The TID of the horse specifies which body mesh is used for that horse.
+      // Can be found in the `MountPartInfo` table.
+      horse.tid() = 20002;
 
-    // The default parts and appearance of each horse TID
-    // can be found in the `MountPartSet` table.
-    horse.parts.skinId() = 4;
-    horse.parts.faceId() = 1;
-    horse.parts.maneId() = 1;
-    horse.parts.tailId() = 1;
-    horse.appearance.bodyLength() = 5;
-    horse.appearance.bodyVolume() = 5;
-    horse.appearance.legLength() = 5;
-    horse.appearance.legVolume() = 5;
-    horse.appearance.scale() = 5;
+      // The default parts and appearance of each horse TID
+      // can be found in the `MountPartSet` table.
+      horse.parts.skinId() = 4;
+      horse.parts.faceId() = 1;
+      horse.parts.maneId() = 1;
+      horse.parts.tailId() = 1;
+      horse.appearance.bodyLength() = 5;
+      horse.appearance.bodyVolume() = 5;
+      horse.appearance.legLength() = 5;
+      horse.appearance.legVolume() = 5;
+      horse.appearance.scale() = 5;
 
-    characterMountUid = horse.uid();
-  });
+      characterMountUid = horse.uid();
+    });
 
   // Create a new ranch for the character.
-  auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
+  const auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
   // The UID of the newly created ranch.
   auto characterRanchUid{data::InvalidUid};
 
-  ranchRecord.Mutable([&characterRanchUid, &command](data::Ranch& ranch)
-  {
-    const bool endsWithPlural = command.nickname.ends_with("s")
-      || command.nickname.ends_with("S");
-    const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
+  ranchRecord.Mutable(
+    [&characterRanchUid, &command](data::Ranch& ranch)
+    {
+      const bool endsWithPlural = command.nickname.ends_with("s") || command.nickname.ends_with("S");
+      const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
 
-    ranch.name = std::format("{}{} ranch", command.nickname, possessiveSuffix);
-    characterRanchUid = ranch.uid();
-  });
+      ranch.name = std::format("{}{} ranch", command.nickname, possessiveSuffix);
+      characterRanchUid = ranch.uid();
+    });
 
   // And finally create the character with the new horse,
   // new ranch and the appearance sent from the client.
-  auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
+  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
   auto userCharacterUid{data::InvalidUid};
 
-  characterRecord.Mutable([
-    &userCharacterUid,
-    &characterMountUid,
-    &characterRanchUid,
-    &command](data::Character& character)
-  {
-    userCharacterUid = character.uid();
+  characterRecord.Mutable(
+    [&userCharacterUid,
+     &characterMountUid,
+     &characterRanchUid,
+     &command](data::Character& character)
+    {
+      userCharacterUid = character.uid();
 
-    character.level = 60;
-    character.carrots = 5000;
+      character.level = 60;
+      character.carrots = 5000;
 
-    character.name = command.nickname;
-    character.parts = data::Character::Parts{
-      .modelId = command.character.parts.charId,
-      .mouthId = command.character.parts.mouthSerialId,
-      .faceId = command.character.parts.faceSerialId};
-    character.appearance = data::Character::Appearance{
-      .headSize = command.character.appearance.headSize,
-      .height = command.character.appearance.height,
-      .thighVolume = command.character.appearance.thighVolume,
-      .legVolume = command.character.appearance.legVolume,};
+      character.name = command.nickname;
+      character.parts = data::Character::Parts{
+        .modelId = command.character.parts.charId,
+        .mouthId = command.character.parts.mouthSerialId,
+        .faceId = command.character.parts.faceSerialId};
+      character.appearance = data::Character::Appearance{
+        .headSize = command.character.appearance.headSize,
+        .height = command.character.appearance.height,
+        .thighVolume = command.character.appearance.thighVolume,
+        .legVolume = command.character.appearance.legVolume,
+      };
 
-    character.mountUid() = characterMountUid;
-    character.horses().emplace_back(characterMountUid);
+      character.mountUid() = characterMountUid;
+      character.horses().emplace_back(characterMountUid);
 
-    character.ranchUid() = characterRanchUid;
-  });
+      character.ranchUid() = characterRanchUid;
+    });
 
   // Assign the character to the user.
-  userRecord->Mutable([&userCharacterUid](data::User& user)
-  {
-    user.characterUid() = userCharacterUid;
-  });
+  userRecord->Mutable(
+    [&userCharacterUid](data::User& user)
+    {
+      user.characterUid() = userCharacterUid;
+    });
 
   // Queue the processing of the login response.
   _clientLoginResponseQueue.emplace(clientId);
@@ -281,14 +287,15 @@ void LoginHandler::QueueUserLoginAccepted(
   const ClientId clientId,
   const std::string& userName)
 {
-  auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(userName);
+  const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
+    userName);
   if (not userRecord)
     throw std::runtime_error("User record unavailable");
 
   const auto lobbyServerTime = util::UnixTimeToFileTime(
     std::chrono::system_clock::now());
 
-  LobbyCommandLoginOK response {
+  LobbyCommandLoginOK response{
     .lobbyTime =
       {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
@@ -314,18 +321,7 @@ void LoginHandler::QueueUserLoginAccepted(
     .port = _lobbyDirector.GetSettings().ranchAdvPort,
     .scramblingConstant = 0,
 
-    .val7 = {
-      .values = {
-        {0x6, 0x0},
-        {0xF, 0x4},
-        {0x1B, 0x2},
-        {0x1E, 0x0},
-        {0x1F, 0x0},
-        {0x25, 0x7530},
-        {0x35, 0x4},
-        {0x42, 0x2},
-        {0x43, 0x4},
-        {0x45, 0x0}}},
+    .val7 = {.values = {{0x6, 0x0}, {0xF, 0x4}, {0x1B, 0x2}, {0x1E, 0x0}, {0x1F, 0x0}, {0x25, 0x7530}, {0x35, 0x4}, {0x42, 0x2}, {0x43, 0x4}, {0x45, 0x0}}},
 
     .val11 = {4, 0x2B, 4},
     .val14 = 0xca1b87db,
@@ -337,79 +333,82 @@ void LoginHandler::QueueUserLoginAccepted(
 
   // Get the character UID of the user.
   data::Uid userCharacterUid{data::InvalidUid};
-  userRecord->Immutable([&userCharacterUid](
-    const data::User& user)
-  {
-    userCharacterUid = user.characterUid();
-  });
+  userRecord->Immutable(
+    [&userCharacterUid](
+      const data::User& user)
+    {
+      userCharacterUid = user.characterUid();
+    });
 
   // Get the character record and fill the protocol data.
   // Also get the UID of the horse mounted by the character.
-  auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(userCharacterUid);
+  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(userCharacterUid);
   if (not characterRecord)
     throw std::runtime_error("Character record unavailable");
 
   data::Uid characterMountUid{
     data::InvalidUid};
 
-  characterRecord->Immutable([this, &response, &characterMountUid](const data::Character& character)
-  {
-    response.uid = character.uid();
-    response.name = character.name();
+  characterRecord->Immutable(
+    [this, &response, &characterMountUid](const data::Character& character)
+    {
+      response.uid = character.uid();
+      response.name = character.name();
 
-    response.introduction = character.introduction();
-    response.gender = Gender::Unspecified;
+      response.introduction = character.introduction();
+      response.gender = Gender::Unspecified;
 
-    response.level = character.level();
-    response.carrots = character.carrots();
-    response.role = std::bit_cast<LobbyCommandLoginOK::Role>(
-      character.role());
-    response.ageGroup = AgeGroup::Adult;
-    response.hideAge = false;
+      response.level = character.level();
+      response.carrots = character.carrots();
+      response.role = std::bit_cast<LobbyCommandLoginOK::Role>(
+        character.role());
+      response.ageGroup = AgeGroup::Adult;
+      response.hideAge = false;
 
-    response.bitfield = 0x0e06;
+      response.bitfield = 0x0e06;
 
-    // Character equipment.
-    auto characterEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
-      character.characterEquipment());
-    if (not characterEquipmentItems)
-      throw std::runtime_error("Character equipment items unavailable");
+      // Character equipment.
+      const auto characterEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
+        character.characterEquipment());
+      if (not characterEquipmentItems)
+        throw std::runtime_error("Character equipment items unavailable");
 
-    protocol::BuildProtocolItems(
-      response.characterEquipment,
-      *characterEquipmentItems);
+      protocol::BuildProtocolItems(
+        response.characterEquipment,
+        *characterEquipmentItems);
 
-    // Mount equipment.
-    auto mountEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
-      character.mountEquipment());
-    if (not mountEquipmentItems)
-      throw std::runtime_error("Character equipment items unavailable");
+      // Mount equipment.
+      const auto mountEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
+        character.mountEquipment());
+      if (not mountEquipmentItems)
+        throw std::runtime_error("Character equipment items unavailable");
 
-    protocol::BuildProtocolItems(
-      response.mountEquipment,
-      *mountEquipmentItems);
+      protocol::BuildProtocolItems(
+        response.mountEquipment,
+        *mountEquipmentItems);
 
-    protocol::BuildProtocolCharacter(
-      response.character,
-      character);
+      protocol::BuildProtocolCharacter(
+        response.character,
+        character);
 
-    characterMountUid = character.mountUid();
-  });
+      characterMountUid = character.mountUid();
+    });
 
   // Get the mounted horse record and fill the protocol data.
-  auto mountRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(characterMountUid);
+  const auto mountRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(characterMountUid);
   if (not mountRecord)
     throw std::runtime_error("Horse mount record unavailable");
 
-  mountRecord->Immutable([&response](const data::Horse& horse)
-  {
-//    response.val17 = {
-//      .mountUid = horse.uid(),
-//      .tid = 0x12,
-//      .val2 = 0x16e67e4};
+  mountRecord->Immutable(
+    [&response](const data::Horse& horse)
+    {
+      //    response.val17 = {
+      //      .mountUid = horse.uid(),
+      //      .tid = 0x12,
+      //      .val2 = 0x16e67e4};
 
-    protocol::BuildProtocolHorse(response.horse, horse);
-  });
+      protocol::BuildProtocolHorse(response.horse, horse);
+    });
 
   _server.SetCode(clientId, {});
 

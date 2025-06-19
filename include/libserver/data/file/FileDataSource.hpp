@@ -84,7 +84,6 @@ private:
   //! A path to the ranch data files.
   std::filesystem::path _ranchDataPath;
 
-
   std::filesystem::path _metaFilePath;
 
   uint32_t _sequentialUid = 0;

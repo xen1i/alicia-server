@@ -21,18 +21,13 @@
 
 #include <ranges>
 
-#define Int32x32To64(a, b) ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
-
 namespace server::util
 {
 
-// Sources:
-//  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
-//  https://gist.github.com/JamesMenetrey/d3f494262bcab48af1d617c3d39f34cf#file-winnt-h-L944
 WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint)
 {
   const uint64_t unixTime = timePoint.time_since_epoch().count();
-  const uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
+  const uint64_t convertedUnixTime = unixTime * 10'000'000ull + 116444736000000000;
   return WinFileTime{
     .dwLowDateTime = static_cast<uint32_t>(convertedUnixTime),
     .dwHighDateTime = static_cast<uint32_t>(convertedUnixTime >> 32)};

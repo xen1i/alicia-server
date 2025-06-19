@@ -103,7 +103,7 @@ int main()
   // Set is as the default logger for the application.
   spdlog::set_default_logger(g_logger);
 
-  spdlog::info("Running Alicia server v{}.", server::BuildVersion);
+  spdlog::info("Running dedicated Alicia server v{}.", server::BuildVersion);
 
   server::ServerInstance serverInstance;
   serverInstance.Initialize();

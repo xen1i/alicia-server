@@ -128,6 +128,7 @@ void Client::ReadLoop() noexcept
           {
             case asio::error::operation_aborted:
               throw std::runtime_error("Connection aborted by the server");
+            case asio::error::misc_errors::eof:
             case asio::error::connection_reset:
               throw std::runtime_error("Connection reset by the client");
             default:

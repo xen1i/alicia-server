@@ -53,81 +53,25 @@ public:
 
   UserStorage& GetUsers();
 
-  Record<data::Character> CreateCharacter()
-  {
-    return _characterStorage.Create([this]() {
-      data::Character character;
-      _dataSource->CreateCharacter(character);
-
-      return std::make_pair(character.uid(), std::move(character));
-    });
-  }
+  Record<data::Character> CreateCharacter();
   CharacterStorage& GetCharacters();
 
-  Record<data::Item> CreateItem()
-  {
-    return _itemStorage.Create([this]() {
-      data::Item item;
-      _dataSource->CreateItem(item);
-
-      return std::make_pair(item.uid(), std::move(item));
-    });
-  }
+  Record<data::Item> CreateItem();
   ItemStorage& GetItems();
 
-  Record<data::Pet> CreatePet()
-  {
-    return _petStorage.Create([this]() {
-      data::Pet pet;
-      _dataSource->CreatePet(pet);
-
-      return std::make_pair(pet.uid(), std::move(pet));
-    });
-  }
+  Record<data::Pet> CreatePet();
   PetStorage& GetPets();
 
-  Record<data::Guild> CreateGuild()
-  {
-    return _guildStorage.Create([this]() {
-      data::Guild guild;
-      _dataSource->CreateGuild(guild);
-
-      return std::make_pair(guild.uid(), std::move(guild));
-    });
-  }
+  Record<data::Guild> CreateGuild();
   GuildStorage& GetGuilds();
 
-  Record<data::StoredItem> CreateStoredItem()
-  {
-    return _storedItemStorage.Create([this]() {
-      data::StoredItem item;
-      _dataSource->CreateStoredItem(item);
-
-      return std::make_pair(item.uid(), std::move(item));
-    });
-  }
+  Record<data::StoredItem> CreateStoredItem();
   StoredItemStorage& GetStoredItems();
 
-  Record<data::Horse> CreateHorse()
-  {
-    return _horseStorage.Create([this]() {
-      data::Horse horse;
-      _dataSource->CreateHorse(horse);
-
-      return std::make_pair(horse.uid(), std::move(horse));
-    });
-  }
+  Record<data::Horse> CreateHorse();
   HorseStorage& GetHorses();
 
-  Record<data::Ranch> CreateRanch()
-  {
-    return _ranchStorage.Create([this]() {
-      data::Ranch ranch;
-      _dataSource->CreateRanch(ranch);
-
-      return std::make_pair(ranch.uid(), std::move(ranch));
-    });
-  }
+  Record<data::Ranch> CreateRanch();
   RanchStorage& GetRanches();
 
 private:

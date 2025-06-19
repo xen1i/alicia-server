@@ -65,10 +65,14 @@ RaceDirector::RaceDirector(ServerInstance& serverInstance)
     protocol::Command::RaceLoadingComplete,
     [this](ClientId clientId, const auto& message)
     {
-      _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, protocol::Command::RaceLoadingCompleteNotify, [](){
-        return RaceCommandLoadingCompleteNotify{
-        .member0 = 1};
-      });
+      _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(
+        clientId,
+        protocol::Command::RaceLoadingCompleteNotify,
+        []()
+        {
+          return RaceCommandLoadingCompleteNotify{
+            .member0 = 1};
+        });
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandReadyRace>(
@@ -151,9 +155,7 @@ void RaceDirector::HandleEnterRoom(
       .teamMode = room.teamMode,
       .missionId = room.missionId,
       .unk6 = room.unk3,
-      .unk7 = room.unk4
-    }
-  };
+      .unk7 = room.unk4}};
 
   Racer joiningRacer;
 
@@ -163,26 +165,27 @@ void RaceDirector::HandleEnterRoom(
 
     const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
       characterUid);
-    characterRecord->Immutable([this, characterOid, &protocolRacer](const data::Character& character)
-    {
-      protocolRacer.level = character.level();
-      protocolRacer.oid = character.uid();
-      protocolRacer.uid = character.uid();
-      protocolRacer.name = character.name();
-      protocolRacer.isHidden = false;
-      protocolRacer.isNPC = false;
+    characterRecord->Immutable(
+      [this, characterOid, &protocolRacer](const data::Character& character)
+                               {
+                                 protocolRacer.level = character.level();
+                                 protocolRacer.oid = character.uid();
+                                 protocolRacer.uid = character.uid();
+                                 protocolRacer.name = character.name();
+                                 protocolRacer.isHidden = false;
+                                 protocolRacer.isNPC = false;
 
-      protocolRacer.avatar = Avatar{};
+                                 protocolRacer.avatar = Avatar{};
 
-      protocol::BuildProtocolCharacter(protocolRacer.avatar->character, character);
+                                 protocol::BuildProtocolCharacter(protocolRacer.avatar->character, character);
 
-      const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
-        character.mountUid());
-      mountRecord->Immutable([&protocolRacer](const data::Horse& mount)
-      {
-        protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
-      });
-    });
+                                 const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+                                   character.mountUid());
+                                 mountRecord->Immutable([&protocolRacer](const data::Horse& mount)
+                                                        {
+                                                          protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
+                                                        });
+                               });
 
     if (characterUid == clientContext.characterUid)
     {
@@ -242,7 +245,7 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
 void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace& startRace)
 {
   // Start the race or AcCmdRCRoomCountdown
-  const RaceCommandStartRaceNotify response {
+  const RaceCommandStartRaceNotify response{
     .gamemode = 6,
     .unk3 = 1,
     .map = 8,
@@ -256,8 +259,7 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
         .p2dId = 3,
         .unk6 = 1,
         .unk7 = 3,
-      }
-    },
+      }},
     .ip = GetSettings().address.to_uint(),
     .port = htons(GetSettings().port),
   };

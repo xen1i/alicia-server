@@ -41,42 +41,42 @@ DataDirector::DataDirector()
       {
         _dataSource->StoreCharacter(key, character);
       })
-    , _itemStorage(
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->RetrieveItem(key, item);
-        },
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->StoreItem(key, item);
-        })
-    , _storedItemStorage(
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->RetrieveStoredItem(key, item);
-        },
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->StoreStoredItem(key, item);
-        })
-    , _petStorage(
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->RetrievePet(key, item);
-        },
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->StorePet(key, item);
-        })
-    , _guildStorage(
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->RetrieveGuild(key, item);
-        },
-        [&](const auto& key, auto& item)
-        {
-          _dataSource->StoreGuild(key, item);
-        })
+  , _itemStorage(
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->RetrieveItem(key, item);
+      },
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->StoreItem(key, item);
+      })
+  , _storedItemStorage(
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->RetrieveStoredItem(key, item);
+      },
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->StoreStoredItem(key, item);
+      })
+  , _petStorage(
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->RetrievePet(key, item);
+      },
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->StorePet(key, item);
+      })
+  , _guildStorage(
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->RetrieveGuild(key, item);
+      },
+      [&](const auto& key, auto& item)
+      {
+        _dataSource->StoreGuild(key, item);
+      })
   , _horseStorage(
       [&](const auto& key, auto& horse)
       {
@@ -132,9 +132,33 @@ DataDirector::UserStorage& DataDirector::GetUsers()
   return _userStorage;
 }
 
+Record<data::Character> DataDirector::CreateCharacter()
+{
+  return _characterStorage.Create(
+    [this]()
+    {
+      data::Character character;
+      _dataSource->CreateCharacter(character);
+
+      return std::make_pair(character.uid(), std::move(character));
+    });
+}
+
 DataDirector::CharacterStorage& DataDirector::GetCharacters()
 {
   return _characterStorage;
+}
+
+Record<data::Item> DataDirector::CreateItem()
+{
+  return _itemStorage.Create(
+    [this]()
+    {
+      data::Item item;
+      _dataSource->CreateItem(item);
+
+      return std::make_pair(item.uid(), std::move(item));
+    });
 }
 
 DataDirector::ItemStorage& DataDirector::GetItems()
@@ -142,9 +166,33 @@ DataDirector::ItemStorage& DataDirector::GetItems()
   return _itemStorage;
 }
 
+Record<data::Pet> DataDirector::CreatePet()
+{
+  return _petStorage.Create(
+    [this]()
+    {
+      data::Pet pet;
+      _dataSource->CreatePet(pet);
+
+      return std::make_pair(pet.uid(), std::move(pet));
+    });
+}
+
 DataDirector::PetStorage& DataDirector::GetPets()
 {
   return _petStorage;
+}
+
+Record<data::Guild> DataDirector::CreateGuild()
+{
+  return _guildStorage.Create(
+    [this]()
+    {
+      data::Guild guild;
+      _dataSource->CreateGuild(guild);
+
+      return std::make_pair(guild.uid(), std::move(guild));
+    });
 }
 
 DataDirector::GuildStorage& DataDirector::GetGuilds()
@@ -152,14 +200,50 @@ DataDirector::GuildStorage& DataDirector::GetGuilds()
   return _guildStorage;
 }
 
+Record<data::StoredItem> DataDirector::CreateStoredItem()
+{
+  return _storedItemStorage.Create(
+    [this]()
+    {
+      data::StoredItem item;
+      _dataSource->CreateStoredItem(item);
+
+      return std::make_pair(item.uid(), std::move(item));
+    });
+}
+
 DataDirector::StoredItemStorage& DataDirector::GetStoredItems()
 {
   return _storedItemStorage;
 }
 
+Record<data::Horse> DataDirector::CreateHorse()
+{
+  return _horseStorage.Create(
+    [this]()
+    {
+      data::Horse horse;
+      _dataSource->CreateHorse(horse);
+
+      return std::make_pair(horse.uid(), std::move(horse));
+    });
+}
+
 DataDirector::HorseStorage& DataDirector::GetHorses()
 {
   return _horseStorage;
+}
+
+Record<data::Ranch> DataDirector::CreateRanch()
+{
+  return _ranchStorage.Create(
+    [this]()
+    {
+      data::Ranch ranch;
+      _dataSource->CreateRanch(ranch);
+
+      return std::make_pair(ranch.uid(), std::move(ranch));
+    });
 }
 
 DataDirector::RanchStorage& DataDirector::GetRanches()
