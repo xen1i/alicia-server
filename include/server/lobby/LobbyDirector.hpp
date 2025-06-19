@@ -61,7 +61,6 @@ public:
   void UpdateInventory(uint32_t characterUid);
 
 private:
-  //!
   void HandleEnterChannel(
     ClientId clientId,
     const LobbyCommandEnterChannel& enterChannel);
@@ -70,10 +69,13 @@ private:
     ClientId,
     const LobbyCommandRoomList& command);
 
-  //!
   void HandleMakeRoom(
     ClientId clientId,
-    const LobbyCommandMakeRoom& makeRoom);
+    const LobbyCommandMakeRoom& command);
+
+  void HandleEnterRoom(
+    ClientId clientId,
+    const LobbyCommandEnterRoom& command);
 
   //!
   void HandleHeartbeat(

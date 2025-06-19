@@ -28,40 +28,40 @@ namespace alicia
 {
 
 //!
-using EntityId = uint16_t;
+using Oid = uint16_t;
 //!
-constexpr EntityId InvalidEntityId = 0;
+constexpr Oid InvalidEntityOid = 0;
 
 //!
 class WorldTracker
 {
 public:
-  //! An entity map.
-  using EntityMap = std::map<soa::data::Uid, uint16_t>;
+  //! An object map.
+  using ObjectMap = std::map<soa::data::Uid, uint16_t>;
 
   //!
-  EntityId AddCharacter(soa::data::Uid character);
+  Oid AddCharacter(soa::data::Uid character);
   //!
   void RemoveCharacter(soa::data::Uid character);
   //!
-  [[nodiscard]] EntityId GetCharacterEntityId(soa::data::Uid character);
+  [[nodiscard]] Oid GetCharacterEntityId(soa::data::Uid character);
   //!
-  EntityId AddHorse(soa::data::Uid mount);
+  Oid AddHorse(soa::data::Uid mount);
   //!
-  [[nodiscard]] EntityId GetHorseEntityId(soa::data::Uid mount);
+  [[nodiscard]] Oid GetHorseEntityId(soa::data::Uid mount);
 
   //!
-  [[nodiscard]] const EntityMap& GetHorseEntities();
+  [[nodiscard]] const ObjectMap& GetHorseEntities();
   //!
-  [[nodiscard]] const EntityMap& GetCharacterEntities();
+  [[nodiscard]] const ObjectMap& GetCharacterEntities();
 
 private:
   //! The next entity ID.
-  EntityId _nextEntityId = 1;
+  Oid _nextObjectId = 1;
   //! Mount entities in the world.
-  EntityMap _mounts;
+  ObjectMap _horses;
   //! Character entities in the world.
-  EntityMap _characters;
+  ObjectMap _characters;
 };
 
 } // namespace alicia

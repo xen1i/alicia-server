@@ -22,10 +22,10 @@
 namespace alicia
 {
 
-EntityId WorldTracker::AddCharacter(soa::data::Uid character)
+Oid WorldTracker::AddCharacter(soa::data::Uid character)
 {
-  _characters[character] = _nextEntityId;
-  return _nextEntityId++;
+  _characters[character] = _nextObjectId;
+  return _nextObjectId++;
 }
 
 void WorldTracker::RemoveCharacter(soa::data::Uid character)
@@ -33,34 +33,34 @@ void WorldTracker::RemoveCharacter(soa::data::Uid character)
   _characters.erase(character);
 }
 
-EntityId WorldTracker::GetCharacterEntityId(soa::data::Uid character)
+Oid WorldTracker::GetCharacterEntityId(soa::data::Uid character)
 {
   const auto itr = _characters.find(character);
   if (itr == _characters.cend())
-    return InvalidEntityId;
+    return InvalidEntityOid;
   return itr->second;
 }
 
-EntityId WorldTracker::AddHorse(soa::data::Uid mount)
+Oid WorldTracker::AddHorse(soa::data::Uid mount)
 {
-  _mounts[mount] = _nextEntityId;
-  return _nextEntityId++;
+  _horses[mount] = _nextObjectId;
+  return _nextObjectId++;
 }
 
-EntityId WorldTracker::GetHorseEntityId(soa::data::Uid mount)
+Oid WorldTracker::GetHorseEntityId(soa::data::Uid mount)
 {
-  const auto itr = _mounts.find(mount);
-  if (itr == _mounts.cend())
-    return InvalidEntityId;
+  const auto itr = _horses.find(mount);
+  if (itr == _horses.cend())
+    return InvalidEntityOid;
   return itr->second;
 }
 
-const WorldTracker::EntityMap& WorldTracker::GetHorseEntities()
+const WorldTracker::ObjectMap& WorldTracker::GetHorseEntities()
 {
-  return _mounts;
+  return _horses;
 }
 
-const WorldTracker::EntityMap& WorldTracker::GetCharacterEntities()
+const WorldTracker::ObjectMap& WorldTracker::GetCharacterEntities()
 {
   return _characters;
 }

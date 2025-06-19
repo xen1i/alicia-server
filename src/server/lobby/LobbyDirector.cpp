@@ -51,13 +51,6 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
       _loginHandler.HandleUserLogin(clientId, message);
     });
 
-  _commandServer.RegisterCommandHandler<LobbyCommandRoomList>(
-    CommandId::LobbyRoomList,
-    [this](ClientId clientId, const auto& message)
-    {
-     HandleRoomList(clientId, message);
-    });
-
   _commandServer.RegisterCommandHandler<LobbyCommandCreateNickname>(
     CommandId::LobbyCreateNickname,
     [this](ClientId clientId, const auto& message)
@@ -72,11 +65,25 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
       HandleEnterChannel(clientId, message);
     });
 
+  _commandServer.RegisterCommandHandler<LobbyCommandRoomList>(
+    CommandId::LobbyRoomList,
+    [this](ClientId clientId, const auto& message)
+    {
+     HandleRoomList(clientId, message);
+    });
+
   _commandServer.RegisterCommandHandler<LobbyCommandMakeRoom>(
     CommandId::LobbyMakeRoom,
     [this](ClientId clientId, const auto& message)
     {
       HandleMakeRoom(clientId, message);
+    });
+
+  _commandServer.RegisterCommandHandler<LobbyCommandEnterRoom>(
+    CommandId::LobbyEnterRoom,
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleEnterRoom(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandHeartbeat>(
@@ -272,13 +279,18 @@ void LobbyDirector::HandleRoomList(
   const LobbyCommandRoomList& command)
 {
   LobbyCommandRoomListOK response;
-  response.unk0 = 1;
+  response.page = command.page;
   response.unk1 = 1;
   response.unk2 = 1;
 
-  response.rooms.emplace_back(LobbyCommandRoomListOK::Room{
-    .id = 1,
-    .name = "test"});
+  for (const auto & room : soa::RoomRegistry::Get().GetRooms() | std::views::values)
+  {
+    auto& roomResponse = response.rooms.emplace_back();
+    roomResponse.id = room.uid;
+    roomResponse.playerCount = 1;
+    roomResponse.maxPlayers = 8;
+    roomResponse.level = 2;
+  }
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -291,30 +303,51 @@ void LobbyDirector::HandleRoomList(
 
 void LobbyDirector::HandleMakeRoom(
   ClientId clientId,
-  const LobbyCommandMakeRoom& makeRoom)
+  const LobbyCommandMakeRoom& command)
 {
   auto& roomRegistry = soa::RoomRegistry::Get();
   auto& room = roomRegistry.CreateRoom();
 
-  room.name = makeRoom.name;
-  room.description = makeRoom.description;
-  room.missionId = makeRoom.missionId;
-  room.unk0 = makeRoom.unk0;
-  room.unk1 = makeRoom.unk1;
-  room.unk2 = makeRoom.unk2;
-  room.unk3 = makeRoom.unk3;
-  room.bitset = makeRoom.bitset;
-  room.unk4 = makeRoom.unk4;
+  room.name = command.name;
+  room.description = command.password;
+  room.missionId = command.missionId;
+  room.unk0 = command.playerCount;
+  room.gameMode = command.gameMode;
+  room.teamMode = command.teamMode;
+  room.unk3 = command.unk3;
+  room.bitset = static_cast<uint16_t>(command.bitset);
+  room.unk4 = command.unk4;
 
   LobbyCommandMakeRoomOK response{
     .roomUid = room.uid,
     .otp = 0xBAAD,
-    .ip = htonl(GetSettings().raceAdvAddress.to_uint()),
+    .address = GetSettings().raceAdvAddress.to_uint(),
     .port = GetSettings().raceAdvPort};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
     CommandId::LobbyMakeRoomOK,
+    [response]()
+    {
+      return response;
+    });
+}
+
+void LobbyDirector::HandleEnterRoom(
+  ClientId clientId,
+  const LobbyCommandEnterRoom& command)
+{
+  auto& roomRegistry = soa::RoomRegistry::Get();
+
+  LobbyCommandEnterRoomOK response{
+    .roomUid =  command.roomUid,
+    .otp = 0xBAAD,
+    .address = GetSettings().raceAdvAddress.to_uint(),
+    .port = GetSettings().raceAdvPort,};
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    CommandId::LobbyEnterRoomOK,
     [response]()
     {
       return response;
@@ -347,10 +380,12 @@ void LobbyDirector::QueueShowInventory(ClientId clientId)
 
   characterRecord->Immutable([this, &response](const soa::data::Character& character)
   {
-    auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(character.inventory());
+    const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
+      character.inventory());
     protocol::BuildProtocolItems(response.items, *itemRecords);
 
-    auto horseRecords = GetServerInstance().GetDataDirector().GetHorses().Get(character.horses());
+    const auto horseRecords = GetServerInstance().GetDataDirector().GetHorses().Get(
+      character.horses());
     protocol::BuildProtocolHorses(response.horses, *horseRecords);
   });
 

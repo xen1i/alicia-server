@@ -86,6 +86,10 @@ enum class CommandId : uint16_t
   LobbyMakeRoomOK = 0x14,
   LobbyMakeRoomCancel = 0x15,
 
+  LobbyEnterRoom = 0x1c,
+  LobbyEnterRoomOK = 0x1d,
+  LobbyEnterRoomCancel = 0x1e,
+
   LobbyHeartbeat = 0x12,
 
   LobbyCreateNicknameNotify = 0x6b,

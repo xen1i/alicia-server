@@ -428,6 +428,19 @@ struct RanchUnk11
   static void Read(RanchUnk11& value, SourceStream& stream);
 };
 
+enum class GameMode : uint8_t
+{
+  Speed = 1,
+  Magic = 2,
+  Guild = 3
+};
+
+enum class TeamMode : uint8_t
+{
+  Single = 1,
+  Team = 2
+};
+
 } // namespace alicia
 
 #endif

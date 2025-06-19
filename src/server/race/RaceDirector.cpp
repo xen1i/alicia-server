@@ -115,37 +115,26 @@ soa::Settings::RaceSettings& RaceDirector::GetSettings()
   return GetServerInstance().GetSettings()._raceSettings;
 }
 
-/*
-
-Rooms will not be in data director.
-
-  struct Room
-  {
-    std::string name;
-    std::string description;
-    uint8_t unk0;
-    uint8_t unk1;
-    uint8_t isBusy;
-    uint16_t missionId;
-    uint8_t unk4;
-    uint16_t bitset;
-    uint8_t unk6;
-  };
-
-*/
-
-void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom& enterRoom)
+void RaceDirector::HandleEnterRoom(
+  ClientId clientId,
+  const RaceCommandEnterRoom& enterRoom)
 {
   assert(enterRoom.otp == 0xBAAD);
 
-  // TODO: Send RaceEnterRoomNotify to all clients in the room
+  auto& clientContext = _clientContexts[clientId];
+  clientContext.characterUid = enterRoom.characterUid;
+  clientContext.roomUid = enterRoom.roomUid;
+
+  auto& roomRegistry = soa::RoomRegistry::Get();
+  auto& room = roomRegistry.GetRoom(enterRoom.roomUid);
+
+  auto& roomInstance = _roomInstances[enterRoom.roomUid];
+  roomInstance.worldTracker.AddCharacter(
+    clientContext.characterUid);
 
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
   _commandServer.SetCode(clientId, {});
-
-  auto& roomRegistry = soa::RoomRegistry::Get();
-  auto& room = roomRegistry.GetRoom(enterRoom.roomUid);
 
   RaceCommandEnterRoomOK response{
     .nowPlaying = 1,
@@ -155,34 +144,49 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
       .val_between_name_and_desc = static_cast<uint8_t>(room.uid), // ?
       .description = room.description,
       .unk1 = room.unk0,
-      .unk2 = room.unk1,
+      .gameMode = room.gameMode,
       .unk3 = 8,
-      .unk4 = room.unk2,
+      .teamMode = room.teamMode,
       .missionId = room.missionId,
       .unk6 = room.unk3,
       .unk7 = room.unk4
     }
   };
 
-  auto& racer = response.racers.emplace_back();
+  Racer joiningRacer;
 
-  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(enterRoom.characterUid);
-  characterRecord->Immutable([this, &racer](const soa::data::Character& character)
+  for (const auto& [characterUid, characterOid] : roomInstance.worldTracker.GetCharacterEntities())
   {
-    racer.uid = character.uid();
-    racer.name = character.name();
+    auto& protocolRacer = response.racers.emplace_back();
 
-    racer.playerRacer = PlayerRacer{
-    };
-
-    protocol::BuildProtocolCharacter(racer.playerRacer->character, character);
-
-    const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid());
-    mountRecord->Immutable([&racer](const soa::data::Horse& mount)
+    const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+      characterUid);
+    characterRecord->Immutable([this, characterOid, &protocolRacer](const soa::data::Character& character)
     {
-      protocol::BuildProtocolHorse(racer.playerRacer->horse, mount);
+      protocolRacer.level = character.level();
+      protocolRacer.oid = character.uid();
+      protocolRacer.uid = character.uid();
+      protocolRacer.name = character.name();
+      protocolRacer.isHidden = false;
+      protocolRacer.isNPC = false;
+
+      protocolRacer.avatar = Avatar{};
+
+      protocol::BuildProtocolCharacter(protocolRacer.avatar->character, character);
+
+      const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
+        character.mountUid());
+      mountRecord->Immutable([&protocolRacer](const soa::data::Horse& mount)
+      {
+        protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
+      });
     });
-  });
+
+    if (characterUid == clientContext.characterUid)
+    {
+      joiningRacer = protocolRacer;
+    }
+  }
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -191,6 +195,23 @@ void RaceDirector::HandleEnterRoom(ClientId clientId, const RaceCommandEnterRoom
     {
       return response;
     });
+
+  RaceCommandEnterRoomNotify notify{
+    .racer = joiningRacer,
+    .unk0 = clientContext.characterUid};
+
+  for (const ClientId& roomClientId : roomInstance.clients)
+  {
+    _commandServer.QueueCommand<decltype(response)>(
+      roomClientId,
+      CommandId::RaceEnterRoomNotify,
+      [response]()
+      {
+        return response;
+      });
+  }
+
+  roomInstance.clients.emplace_back(clientId);
 }
 
 void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandChangeRoomOptions& changeRoomOptions)
@@ -266,19 +287,25 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
 
 void RaceDirector::HandleReadyRace(ClientId clientId, const RaceCommandReadyRace& command)
 {
+  auto& clientContext = _clientContexts[clientId];
+  clientContext.ready = !_clientContexts[clientId].ready;
+
   RaceCommandReadyRaceNotify response{
-    .characterUid = 3,
-    .ready = true};
+    .characterUid = clientContext.characterUid,
+    .ready = clientContext.ready};
 
-  _commandServer.QueueCommand<decltype(response)>(
-    clientId,
-    CommandId::RaceReadyNotify,
-    [response]()
-    {
-      return response;
-    });
+  const auto& roomInstance = _roomInstances[clientContext.roomUid];
 
-  HandleStartRace(clientId, {});
+  for (const ClientId& roomClientId : roomInstance.clients)
+  {
+    _commandServer.QueueCommand<decltype(response)>(
+      roomClientId,
+      CommandId::RaceReadyNotify,
+      [response]()
+      {
+        return response;
+      });
+  }
 }
 
 } // namespace alicia

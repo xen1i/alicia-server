@@ -22,7 +22,7 @@
 namespace alicia
 {
 
-void WritePlayerRacer(SinkStream& stream, const PlayerRacer& playerRacer)
+void WritePlayerRacer(SinkStream& stream, const Avatar& playerRacer)
 {
   stream.Write(static_cast<uint8_t>(playerRacer.characterEquipment.size()));
 
@@ -32,30 +32,30 @@ void WritePlayerRacer(SinkStream& stream, const PlayerRacer& playerRacer)
   }
 
   stream.Write(playerRacer.character)
-    .Write(playerRacer.horse)
+    .Write(playerRacer.mount)
     .Write(playerRacer.unk0);
 }
 
 void WriteRacer(SinkStream& stream, const Racer& racer)
 {
-  stream.Write(racer.unk0)
-    .Write(racer.unk1)
+  stream.Write(racer.member1)
+    .Write(racer.member2)
     .Write(racer.level)
-    .Write(racer.exp)
+    .Write(racer.oid)
     .Write(racer.uid)
     .Write(racer.name)
     .Write(racer.unk5)
     .Write(racer.unk6)
-    .Write(racer.bitset)
+    .Write(racer.isHidden)
     .Write(racer.isNPC);
 
   if (racer.isNPC)
   {
-    stream.Write(racer.npcRacer.value());
+    stream.Write(racer.npcTid.value());
   }
   else
   {
-    WritePlayerRacer(stream, racer.playerRacer.value());
+    WritePlayerRacer(stream, racer.avatar.value());
   }
 
   stream.Write(racer.unk8.unk0)
@@ -86,9 +86,9 @@ void WriteRoomDescription(SinkStream& stream, const RoomDescription& roomDescrip
     .Write(roomDescription.val_between_name_and_desc)
     .Write(roomDescription.description)
     .Write(roomDescription.unk1)
-    .Write(roomDescription.unk2)
+    .Write(roomDescription.gameMode)
     .Write(roomDescription.unk3)
-    .Write(roomDescription.unk4)
+    .Write(roomDescription.teamMode)
     .Write(roomDescription.missionId)
     .Write(roomDescription.unk6)
     .Write(roomDescription.unk7);

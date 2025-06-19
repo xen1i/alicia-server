@@ -40,44 +40,45 @@ enum class RoomOptionType : uint16_t
   Unk5 = 1 << 5,
 };
 
-struct PlayerRacer
+struct Avatar
 {
   // List length specified with a uint8_t
   std::vector<Item> characterEquipment{};
   Character character{};
-  Horse horse{};
+  Horse mount{};
   uint32_t unk0{};
 };
 
 //! Racer
 struct Racer
 {
-  uint8_t unk0{};
-  uint8_t unk1{};
+  uint8_t member1{1};
+  uint8_t member2{2};
   uint32_t level{};
-  uint32_t exp{};
+  uint32_t oid{};
   uint32_t uid{};
   std::string name{};
-  uint8_t unk5{};
-  uint32_t unk6{};
-  uint8_t bitset{};
+  uint8_t unk5{3};
+  uint32_t unk6{4};
+  bool isHidden{};
   bool isNPC{};
 
-  std::optional<PlayerRacer> playerRacer{};
-  std::optional<uint32_t> npcRacer{};
+  std::optional<Avatar> avatar{};
+  std::optional<uint32_t> npcTid{};
 
   struct
   {
     uint8_t unk0{};
     Rent rent{};
   } unk8{};
+
   Pet pet{};
   Guild guild{};
   RanchUnk11 unk9{};
-  uint8_t unk10{};
-  uint8_t unk11{};
-  uint8_t unk12{};
-  uint8_t unk13{};
+  uint8_t unk10{5};
+  uint8_t unk11{6};
+  uint8_t unk12{7};
+  uint8_t unk13{8};
 };
 
 struct RoomDescription
@@ -86,9 +87,9 @@ struct RoomDescription
   uint8_t val_between_name_and_desc{}; // room id?
   std::string description{};
   uint8_t unk1{};
-  uint8_t unk2{};
+  GameMode gameMode{};
   uint16_t unk3{};      // map?
-  uint8_t unk4{};       // 0 waiting room, 1 race started?
+  TeamMode teamMode{};       // 0 waiting room, 1 race started?
   uint16_t missionId{}; // idk but probably important, first value checked in RaceCommandEnterRoomOK handler
   uint8_t unk6{};
   uint8_t unk7{}; // 0: 3lv, 1: 12lv, 2 and beyond: nothing?
@@ -115,6 +116,7 @@ struct RaceCommandEnterRoomOK
 {
   // List size specified with a uint32_t. Max size 10
   std::vector<Racer> racers{};
+
   uint8_t nowPlaying{};
   uint32_t unk1{};
   RoomDescription roomDescription{};

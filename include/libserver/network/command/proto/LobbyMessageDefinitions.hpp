@@ -529,16 +529,8 @@ struct LobbyCommandEnterChannelCancel
 struct LobbyCommandRoomList
 {
   uint8_t page;
-
-  enum class Mode : uint8_t
-  {
-    Magic, Speed
-  } mode;
-  enum class Unk : uint8_t
-  {
-    Single, Team
-  } member3;
-
+  GameMode gameMode;
+  TeamMode teamMode;
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -558,7 +550,7 @@ struct LobbyCommandRoomList
 //! Clientbound room list response.
 struct LobbyCommandRoomListOK
 {
-  uint8_t unk0;
+  uint8_t page;
   uint8_t unk1;
   uint8_t unk2;
 
@@ -611,13 +603,21 @@ struct LobbyCommandMakeRoom
 {
   // presumably
   std::string name;
-  std::string description;
-  uint8_t unk0;
-  uint8_t unk1;
-  uint8_t unk2;
+  std::string password;
+  uint8_t playerCount;
+  GameMode gameMode;
+  TeamMode teamMode;
   uint16_t missionId;
   uint8_t unk3;
-  uint16_t bitset;
+
+  enum class ModifiedSet : uint16_t
+  {
+    ChangeName = 1,
+    ChangePlayerCount = 2,
+    ChangeMode = 8
+  };
+  ModifiedSet bitset;
+
   uint8_t unk4;
 
   //! Writes the command to a provided sink stream.
@@ -640,7 +640,7 @@ struct LobbyCommandMakeRoomOK
 {
   uint32_t roomUid;
   uint32_t otp;
-  uint32_t ip;
+  uint32_t address;
   uint16_t port;
   uint8_t unk2;
 
@@ -676,6 +676,69 @@ struct LobbyCommandMakeRoomCancel
   //! @param stream Source stream.
   static void Read(
     LobbyCommandMakeRoomCancel& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandEnterRoom
+{
+  uint32_t roomUid{};
+  std::string password{};
+  uint32_t member3{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandEnterRoom& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandEnterRoom& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandEnterRoomOK
+{
+  uint32_t roomUid{};
+  uint32_t otp{};
+  uint32_t address{};
+  uint16_t port{};
+  uint8_t member6{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandEnterRoomOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandEnterRoomOK& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandEnterRoomCancel
+{
+  uint8_t status{};
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandEnterRoomCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandEnterRoomCancel& command,
     SourceStream& stream);
 };
 

@@ -24,6 +24,7 @@
 
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
+#include "server/tracker/WorldTracker.hpp"
 
 namespace soa
 {
@@ -80,14 +81,20 @@ private:
   //!
   CommandServer _commandServer;
 
-  //!
-  std::unordered_map<ClientId, uint32_t> _clientCharacters;
-
-  struct RoomInstance
+  struct ClientContext
   {
-    // Add race-specific data here
+    uint32_t characterUid;
+    uint32_t roomUid;
+    bool ready = false;
   };
-  std::unordered_map<uint32_t, RoomInstance> _rooms;
+  std::unordered_map<ClientId, ClientContext> _clientContexts;
+
+  struct Room
+  {
+    std::vector<ClientId> clients;
+    WorldTracker worldTracker;
+  };
+  std::unordered_map<uint32_t, Room> _roomInstances;
 };
 
 } // namespace alicia

@@ -29,34 +29,31 @@ namespace
 
 //! Commands IDs mapped to the command names.
 const std::unordered_map<CommandId, std::string_view> commands = {
-  // Login
   {CommandId::LobbyLogin, "LobbyLogin"},
   {CommandId::LobbyLoginOK, "LobbyLoginOK"},
   {CommandId::LobbyLoginCancel, "LobbyLoginCancel"},
 
-  // Heartbeat
-  {CommandId::LobbyHeartbeat, "LobbyHeartbeat"},
-
-  // CreateNickname
-  {CommandId::LobbyCreateNicknameNotify, "LobbyCreateNicknameNotify"},
-  {CommandId::LobbyCreateNickname, "LobbyCreateNicknameOK"},
-  {CommandId::LobbyCreateNicknameCancel, "LobbyCreateNicknameCancel"},
-
-  // EnterChannel
-  {CommandId::LobbyEnterChannel, "LobbyEnterChannel"},
-  {CommandId::LobbyEnterChannelOK, "LobbyEnterChannelOK"},
-  {CommandId::LobbyEnterChannelCancel, "LobbyEnterChannelCancel"},
-
-  // Make Room
   {CommandId::LobbyRoomList, "LobbyRoomList"},
   {CommandId::LobbyRoomListOK, "LobbyRoomListOK"},
 
-  // Make Room
   {CommandId::LobbyMakeRoom, "LobbyMakeRoom"},
   {CommandId::LobbyMakeRoomOK, "LobbyMakeRoomOK"},
   {CommandId::LobbyMakeRoomCancel, "LobbyMakeRoomCancel"},
 
-  // Inventory
+  {CommandId::LobbyEnterRoom, "LobbyEnterRoom"},
+  {CommandId::LobbyEnterRoomOK, "LobbyEnterRoomOK"},
+  {CommandId::LobbyEnterRoomCancel, "LobbyEnterRoomCancel"},
+
+  {CommandId::LobbyHeartbeat, "LobbyHeartbeat"},
+
+  {CommandId::LobbyCreateNicknameNotify, "LobbyCreateNicknameNotify"},
+  {CommandId::LobbyCreateNickname, "LobbyCreateNicknameOK"},
+  {CommandId::LobbyCreateNicknameCancel, "LobbyCreateNicknameCancel"},
+
+  {CommandId::LobbyEnterChannel, "LobbyEnterChannel"},
+  {CommandId::LobbyEnterChannelOK, "LobbyEnterChannelOK"},
+  {CommandId::LobbyEnterChannelCancel, "LobbyEnterChannelCancel"},
+
   {CommandId::LobbyShowInventory, "LobbyShowInventory"},
   {CommandId::LobbyShowInventoryOK, "LobbyShowInventoryOK"},
   {CommandId::LobbyShowInventoryCancel, "LobbyShowInventoryCancel"},
