@@ -34,50 +34,50 @@ struct ChatterCommandLogin
 };
 
 alicia::ChatterServer::ChatterServer()
-  : _server(
-      [](ClientId clientId) {},
-      [](ClientId clientId) {},
-      [](ClientId clientId, asio::streambuf& readBuffer)
-      {
-        const auto buffer = readBuffer.data();
-
-        alicia::SourceStream stream({static_cast<const std::byte*>(buffer.data()), buffer.size()});
-
-        std::array<std::byte, 4092> dataBuffer;
-        SinkStream dataSinkStream(
-          {dataBuffer.begin(), dataBuffer.end()});
-
-        constexpr std::array XorCode{
-          static_cast<std::byte>(0x2B),
-          static_cast<std::byte>(0xFE),
-          static_cast<std::byte>(0xB8),
-          static_cast<std::byte>(0x02)};
-        while (stream.GetCursor() != stream.Size())
-        {
-          std::byte val;
-          stream.Read(val);
-          val ^= XorCode[(stream.GetCursor() - 1) % 4];
-          dataSinkStream.Write(val);
-        }
-
-        spdlog::debug(
-          "Chatter message:\n\n"
-          "Size: {}\n"
-          "Dump: \n\n{}\n\n",
-          buffer.size(),
-          soa::util::GenerateByteDump({dataBuffer.begin(), stream.GetCursor()}));
-
-        readBuffer.consume(buffer.size());
-      },
-      [](ClientId clientId, asio::streambuf& writeBuffer) {})
+  // : _server(
+  //     [](ClientId clientId) {},
+  //     [](ClientId clientId) {},
+  //     [](ClientId clientId, asio::streambuf& readBuffer)
+  //     {
+  //       const auto buffer = readBuffer.data();
+  //
+  //       alicia::SourceStream stream({static_cast<const std::byte*>(buffer.data()), buffer.size()});
+  //
+  //       std::array<std::byte, 4092> dataBuffer;
+  //       SinkStream dataSinkStream(
+  //         {dataBuffer.begin(), dataBuffer.end()});
+  //
+  //       constexpr std::array XorCode{
+  //         static_cast<std::byte>(0x2B),
+  //         static_cast<std::byte>(0xFE),
+  //         static_cast<std::byte>(0xB8),
+  //         static_cast<std::byte>(0x02)};
+  //       while (stream.GetCursor() != stream.Size())
+  //       {
+  //         std::byte val;
+  //         stream.Read(val);
+  //         val ^= XorCode[(stream.GetCursor() - 1) % 4];
+  //         dataSinkStream.Write(val);
+  //       }
+  //
+  //       spdlog::debug(
+  //         "Chatter message:\n\n"
+  //         "Size: {}\n"
+  //         "Dump: \n\n{}\n\n",
+  //         buffer.size(),
+  //         soa::util::GenerateByteDump({dataBuffer.begin(), stream.GetCursor()}));
+  //
+  //       readBuffer.consume(buffer.size());
+  //     },
+  //     [](ClientId clientId, asio::streambuf& writeBuffer) {})
 {
 }
 
 alicia::ChatterServer::~ChatterServer()
 {
-  _server.End();
-  if (_serverThread.joinable())
-    _serverThread.join();
+  // _server.End();
+  // if (_serverThread.joinable())
+  //   _serverThread.join();
 }
 
 void alicia::ChatterServer::Host()

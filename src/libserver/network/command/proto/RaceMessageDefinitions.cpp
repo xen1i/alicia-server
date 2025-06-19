@@ -177,7 +177,7 @@ void RaceCommandEnterRoomNotify::Write(
   SinkStream& stream)
 {
   WriteRacer(stream, command.racer);
-  stream.Write(command.unk0);
+  stream.Write(command.averageTimeRecord);
 }
 
 void RaceCommandEnterRoomNotify::Read(

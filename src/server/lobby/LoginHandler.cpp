@@ -18,6 +18,8 @@
  **/
 
 #include "server/lobby/LoginHandler.hpp"
+
+#include "libserver/Constants.hpp"
 #include "server/lobby/LobbyDirector.hpp"
 #include "server/ServerInstance.hpp"
 
@@ -72,6 +74,7 @@ void LoginHandler::Tick()
     }
     else
     {
+      spdlog::debug("Rejecting user login. Not authenticated.");
       QueueUserLoginRejected(clientId);
     }
 
@@ -140,14 +143,18 @@ void LoginHandler::HandleUserLogin(
   const LobbyCommandLogin& login)
 {
   // Validate the command fields.
-  if (login.loginId.empty() || login.authKey.empty())
+  if (login.loginId.empty())
   {
-    spdlog::debug(
-      "LoginHandler::HandleUserLogin - Rejecting login for client {}."
-      " User name or user token empty.",
-      clientId);
+    if (login.loginId.empty() &&
+      not server::constants::IsDevelopmentMode)
+    {
+      spdlog::debug(
+        "LoginHandler::HandleUserLogin - Rejecting login for client {}."
+        " User name or user token empty.",
+        clientId);
 
-    QueueUserLoginRejected(clientId);
+      QueueUserLoginRejected(clientId);
+    }
     return;
   }
 

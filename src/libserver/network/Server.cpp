@@ -19,37 +19,27 @@
 
 #include "libserver/network/Server.hpp"
 
+#include <ranges>
 #include <spdlog/spdlog.h>
 
-namespace alicia
+namespace server::network
 {
-
-namespace
-{
-
-constexpr size_t MaxBufferSize = 4092;
-
-} // namespace
 
 Client::Client(
+  ClientId clientId,
   asio::ip::tcp::socket&& socket,
-  BeginHandler beginHandler,
-  EndHandler endHandler,
-  ReadHandler readHandler,
-  WriteHandler writeHandler) noexcept
-  : _beginHandler(std::move(beginHandler))
-  , _endHandler(std::move(endHandler))
-  , _readHandler(std::move(readHandler))
-  , _writeHandler(std::move(writeHandler))
+  EventHandlerInterface& networkEventHandler) noexcept
+  : _clientId(clientId)
   , _socket(std::move(socket))
+  , _networkEventHandler(networkEventHandler)
 {
 }
 
 void Client::Begin()
 {
   _shouldRun = true;
-  _beginHandler();
 
+  _networkEventHandler.OnClientConnected(_clientId);
   ReadLoop();
 }
 
@@ -59,43 +49,52 @@ void Client::End()
 
   try
   {
-    _socket.shutdown(asio::socket_base::shutdown_both);
-    _socket.close();
+    if (_socket.is_open())
+    {
+      _socket.shutdown(asio::socket_base::shutdown_both);
+      _socket.close();
+    }
   }
   catch (const std::exception& x)
   {
-    spdlog::error("Couldn't end connection", x.what());
+    spdlog::error("Client ", x.what());
   }
 
-  _endHandler();
+  _networkEventHandler.OnClientDisconnected(_clientId);
 }
 
 void Client::QueueWrite(WriteSupplier writeSupplier)
 {
-  // ToDo: Write & send timing.
-  // ToDo: Write & send batching.
-  if (not _shouldRun)
-  {
+  if (not _shouldRun.load(std::memory_order::relaxed))
     return;
+
+  // Write the bytes to the write buffer that is being sent to the client.
+  {
+    std::scoped_lock lock(_send_mutex);
+    writeSupplier(_writeBuffer);
   }
 
-  // ToDo: Consider frame-based write loop instead of real-time writes.
-  // Call the supplier.
-  writeSupplier(_writeBuffer);
-  _writeHandler(_writeBuffer);
-
+  // Asynchronously write the data to the socket.
   _socket.async_write_some(
     _writeBuffer.data(),
-    [this](boost::system::error_code error, std::size_t size)
+    [this](const boost::system::error_code& error, const std::size_t size)
     {
       std::scoped_lock lock(_send_mutex);
-      
+
       try
       {
         if (error)
         {
-          throw std::runtime_error(
-            fmt::format("Network error (0x{}): {}", error.value(), error.what()));
+          switch (error.value())
+          {
+            case asio::error::operation_aborted:
+              throw std::runtime_error("Connection aborted by the server");
+            case asio::error::connection_reset:
+              throw std::runtime_error("Connection reset by the client");
+            default:
+              throw std::runtime_error(
+                std::format("Generic network error {}", error.message()));
+          }
         }
 
         // Consume the sent bytes.
@@ -104,9 +103,9 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
       catch (const std::exception& x)
       {
         spdlog::error(
-          "Error in the client write loop: {}",
+          "Exception in the write chain of client {}: {}",
+          _clientId,
           x.what());
-
         End();
       }
     });
@@ -114,54 +113,59 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
 
 void Client::ReadLoop() noexcept
 {
-  // ToDo: Read & receive timing.
-  // ToDo: Read & receive batching.
   if (!_shouldRun)
-  {
     return;
-  }
 
-  // Chain the asynchronous functions.
   _socket.async_read_some(
-    _readBuffer.prepare(MaxBufferSize),
-    [&](boost::system::error_code error, std::size_t size)
+    _readBuffer.prepare(1024),
+    [this](boost::system::error_code error, std::size_t size)
     {
       try
       {
         if (error)
         {
-          throw std::runtime_error(
-            fmt::format("Network error 0x{}", error.value()));
+          switch (error.value())
+          {
+            case asio::error::operation_aborted:
+              throw std::runtime_error("Connection aborted by the server");
+            case asio::error::connection_reset:
+              throw std::runtime_error("Connection reset by the client");
+            default:
+              throw std::runtime_error(
+                std::format("Generic network error {}", error.message()));
+          }
         }
 
-        // Commit the received bytes, so they can be read by the handler.
         _readBuffer.commit(size);
-        _readHandler(_readBuffer);
+
+        const std::span receivedData{
+          static_cast<const std::byte*>(_readBuffer.data().data()),
+          _readBuffer.data().size()};
+
+        const auto consumedBytes = _networkEventHandler.OnClientData(
+          _clientId,
+          receivedData);
+
+        _readBuffer.consume(consumedBytes);
 
         // Continue the read loop.
         ReadLoop();
       }
       catch (const std::exception& x)
       {
-        End();
+        spdlog::error(
+          "Exception in the read chain of client {}: {}",
+          _clientId,
+          x.what());
 
-        spdlog::error("Error in the client read loop: {}", x.what());
-        _socket.close();
+        End();
       }
     });
 }
 
-Server::Server(
-  ClientConnectHandler clientConnectHandler,
-  ClientDisconnectHandler clientDisconnectHandler,
-  ClientReadHandler clientReadHandler,
-  ClientWriteHandler clientWriteHandler) noexcept
-  : _clientConnectHandler(std::move(clientConnectHandler))
-  , _clientDisconnectHandler(std::move(clientDisconnectHandler))
-  , _clientReadHandler(std::move(clientReadHandler))
-  , _clientWriteHandler(std::move(clientWriteHandler))
-  , _io_ctx()
-  , _acceptor(_io_ctx)
+Server::Server(EventHandlerInterface& networkEventHandler) noexcept
+  : _acceptor(_io_ctx)
+  , _networkEventHandler(networkEventHandler)
 {
 }
 
@@ -177,7 +181,11 @@ void Server::Begin(const asio::ip::address& address, uint16_t port)
   }
   catch (const std::exception& x)
   {
-    spdlog::error("Failed to host server on {}:{}: {}", address.to_string(), port, x.what());
+    spdlog::error(
+      "Failed to host server on {}:{}: {}",
+      address.to_string(),
+      port,
+      x.what());
   }
 
   _acceptor.listen();
@@ -191,9 +199,9 @@ void Server::Begin(const asio::ip::address& address, uint16_t port)
 void Server::End()
 {
   // Disconnect all the clients.
-  for (auto& client : _clients)
+  for (auto& client : _clients | std::views::values)
   {
-    client.second.End();
+    client.End();
   }
 
   _acceptor.close();
@@ -230,27 +238,9 @@ void Server::AcceptLoop() noexcept
         // Create the client.
         const auto [itr, emplaced] = _clients.try_emplace(
           clientId,
+          clientId,
           std::move(client_socket),
-          [this, clientId]()
-          {
-            // Invoke the connect handler.
-            _clientConnectHandler(clientId);
-          },
-          [this, clientId]()
-          {
-            // Invoke the disconnect handler.
-            _clientDisconnectHandler(clientId);
-          },
-          [this, clientId](asio::streambuf& readBuffer)
-          {
-            // Invoke the read handler.
-            _clientReadHandler(clientId, readBuffer);
-          },
-          [this, clientId](asio::streambuf& readBuffer)
-          {
-            // Invoke the write handler.
-            _clientWriteHandler(clientId, readBuffer);
-          });
+          _networkEventHandler);
 
         // Id is sequential so emplacement should never fail.
         assert(emplaced);
@@ -269,4 +259,4 @@ void Server::AcceptLoop() noexcept
     });
 }
 
-} // namespace alicia
+} // namespace server::network

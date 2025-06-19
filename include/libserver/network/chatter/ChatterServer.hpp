@@ -32,9 +32,9 @@ public:
   ~ChatterServer();
 
   void Host();
-
-  Server _server;
-  std::thread _serverThread;
+  //
+  // server::network::Server _server;
+  // std::thread _serverThread;
 };
 
 } // namespace alicia

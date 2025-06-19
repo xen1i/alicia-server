@@ -97,12 +97,14 @@ void RaceDirector::Terminate()
 
 void RaceDirector::Tick() {}
 
-void RaceDirector::HandleClientDisconnected(ClientId client)
-{
-}
-
 void RaceDirector::HandleClientConnected(ClientId clientId)
 {
+  spdlog::info("Client {} connected to the race", clientId);
+}
+
+void RaceDirector::HandleClientDisconnected(ClientId clientId)
+{
+  spdlog::info("Client {} disconnected from the race", clientId);
 }
 
 soa::ServerInstance& RaceDirector::GetServerInstance()
@@ -198,7 +200,7 @@ void RaceDirector::HandleEnterRoom(
 
   RaceCommandEnterRoomNotify notify{
     .racer = joiningRacer,
-    .unk0 = clientContext.characterUid};
+    .averageTimeRecord = clientContext.characterUid};
 
   for (const ClientId& roomClientId : roomInstance.clients)
   {

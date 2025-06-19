@@ -47,8 +47,7 @@ constexpr int32_t XorControl{
   static_cast<int32_t>(0xA20191CB)};
 
 //! XOR rolling key algorithm constant
-constexpr int32_t XorMultiplier{
-  0x20080825};
+constexpr int32_t XorMultiplier{0x20080825};
 
 //! Message magic with which all messages are prefixed.
 struct MessageMagic

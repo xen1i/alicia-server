@@ -35,7 +35,7 @@ namespace alicia
 {
 
 class RaceDirector final
-  : public CommandServer::EventInterface
+  : public CommandServer::EventHandlerInterface
 {
 public:
   //!
@@ -46,7 +46,7 @@ public:
   void Tick();
 
   void HandleClientConnected(ClientId clientId) override;
-  void HandleClientDisconnected(ClientId client) override;
+  void HandleClientDisconnected(ClientId clientId) override;
 
   soa::ServerInstance& GetServerInstance();
   soa::Settings::RaceSettings& GetSettings();

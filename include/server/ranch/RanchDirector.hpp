@@ -36,7 +36,7 @@ namespace alicia
 {
 
 class RanchDirector final
-  : public CommandServer::EventInterface
+  : public CommandServer::EventHandlerInterface
 {
 public:
   //!

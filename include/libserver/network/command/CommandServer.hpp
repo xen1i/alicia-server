@@ -21,6 +21,7 @@
 #define COMMAND_SERVER_HPP
 
 #include "CommandProtocol.hpp"
+#include "libserver/Constants.hpp"
 #include "libserver/network/Server.hpp"
 #include "libserver/util/Stream.hpp"
 
@@ -29,6 +30,9 @@
 
 namespace alicia
 {
+
+namespace asio = server::network::asio;
+using ClientId = server::network::ClientId;
 
 //! A command handler.
 using RawCommandHandler = std::function<void(ClientId, SourceStream&)>;
@@ -52,18 +56,20 @@ private:
 };
 
 //! A command server.
-class CommandServer
+class CommandServer final
 {
 public:
-  class EventInterface
+  class EventHandlerInterface
   {
   public:
+    virtual ~EventHandlerInterface() = default;
     virtual void HandleClientConnected(ClientId clientId) = 0;
-    virtual void HandleClientDisconnected(ClientId client) = 0;
+    virtual void HandleClientDisconnected(ClientId clientId) = 0;
   };
 
   //! Default constructor;
-  explicit CommandServer(EventInterface& events);
+  explicit CommandServer(
+    EventHandlerInterface& events);
   ~CommandServer();
 
   //! Begins the server.
@@ -108,31 +114,37 @@ public:
   void SetCode(ClientId client, XorCode code);
 
 private:
-  //!
-  void HandleClientConnect(ClientId clientId);
-  //!
-  void HandleClientDisconnect(ClientId clientId);
-  //!
-  void HandleClientRead(
-    ClientId clientId,
-    asio::streambuf& streamBuf);
-  //!
-  void HandleClientWrite(
-    ClientId clientId,
-    asio::streambuf& writeBuffer);
+  class NetworkEventHandler
+    : public server::network::EventHandlerInterface
+  {
+  public:
+    NetworkEventHandler(CommandServer& commandServer);
+
+    void OnClientConnected(server::network::ClientId clientId) override;
+    void OnClientDisconnected(server::network::ClientId clientId) override;
+    size_t OnClientData(server::network::ClientId clientId, const std::span<const std::byte>& data) override;
+
+  private:
+    CommandServer& _commandServer;
+  };
 
   //!
   void SendCommand(
-    ClientId client,
-    CommandId command,
+    ClientId clientId,
+    CommandId commandId,
     CommandSupplier supplier);
+
+  bool debugIncomingCommandData = server::constants::IsDevelopmentMode;
+  bool debugOutgoingCommandData = server::constants::IsDevelopmentMode;
+  bool debugCommands = server::constants::IsDevelopmentMode;
 
   std::unordered_map<CommandId, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
 
-  EventInterface& _eventInterface;
+  EventHandlerInterface& _eventHandler;
+  NetworkEventHandler _serverNetworkEventHandler;
 
-  Server _server;
+  server::network::Server _server;
   std::thread _serverThread;
 };
 

@@ -34,8 +34,6 @@ RanchDirector::RanchDirector(soa::ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
   , _commandServer(*this)
 {
-  // Handlers
-
   _commandServer.RegisterCommandHandler<RanchCommandRanchEnter>(
     CommandId::RanchEnterRanch,
     [this](ClientId clientId, const auto& message)
@@ -199,10 +197,13 @@ void RanchDirector::Tick()
 
 void RanchDirector::HandleClientConnected(ClientId clientId)
 {
+  spdlog::info("Client {} connected to the ranch", clientId);
 }
 
 void RanchDirector::HandleClientDisconnected(ClientId clientId)
 {
+  spdlog::info("Client {} disconnected from the ranch", clientId);
+
   HandleRanchLeave(clientId);
   _clientContext.erase(clientId);
 }
@@ -726,7 +727,7 @@ void RanchDirector::HandleUpdateMountNickname(
 
   bool canRenameHorse = false;
   characterRecord->Mutable([this, &canRenameHorse, horseUid = command.horseUid](soa::data::Character& character)
-                           {
+  {
     const bool ownsHorse = std::ranges::contains(character.horses(), horseUid);
     if (not ownsHorse)
       return;
@@ -758,7 +759,8 @@ void RanchDirector::HandleUpdateMountNickname(
 
     // Remove the item from the inventory.
     character.inventory().erase(itemInventoryIter);
-    canRenameHorse = true; });
+    canRenameHorse = true;
+  });
 
   if (not canRenameHorse)
   {
@@ -1135,7 +1137,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
       // Create the item.
       auto createdItemUid = soa::data::InvalidUid;
-      auto createdItemRecord = GetServerInstance().GetDataDirector().CreateItem();
+      const auto createdItemRecord = GetServerInstance().GetDataDirector().CreateItem();
       createdItemRecord.Mutable([createdItemTid, itemCount, &createdItemUid](soa::data::Item& item)
       {
         item.tid() = createdItemTid;
@@ -1146,7 +1148,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
       // Create the stored item.
       auto giftUid = soa::data::InvalidUid;
-      auto storedItem = GetServerInstance().GetDataDirector().CreateStoredItem();
+      const auto storedItem = GetServerInstance().GetDataDirector().CreateStoredItem();
       storedItem.Mutable([this, &giftUid, createdItemUid, createdItemTid](soa::data::StoredItem& storedItem)
       {
         storedItem.items().emplace_back(createdItemUid);
@@ -1187,7 +1189,6 @@ void RanchDirector::SendChat(
     CommandId::RanchChatNotify,
     [chat]()
     {
-      spdlog::info("suply");
       return chat;
     });
 }
@@ -1257,7 +1258,7 @@ void RanchDirector::HandleRemoveEquipment(
     clientContext.characterUid);
 
   characterRecord->Mutable([&command](soa::data::Character& character)
-                           {
+  {
     const bool ownsItem = std::ranges::contains(
       character.inventory(), command.itemUid);
 
@@ -1269,7 +1270,8 @@ void RanchDirector::HandleRemoveEquipment(
       const auto range = std::ranges::remove(
         character.characterEquipment(), command.itemUid);
       character.characterEquipment().erase(range.begin(), range.end());
-    } });
+    }
+  });
 
   // We really don't need to cancel the unequip.
   // Always respond with OK.

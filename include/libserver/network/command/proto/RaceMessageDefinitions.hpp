@@ -172,7 +172,7 @@ struct RaceCommandEnterRoomCancel
 struct RaceCommandEnterRoomNotify
 {
   Racer racer{};
-  uint32_t unk0{};
+  uint32_t averageTimeRecord{};
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.

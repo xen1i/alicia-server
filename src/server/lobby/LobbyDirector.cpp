@@ -228,11 +228,13 @@ void LobbyDirector::Tick()
 
 void LobbyDirector::HandleClientConnected(ClientId clientId)
 {
+  spdlog::info("Client {} connected to the lobby", clientId);
 }
 
-void LobbyDirector::HandleClientDisconnected(ClientId client)
+void LobbyDirector::HandleClientDisconnected(ClientId clientId)
 {
-  _clientContext.erase(client);
+  spdlog::info("Client {} disconnected from the lobby", clientId);
+  _clientContext.erase(clientId);
 }
 
 soa::ServerInstance& LobbyDirector::GetServerInstance()
