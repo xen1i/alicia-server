@@ -19,7 +19,7 @@
 
 #include "libserver/network/command/proto/CommonStructureDefinitions.hpp"
 
-namespace alicia
+namespace server
 {
 
 void Item::Write(const Item& item, SinkStream& stream)
@@ -552,4 +552,4 @@ void RanchUnk11::Read(RanchUnk11& value, SourceStream& stream)
     .Read(value.unk1);
 }
 
-} // namespace alicia
+} // namespace server

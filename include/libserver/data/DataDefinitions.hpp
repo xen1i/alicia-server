@@ -22,11 +22,10 @@
 
 #include <atomic>
 #include <cstdint>
-#include <functional>
 #include <unordered_set>
 #include <string>
 
-namespace soa
+namespace server
 {
 
 namespace dao
@@ -290,6 +289,6 @@ struct Ranch
 
 } // namespace data
 
-} // namespace soa
+} // namespace server
 
 #endif // DATADEFINITIONS_HPP

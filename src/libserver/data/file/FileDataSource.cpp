@@ -37,7 +37,7 @@ std::filesystem::path ProduceDataPath(
 
 } // namespace
 
-void soa::FileDataSource::Initialize(const std::filesystem::path& path)
+void server::FileDataSource::Initialize(const std::filesystem::path& path)
 {
   _dataPath = path;
   _metaFilePath = _dataPath;
@@ -72,7 +72,7 @@ void soa::FileDataSource::Initialize(const std::filesystem::path& path)
   _sequentialUid = meta["sequentialUid"].get<uint32_t>();
 }
 
-void soa::FileDataSource::Terminate()
+void server::FileDataSource::Terminate()
 {
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
@@ -89,7 +89,7 @@ void soa::FileDataSource::Terminate()
   metaFile << meta.dump(2);
 }
 
-void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
+void server::FileDataSource::RetrieveUser(std::string name, data::User& user)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _userDataPath, name);
@@ -106,7 +106,7 @@ void soa::FileDataSource::RetrieveUser(std::string name, data::User& user)
   user.characterUid = json["characterUid"].get<data::Uid>();
 }
 
-void soa::FileDataSource::StoreUser(std::string name, const data::User& user)
+void server::FileDataSource::StoreUser(std::string name, const data::User& user)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _userDataPath, name);
@@ -123,13 +123,13 @@ void soa::FileDataSource::StoreUser(std::string name, const data::User& user)
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreateCharacter(data::Character& character)
+void server::FileDataSource::CreateCharacter(data::Character& character)
 {
   _sequentialUid++;
   character.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)
+void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _characterDataPath, std::format("{}", uid));
@@ -180,7 +180,7 @@ void soa::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& char
   character.ranchUid = json["ranchUid"].get<data::Uid>();
 }
 
-void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
+void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _characterDataPath, std::format("{}", uid));
@@ -233,13 +233,13 @@ void soa::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& c
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreateItem(data::Item& item)
+void server::FileDataSource::CreateItem(data::Item& item)
 {
   _sequentialUid++;
   item.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
+void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _itemDataPath, std::format("{}", uid));
@@ -255,7 +255,7 @@ void soa::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
   item.count = json["count"].get<uint32_t>();
 }
 
-void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
+void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _itemDataPath, std::format("{}", uid));
@@ -271,13 +271,13 @@ void soa::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreatePet(soa::data::Pet& pet)
+void server::FileDataSource::CreatePet(data::Pet& pet)
 {
   _sequentialUid++;
   pet.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrievePet(soa::data::Uid uid, soa::data::Pet& pet)
+void server::FileDataSource::RetrievePet(data::Uid uid, data::Pet& pet)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _petDataPath, std::format("{}", uid));
@@ -293,7 +293,7 @@ void soa::FileDataSource::RetrievePet(soa::data::Uid uid, soa::data::Pet& pet)
   pet.name = json["name"].get<std::string>();
 }
 
-void soa::FileDataSource::StorePet(soa::data::Uid uid, const soa::data::Pet& pet)
+void server::FileDataSource::StorePet(data::Uid uid, const data::Pet& pet)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _petDataPath, std::format("{}", uid));
@@ -309,13 +309,13 @@ void soa::FileDataSource::StorePet(soa::data::Uid uid, const soa::data::Pet& pet
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreateGuild(soa::data::Guild& guild)
+void server::FileDataSource::CreateGuild(data::Guild& guild)
 {
   _sequentialUid++;
   guild.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveGuild(soa::data::Uid uid, soa::data::Guild& guild)
+void server::FileDataSource::RetrieveGuild(data::Uid uid, data::Guild& guild)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _guildDataPath, std::format("{}", uid));
@@ -330,7 +330,7 @@ void soa::FileDataSource::RetrieveGuild(soa::data::Uid uid, soa::data::Guild& gu
   guild.name = json["name"].get<std::string>();
 }
 
-void soa::FileDataSource::StoreGuild(soa::data::Uid uid, const soa::data::Guild& guild)
+void server::FileDataSource::StoreGuild(data::Uid uid, const data::Guild& guild)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _guildDataPath, std::format("{}", uid));
@@ -345,13 +345,13 @@ void soa::FileDataSource::StoreGuild(soa::data::Uid uid, const soa::data::Guild&
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreateStoredItem(data::StoredItem& item)
+void server::FileDataSource::CreateStoredItem(data::StoredItem& item)
 {
   _sequentialUid++;
   item.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
+void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _storedItemPath, std::format("{}", uid));
@@ -370,7 +370,7 @@ void soa::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& it
   item.expired = json["expired"].get<bool>();
 }
 
-void soa::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem& item)
+void server::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem& item)
 {
   const std::filesystem::path dataPath = ProduceDataPath(
     _storedItemPath, std::format("{}", uid));
@@ -388,13 +388,13 @@ void soa::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem&
   json["expired"] = item.expired();
 }
 
-void soa::FileDataSource::CreateHorse(data::Horse& horse)
+void server::FileDataSource::CreateHorse(data::Horse& horse)
 {
   _sequentialUid++;
   horse.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
+void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _horseDataPath, std::format("{}", uid));
@@ -451,7 +451,7 @@ void soa::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   horse.emblem = json["emblem"].get<uint32_t>();
 }
 
-void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
+void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _horseDataPath, std::format("{}", uid));
@@ -510,13 +510,13 @@ void soa::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   file << json.dump(2);
 }
 
-void soa::FileDataSource::CreateRanch(data::Ranch& ranch)
+void server::FileDataSource::CreateRanch(data::Ranch& ranch)
 {
   _sequentialUid++;
   ranch.uid = _sequentialUid;
 }
 
-void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
+void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _ranchDataPath, std::format("{}", uid));
@@ -531,7 +531,7 @@ void soa::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
   ranch.name = json["name"].get<std::string>();
 }
 
-void soa::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
+void server::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
 {
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _ranchDataPath, std::format("{}", uid));

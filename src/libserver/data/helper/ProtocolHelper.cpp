@@ -4,7 +4,7 @@
 
 #include "libserver/data/helper/ProtocolHelper.hpp"
 
-namespace alicia
+namespace server
 {
 
 namespace protocol
@@ -12,7 +12,7 @@ namespace protocol
 
 void BuildProtocolCharacter(
   Character& protocolCharacter,
-  const soa::data::Character& character)
+  const data::Character& character)
 {
   // Set the character parts.
   // These serial ID's can be found in the `_ClientCharDefaultPartInfo` table.
@@ -34,7 +34,7 @@ void BuildProtocolCharacter(
 
 void BuildProtocolHorse(
   Horse& protocolHorse,
-  const soa::data::Horse& horse)
+  const data::Horse& horse)
 {
   protocolHorse.uid = horse.uid();
   protocolHorse.tid = horse.tid();
@@ -82,7 +82,7 @@ void BuildProtocolHorse(
 
 void BuildProtocolHorseParts(
   Horse::Parts& protocolHorseParts,
-  const soa::data::Horse::Parts& parts)
+  const data::Horse::Parts& parts)
 {
   protocolHorseParts = {
     .skinId = static_cast<uint8_t>(parts.skinId()),
@@ -93,7 +93,7 @@ void BuildProtocolHorseParts(
 
 void BuildProtocolHorseAppearance(
   Horse::Appearance& protocolHorseAppearance,
-  const soa::data::Horse::Appearance& appearance)
+  const data::Horse::Appearance& appearance)
 {
   protocolHorseAppearance = {
     .scale = static_cast<uint8_t>(appearance.scale()),
@@ -105,7 +105,7 @@ void BuildProtocolHorseAppearance(
 
 void BuildProtocolHorseStats(
   Horse::Stats& protocolHorseStats,
-  const soa::data::Horse::Stats& stats)
+  const data::Horse::Stats& stats)
 {
   protocolHorseStats = {
     .agility = stats.agility(),
@@ -117,7 +117,7 @@ void BuildProtocolHorseStats(
 
 void BuildProtocolHorseMastery(
   Horse::Mastery& protocolHorseMastery,
-  const soa::data::Horse::Mastery& mastery)
+  const data::Horse::Mastery& mastery)
 {
   protocolHorseMastery = {
     .spurMagicCount = mastery.spurMagicCount(),
@@ -129,7 +129,7 @@ void BuildProtocolHorseMastery(
 
 void BuildProtocolHorses(
   std::vector<Horse>& protocolHorses,
-  const std::vector<soa::Record<soa::data::Horse>>& horses)
+  const std::vector<Record<data::Horse>>& horses)
 {
   for (const auto& horse : horses)
   {
@@ -143,7 +143,7 @@ void BuildProtocolHorses(
 
 void BuildProtocolItem(
   Item& protocolItem,
-  const soa::data::Item& item)
+  const data::Item& item)
 {
   protocolItem.uid = item.uid();
   protocolItem.tid = item.tid();
@@ -152,7 +152,7 @@ void BuildProtocolItem(
 
 void BuildProtocolItems(
   std::vector<Item>& protocolItems,
-  const std::vector<soa::Record<soa::data::Item>>& items)
+  const std::vector<Record<data::Item>>& items)
 {
   for (const auto& item : items)
   {
@@ -164,7 +164,7 @@ void BuildProtocolItems(
   }
 }
 
-void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const soa::data::StoredItem& storedItem)
+void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const data::StoredItem& storedItem)
 {
   protocolStoredItem.uid = storedItem.uid();
   protocolStoredItem.sender = storedItem.sender();
@@ -173,18 +173,18 @@ void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const soa::data::St
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::vector<soa::Record<soa::data::StoredItem>>& storedItems)
+  const std::vector<Record<data::StoredItem>>& storedItems)
 {
   for (const auto& storedItem : storedItems)
   {
-    auto& protoclStoredItem = protocolStoredItems.emplace_back();
-    storedItem.Immutable([&protoclStoredItem](const auto& storedItem)
+    auto& protocolStoredItem = protocolStoredItems.emplace_back();
+    storedItem.Immutable([&protocolStoredItem](const auto& storedItem)
     {
-      BuildProtocolStoredItem(protoclStoredItem, storedItem);
+      BuildProtocolStoredItem(protocolStoredItem, storedItem);
     });
   }
 }
 
 } // namespace protocol
 
-} // namespace alicia
+} // namespace server

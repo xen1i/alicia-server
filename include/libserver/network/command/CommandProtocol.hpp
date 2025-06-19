@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace alicia
+namespace server::protocol
 {
 
 //! A constant buffer size for message magic.
@@ -72,7 +72,7 @@ MessageMagic decode_message_magic(uint32_t value);
 uint32_t encode_message_magic(MessageMagic magic);
 
 //! IDs of the commands in the protocol.
-enum class CommandId : uint16_t
+enum class Command : uint16_t
 {
   LobbyLogin = 0x7,
   LobbyLoginOK = 0x8,
@@ -278,8 +278,8 @@ enum class CommandId : uint16_t
 //! @param command ID of the command to retrieve the name for.
 //! @returns If command is registered, name of the command.
 //!          Otherwise, returns "n/a".
-std::string_view GetCommandName(CommandId command);
+std::string_view GetCommandName(Command command);
 
-} // namespace alicia
+} // namespace server
 
 #endif // COMMAND_PROTOCOL_HPP

@@ -27,7 +27,7 @@
 
 #include "spdlog/spdlog.h"
 
-namespace alicia
+namespace server
 {
 
 LoginHandler::LoginHandler(
@@ -55,9 +55,9 @@ void LoginHandler::Tick()
 
     bool isAuthenticated = false;
     bool hasCharacter = false;
-    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](const soa::data::User& user){
+    user->Immutable([&isAuthenticated, &hasCharacter, &loginContext](const data::User& user){
       isAuthenticated = user.token() == loginContext.userToken;
-      hasCharacter = user.characterUid() != soa::data::InvalidUid;
+      hasCharacter = user.characterUid() != data::InvalidUid;
     });
 
     // If the user succeeds in authentication queue user for further processing.
@@ -94,8 +94,8 @@ void LoginHandler::Tick()
     if (not userRecord)
       continue;
 
-    auto characterUid = soa::data::InvalidUid;
-    userRecord->Immutable([&characterUid](const soa::data::User& user)
+    auto characterUid = data::InvalidUid;
+    userRecord->Immutable([&characterUid](const data::User& user)
     {
       characterUid = user.characterUid();
     });
@@ -107,7 +107,7 @@ void LoginHandler::Tick()
 
     bool isCharacterLoaded = false;
 
-    characterRecord->Immutable([this, &isCharacterLoaded](const soa::data::Character& character)
+    characterRecord->Immutable([this, &isCharacterLoaded](const data::Character& character)
     {
       if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.inventory()))
         return;
@@ -146,7 +146,7 @@ void LoginHandler::HandleUserLogin(
   if (login.loginId.empty())
   {
     if (login.loginId.empty() &&
-      not server::constants::IsDevelopmentMode)
+      not constants::IsDevelopmentMode)
     {
       spdlog::debug(
         "LoginHandler::HandleUserLogin - Rejecting login for client {}."
@@ -194,9 +194,9 @@ void LoginHandler::HandleUserCreateCharacter(
   // Create a new horse for the character.
   auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
   // The UID of the newly created horse.
-  auto characterMountUid{soa::data::InvalidUid};
+  auto characterMountUid{data::InvalidUid};
 
-  horseRecord.Mutable([&characterMountUid](soa::data::Horse& horse)
+  horseRecord.Mutable([&characterMountUid](data::Horse& horse)
   {
     horse.name() = "default";
 
@@ -222,9 +222,9 @@ void LoginHandler::HandleUserCreateCharacter(
   // Create a new ranch for the character.
   auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
   // The UID of the newly created ranch.
-  auto characterRanchUid{soa::data::InvalidUid};
+  auto characterRanchUid{data::InvalidUid};
 
-  ranchRecord.Mutable([&characterRanchUid, &command](soa::data::Ranch& ranch)
+  ranchRecord.Mutable([&characterRanchUid, &command](data::Ranch& ranch)
   {
     const bool endsWithPlural = command.nickname.ends_with("s")
       || command.nickname.ends_with("S");
@@ -237,13 +237,13 @@ void LoginHandler::HandleUserCreateCharacter(
   // And finally create the character with the new horse,
   // new ranch and the appearance sent from the client.
   auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
-  auto userCharacterUid{soa::data::InvalidUid};
+  auto userCharacterUid{data::InvalidUid};
 
   characterRecord.Mutable([
     &userCharacterUid,
     &characterMountUid,
     &characterRanchUid,
-    &command](soa::data::Character& character)
+    &command](data::Character& character)
   {
     userCharacterUid = character.uid();
 
@@ -251,11 +251,11 @@ void LoginHandler::HandleUserCreateCharacter(
     character.carrots = 5000;
 
     character.name = command.nickname;
-    character.parts = soa::data::Character::Parts{
+    character.parts = data::Character::Parts{
       .modelId = command.character.parts.charId,
       .mouthId = command.character.parts.mouthSerialId,
       .faceId = command.character.parts.faceSerialId};
-    character.appearance = soa::data::Character::Appearance{
+    character.appearance = data::Character::Appearance{
       .headSize = command.character.appearance.headSize,
       .height = command.character.appearance.height,
       .thighVolume = command.character.appearance.thighVolume,
@@ -268,7 +268,7 @@ void LoginHandler::HandleUserCreateCharacter(
   });
 
   // Assign the character to the user.
-  userRecord->Mutable([&userCharacterUid](soa::data::User& user)
+  userRecord->Mutable([&userCharacterUid](data::User& user)
   {
     user.characterUid() = userCharacterUid;
   });
@@ -285,7 +285,7 @@ void LoginHandler::QueueUserLoginAccepted(
   if (not userRecord)
     throw std::runtime_error("User record unavailable");
 
-  const auto lobbyServerTime = soa::util::UnixTimeToFileTime(
+  const auto lobbyServerTime = util::UnixTimeToFileTime(
     std::chrono::system_clock::now());
 
   LobbyCommandLoginOK response {
@@ -336,9 +336,9 @@ void LoginHandler::QueueUserLoginAccepted(
     .val20 = 0x1c6};
 
   // Get the character UID of the user.
-  soa::data::Uid userCharacterUid{soa::data::InvalidUid};
+  data::Uid userCharacterUid{data::InvalidUid};
   userRecord->Immutable([&userCharacterUid](
-    const soa::data::User& user)
+    const data::User& user)
   {
     userCharacterUid = user.characterUid();
   });
@@ -349,10 +349,10 @@ void LoginHandler::QueueUserLoginAccepted(
   if (not characterRecord)
     throw std::runtime_error("Character record unavailable");
 
-  soa::data::Uid characterMountUid{
-    soa::data::InvalidUid};
+  data::Uid characterMountUid{
+    data::InvalidUid};
 
-  characterRecord->Immutable([this, &response, &characterMountUid](const soa::data::Character& character)
+  characterRecord->Immutable([this, &response, &characterMountUid](const data::Character& character)
   {
     response.uid = character.uid();
     response.name = character.name();
@@ -401,7 +401,7 @@ void LoginHandler::QueueUserLoginAccepted(
   if (not mountRecord)
     throw std::runtime_error("Horse mount record unavailable");
 
-  mountRecord->Immutable([&response](const soa::data::Horse& horse)
+  mountRecord->Immutable([&response](const data::Horse& horse)
   {
 //    response.val17 = {
 //      .mountUid = horse.uid(),
@@ -415,7 +415,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
   _server.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyLoginOK,
+    protocol::Command::LobbyLoginOK,
     [response]()
     {
       return response;
@@ -425,7 +425,7 @@ void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string&
 {
   _server.QueueCommand<LobbyCommandCreateNicknameNotify>(
     clientId,
-    CommandId::LobbyCreateNicknameNotify,
+    protocol::Command::LobbyCreateNicknameNotify,
     []()
     {
       return LobbyCommandCreateNicknameNotify{};
@@ -436,7 +436,7 @@ void LoginHandler::QueueUserLoginRejected(ClientId clientId)
 {
   _server.QueueCommand<LobbyCommandLoginCancel>(
     clientId,
-    CommandId::LobbyLoginCancel,
+    protocol::Command::LobbyLoginCancel,
     []()
     {
       return LobbyCommandLoginCancel{
@@ -444,4 +444,4 @@ void LoginHandler::QueueUserLoginRejected(ClientId clientId)
     });
 }
 
-} // namespace alicia
+} // namespace server

@@ -26,53 +26,53 @@
 
 #include <spdlog/spdlog.h>
 
-namespace alicia
+namespace server
 {
 
-RaceDirector::RaceDirector(soa::ServerInstance& serverInstance)
+RaceDirector::RaceDirector(ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
   , _commandServer(*this)
 {
   _commandServer.RegisterCommandHandler<RaceCommandEnterRoom>(
-    CommandId::RaceEnterRoom,
+    protocol::Command::RaceEnterRoom,
     [this](ClientId clientId, const auto& message)
     {
       HandleEnterRoom(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandChangeRoomOptions>(
-    CommandId::RaceChangeRoomOptions,
+    protocol::Command::RaceChangeRoomOptions,
     [this](ClientId clientId, const auto& message)
     {
       HandleChangeRoomOptions(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandStartRace>(
-    CommandId::RaceStartRace,
+    protocol::Command::RaceStartRace,
     [this](ClientId clientId, const auto& message)
     {
       HandleStartRace(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<UserRaceTimer>(
-    CommandId::UserRaceTimer,
+    protocol::Command::UserRaceTimer,
     [this](ClientId clientId, const auto& message)
     {
       HandleRaceTimer(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandLoadingComplete>(
-    CommandId::RaceLoadingComplete,
+    protocol::Command::RaceLoadingComplete,
     [this](ClientId clientId, const auto& message)
     {
-      _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, CommandId::RaceLoadingCompleteNotify, [](){
+      _commandServer.QueueCommand<RaceCommandLoadingCompleteNotify>(clientId, protocol::Command::RaceLoadingCompleteNotify, [](){
         return RaceCommandLoadingCompleteNotify{
         .member0 = 1};
       });
     });
 
   _commandServer.RegisterCommandHandler<RaceCommandReadyRace>(
-    CommandId::RaceReady,
+    protocol::Command::RaceReady,
     [this](ClientId clientId, const auto& message)
     {
       HandleReadyRace(clientId, message);
@@ -107,12 +107,12 @@ void RaceDirector::HandleClientDisconnected(ClientId clientId)
   spdlog::info("Client {} disconnected from the race", clientId);
 }
 
-soa::ServerInstance& RaceDirector::GetServerInstance()
+ServerInstance& RaceDirector::GetServerInstance()
 {
   return _serverInstance;
 }
 
-soa::Settings::RaceSettings& RaceDirector::GetSettings()
+Settings::RaceSettings& RaceDirector::GetSettings()
 {
   return GetServerInstance().GetSettings()._raceSettings;
 }
@@ -127,7 +127,7 @@ void RaceDirector::HandleEnterRoom(
   clientContext.characterUid = enterRoom.characterUid;
   clientContext.roomUid = enterRoom.roomUid;
 
-  auto& roomRegistry = soa::RoomRegistry::Get();
+  auto& roomRegistry = RoomRegistry::Get();
   auto& room = roomRegistry.GetRoom(enterRoom.roomUid);
 
   auto& roomInstance = _roomInstances[enterRoom.roomUid];
@@ -163,7 +163,7 @@ void RaceDirector::HandleEnterRoom(
 
     const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
       characterUid);
-    characterRecord->Immutable([this, characterOid, &protocolRacer](const soa::data::Character& character)
+    characterRecord->Immutable([this, characterOid, &protocolRacer](const data::Character& character)
     {
       protocolRacer.level = character.level();
       protocolRacer.oid = character.uid();
@@ -178,7 +178,7 @@ void RaceDirector::HandleEnterRoom(
 
       const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
         character.mountUid());
-      mountRecord->Immutable([&protocolRacer](const soa::data::Horse& mount)
+      mountRecord->Immutable([&protocolRacer](const data::Horse& mount)
       {
         protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
       });
@@ -192,7 +192,7 @@ void RaceDirector::HandleEnterRoom(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::RaceEnterRoomOK,
+    protocol::Command::RaceEnterRoomOK,
     [response]()
     {
       return response;
@@ -206,7 +206,7 @@ void RaceDirector::HandleEnterRoom(
   {
     _commandServer.QueueCommand<decltype(response)>(
       roomClientId,
-      CommandId::RaceEnterRoomNotify,
+      protocol::Command::RaceEnterRoomNotify,
       [response]()
       {
         return response;
@@ -232,7 +232,7 @@ void RaceDirector::HandleChangeRoomOptions(ClientId clientId, const RaceCommandC
   // TODO: Send to all clients in the room
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::RaceChangeRoomOptionsNotify,
+    protocol::Command::RaceChangeRoomOptionsNotify,
     [response]()
     {
       return response;
@@ -265,7 +265,7 @@ void RaceDirector::HandleStartRace(ClientId clientId, const RaceCommandStartRace
   // TODO: Send to all clients in the room
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::RaceStartRaceNotify,
+    protocol::Command::RaceStartRaceNotify,
     [response]()
     {
       return response;
@@ -280,7 +280,7 @@ void RaceDirector::HandleRaceTimer(ClientId clientId, const UserRaceTimer& raceT
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::UserRaceTimerOK,
+    protocol::Command::UserRaceTimerOK,
     [response]()
     {
       return response;
@@ -302,7 +302,7 @@ void RaceDirector::HandleReadyRace(ClientId clientId, const RaceCommandReadyRace
   {
     _commandServer.QueueCommand<decltype(response)>(
       roomClientId,
-      CommandId::RaceReadyNotify,
+      protocol::Command::RaceReadyNotify,
       [response]()
       {
         return response;
@@ -310,4 +310,4 @@ void RaceDirector::HandleReadyRace(ClientId clientId, const RaceCommandReadyRace
   }
 }
 
-} // namespace alicia
+} // namespace server

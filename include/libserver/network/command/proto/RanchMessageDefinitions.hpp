@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace alicia
+namespace server
 {
 
 //!
@@ -1698,6 +1698,6 @@ struct RanchCommandRequestPetBirthNotify
     SourceStream& stream);
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // RANCH_MESSAGE_DEFINES_HPP

@@ -19,21 +19,21 @@
 
 #include "server/tracker/WorldTracker.hpp"
 
-namespace alicia
+namespace server
 {
 
-Oid WorldTracker::AddCharacter(soa::data::Uid character)
+Oid WorldTracker::AddCharacter(data::Uid character)
 {
   _characters[character] = _nextObjectId;
   return _nextObjectId++;
 }
 
-void WorldTracker::RemoveCharacter(soa::data::Uid character)
+void WorldTracker::RemoveCharacter(data::Uid character)
 {
   _characters.erase(character);
 }
 
-Oid WorldTracker::GetCharacterEntityId(soa::data::Uid character)
+Oid WorldTracker::GetCharacterEntityId(data::Uid character)
 {
   const auto itr = _characters.find(character);
   if (itr == _characters.cend())
@@ -41,13 +41,13 @@ Oid WorldTracker::GetCharacterEntityId(soa::data::Uid character)
   return itr->second;
 }
 
-Oid WorldTracker::AddHorse(soa::data::Uid mount)
+Oid WorldTracker::AddHorse(data::Uid mount)
 {
   _horses[mount] = _nextObjectId;
   return _nextObjectId++;
 }
 
-Oid WorldTracker::GetHorseEntityId(soa::data::Uid mount)
+Oid WorldTracker::GetHorseEntityId(data::Uid mount)
 {
   const auto itr = _horses.find(mount);
   if (itr == _horses.cend())
@@ -65,4 +65,4 @@ const WorldTracker::ObjectMap& WorldTracker::GetCharacterEntities()
   return _characters;
 }
 
-} // namespace alicia
+} // namespace server

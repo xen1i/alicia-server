@@ -29,7 +29,7 @@
 #include <unordered_set>
 #include <ranges>
 
-namespace soa
+namespace server
 {
 
 template <typename Data>
@@ -89,7 +89,7 @@ public:
     if (not _exclusiveLock.owns_lock())
       _exclusiveLock.lock();
     return *_value;
-  };
+  }
 
   //! Immutable shared access to the underlying data.
   //! @param consumer Consumer that receives the data.
@@ -107,7 +107,7 @@ public:
     _exclusiveLock.lock();
     consumer(*_value);
     _exclusiveLock.unlock();
-  };
+  }
 
 private:
   mutable MutexPtr _mutex;
@@ -290,6 +290,6 @@ private:
   DataSourceStoreListener _dataSourceStoreListener;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif // DATASTORAGE_HPP

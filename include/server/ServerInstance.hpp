@@ -6,11 +6,13 @@
 #define INSTANCE_HPP
 
 #include "server/lobby/LobbyDirector.hpp"
-#include "server/ranch/RanchDirector.hpp"
 #include "server/race/RaceDirector.hpp"
+#include "server/ranch/RanchDirector.hpp"
 #include "server/Settings.hpp"
 
-namespace soa
+#include "libserver/data/DataDirector.hpp"
+
+namespace server
 {
 
 class ServerInstance final
@@ -30,15 +32,15 @@ public:
 
   //! Returns reference to the lobby director.
   //! @returns Reference to the lobby director.
-  alicia::LobbyDirector& GetLobbyDirector();
+  LobbyDirector& GetLobbyDirector();
 
   //! Returns reference to the ranch director.
   //! @returns Reference to the ranch director.
-  alicia::RanchDirector& GetRanchDirector();
+  RanchDirector& GetRanchDirector();
 
   //! Returns reference to the race director.
   //! @returns Reference to the race director.
-  alicia::RaceDirector& GetRaceDirector();
+  RaceDirector& GetRaceDirector();
 
   //! Returns reference to the settings.
   //! @returns Reference to the settings.
@@ -95,22 +97,22 @@ private:
   //! A thread of the lobby director.
   std::thread _lobbyDirectorThread;
   //! A lobby director.
-  alicia::LobbyDirector _lobbyDirector;
+  LobbyDirector _lobbyDirector;
 
   //! A thread of the ranch director.
   std::thread _ranchDirectorThread;
   //! A ranch director.
-  alicia::RanchDirector _ranchDirector;
+  RanchDirector _ranchDirector;
 
   //! A thread of the race director.
   std::thread _raceDirectorThread;
   //! A race director.
-  alicia::RaceDirector _raceDirector;
+  RaceDirector _raceDirector;
 
   //! Settings.
   Settings _settings;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif //INSTANCE_HPP

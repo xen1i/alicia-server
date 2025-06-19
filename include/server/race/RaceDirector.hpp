@@ -26,12 +26,12 @@
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
-namespace soa
+namespace server
 {
 class ServerInstance;
-} // namespace soa
+} // namespace server
 
-namespace alicia
+namespace server
 {
 
 class RaceDirector final
@@ -39,7 +39,7 @@ class RaceDirector final
 {
 public:
   //!
-  explicit RaceDirector(soa::ServerInstance& serverInstance);
+  explicit RaceDirector(ServerInstance& serverInstance);
 
   void Initialize();
   void Terminate();
@@ -48,8 +48,8 @@ public:
   void HandleClientConnected(ClientId clientId) override;
   void HandleClientDisconnected(ClientId clientId) override;
 
-  soa::ServerInstance& GetServerInstance();
-  soa::Settings::RaceSettings& GetSettings();
+  ServerInstance& GetServerInstance();
+  Settings::RaceSettings& GetSettings();
 
 private:
   //!
@@ -77,7 +77,7 @@ private:
     const RaceCommandReadyRace& command);
 
   //!
-  soa::ServerInstance& _serverInstance;
+  ServerInstance& _serverInstance;
   //!
   CommandServer _commandServer;
 
@@ -97,6 +97,6 @@ private:
   std::unordered_map<uint32_t, Room> _roomInstances;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // RACEDIRECTOR_HPP

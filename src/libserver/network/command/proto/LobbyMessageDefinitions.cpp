@@ -19,7 +19,7 @@
 
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
-namespace alicia
+namespace server
 {
 
 void LobbyCommandLogin::Write(
@@ -1140,4 +1140,4 @@ void LobbyCommandSetIntroduction::Read(
   stream.Read(command.introduction);
 }
 
-} // namespace alicia
+} // namespace server

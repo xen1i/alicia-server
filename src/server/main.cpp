@@ -103,9 +103,9 @@ int main()
   // Set is as the default logger for the application.
   spdlog::set_default_logger(g_logger);
 
-  spdlog::info("Running Alicia server v{}.", alicia::BuildVersion);
+  spdlog::info("Running Alicia server v{}.", server::BuildVersion);
 
-  soa::ServerInstance serverInstance;
+  server::ServerInstance serverInstance;
   serverInstance.Initialize();
 
   spdlog::info(
@@ -119,7 +119,7 @@ int main()
     std::string commandLine;
     std::getline(std::cin, commandLine);
 
-    const auto command = soa::util::TokenizeString(
+    const auto command = server::util::TokenizeString(
       commandLine, ' ');
 
     if (command[0] == "exit")

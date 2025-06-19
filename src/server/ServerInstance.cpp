@@ -4,7 +4,7 @@
 
 #include "server/ServerInstance.hpp"
 
-namespace soa
+namespace server
 {
 
 ServerInstance::ServerInstance()
@@ -82,22 +82,22 @@ void ServerInstance::Terminate()
   _shouldRun.store(false, std::memory_order::relaxed);
 }
 
-soa::DataDirector& ServerInstance::GetDataDirector()
+DataDirector& ServerInstance::GetDataDirector()
 {
   return _dataDirector;
 }
 
-alicia::LobbyDirector& ServerInstance::GetLobbyDirector()
+LobbyDirector& ServerInstance::GetLobbyDirector()
 {
   return _lobbyDirector;
 }
 
-alicia::RanchDirector& ServerInstance::GetRanchDirector()
+RanchDirector& ServerInstance::GetRanchDirector()
 {
   return _ranchDirector;
 }
 
-alicia::RaceDirector& ServerInstance::GetRaceDirector()
+RaceDirector& ServerInstance::GetRaceDirector()
 {
   return _raceDirector;
 }
@@ -107,4 +107,4 @@ Settings& ServerInstance::GetSettings()
   return _settings;
 }
 
-} // namespace soa
+} // namespace server

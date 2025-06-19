@@ -20,11 +20,10 @@
 #ifndef LOGINHANDLER_HPP
 #define LOGINHANDLER_HPP
 
-#include "libserver/data/DataDirector.hpp"
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
-namespace alicia
+namespace server
 {
 class LobbyDirector;
 
@@ -70,6 +69,6 @@ private:
   LobbyDirector& _lobbyDirector;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // LOGINHANDLER_HPP

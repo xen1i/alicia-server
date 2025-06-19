@@ -9,15 +9,15 @@
 #include <string>
 #include <unordered_map>
 
-namespace alicia
+namespace server
 {
 enum class TeamMode : uint8_t;
 }
-namespace alicia
+namespace server
 {
 enum class GameMode : uint8_t;
 }
-namespace soa
+namespace server
 {
 
 struct Room
@@ -29,8 +29,8 @@ struct Room
   uint32_t otp{};
 
   uint8_t unk0;
-  alicia::GameMode gameMode;
-  alicia::TeamMode teamMode;
+  GameMode gameMode;
+  TeamMode teamMode;
   uint8_t unk3;
   uint16_t bitset;
   uint8_t unk4;
@@ -50,13 +50,13 @@ public:
   {
     static RoomRegistry singleton;
     return singleton;
-  };
+  }
 
 private:
   uint32_t _sequencedId = 0;
   std::unordered_map<uint32_t, Room> _rooms;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif //ROOMREGISTRY_HPP

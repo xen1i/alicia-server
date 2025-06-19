@@ -24,7 +24,7 @@
 #include <chrono>
 #include <span>
 
-namespace soa
+namespace server
 {
 
 namespace util
@@ -52,6 +52,6 @@ std::vector<std::string> TokenizeString(const std::string& value, char delimiter
 
 } // namespace util
 
-} // namespace soa
+} // namespace server
 
 #endif // UTIL_HPP

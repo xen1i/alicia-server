@@ -9,7 +9,7 @@
 #include "libserver/data/DataStorage.hpp"
 #include "libserver/network/command/proto/CommonStructureDefinitions.hpp"
 
-namespace alicia
+namespace server
 {
 
 namespace protocol
@@ -17,50 +17,50 @@ namespace protocol
 
 void BuildProtocolCharacter(
   Character& protocolCharacter,
-  const soa::data::Character& character);
+  const data::Character& character);
 
 void BuildProtocolHorse(
   Horse& protocolHorse,
-  const soa::data::Horse& horse);
+  const data::Horse& horse);
 
 void BuildProtocolHorseParts(
   Horse::Parts& protocolHorseParts,
-  const soa::data::Horse::Parts& parts);
+  const data::Horse::Parts& parts);
 
 void BuildProtocolHorseAppearance(
   Horse::Appearance& protocolHorseAppearance,
-  const soa::data::Horse::Appearance& appearance);
+  const data::Horse::Appearance& appearance);
 
 void BuildProtocolHorseStats(
   Horse::Stats& protocolHorseStats,
-  const soa::data::Horse::Stats& stats);
+  const data::Horse::Stats& stats);
 
 void BuildProtocolHorseMastery(
   Horse::Mastery& protocolHorseMastery,
-  const soa::data::Horse::Mastery& mastery);
+  const data::Horse::Mastery& mastery);
 
 void BuildProtocolHorses(
     std::vector<Horse>& protocolHorses,
-    const std::vector<soa::Record<soa::data::Horse>>& horses);
+    const std::vector<Record<data::Horse>>& horses);
 
 void BuildProtocolItem(
   Item& protocolItem,
-  const soa::data::Item& item);
+  const data::Item& item);
 
 void BuildProtocolItems(
   std::vector<Item>& protocolItems,
-  const std::vector<soa::Record<soa::data::Item>>& items);
+  const std::vector<Record<data::Item>>& items);
 
 void BuildProtocolStoredItem(
   StoredItem& protocolStoredItem,
-  const soa::data::StoredItem& storedItem);
+  const data::StoredItem& storedItem);
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::vector<soa::Record<soa::data::StoredItem>>& storedItems);
+  const std::vector<Record<data::StoredItem>>& storedItems);
 
 } // namespace protocol
 
-} // namespace alicia
+} // namespace server
 
 #endif //PROTOCOLHELPER_HPP

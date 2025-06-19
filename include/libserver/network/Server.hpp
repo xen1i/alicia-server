@@ -128,6 +128,6 @@ private:
   EventHandlerInterface& _networkEventHandler;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // SERVER_HPP

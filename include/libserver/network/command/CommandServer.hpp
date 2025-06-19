@@ -28,7 +28,7 @@
 #include <queue>
 #include <unordered_map>
 
-namespace alicia
+namespace server
 {
 
 namespace asio = server::network::asio;
@@ -44,15 +44,15 @@ using CommandSupplier = std::function<void(SinkStream&)>;
 class CommandClient
 {
 public:
-  void SetCode(XorCode code);
+  void SetCode(protocol::XorCode code);
   void RollCode();
 
-  [[nodiscard]] const XorCode& GetRollingCode() const;
+  [[nodiscard]] const protocol::XorCode& GetRollingCode() const;
   [[nodiscard]] int32_t GetRollingCodeInt() const;
 
 private:
   std::queue<CommandSupplier> _commandQueue;
-  XorCode _rollingCode{};
+  protocol::XorCode _rollingCode{};
 };
 
 //! A command server.
@@ -85,7 +85,7 @@ public:
   //! @param handler Handler of the command.
   template <ReadableStruct C>
   void RegisterCommandHandler(
-    CommandId commandId,
+    protocol::Command commandId,
     std::function<void(ClientId clientId, const C& command)> handler)
   {
     _handlers[commandId] = [handler](ClientId clientId, SourceStream& source)
@@ -103,7 +103,7 @@ public:
   template <WritableStruct C>
   void QueueCommand(
     ClientId clientId,
-    CommandId commandId,
+    protocol::Command commandId,
     std::function<C()> supplier)
   {
     SendCommand(clientId, commandId, [supplier](SinkStream& sink){
@@ -111,7 +111,7 @@ public:
     });
   }
 
-  void SetCode(ClientId client, XorCode code);
+  void SetCode(ClientId client, protocol::XorCode code);
 
 private:
   class NetworkEventHandler
@@ -131,14 +131,14 @@ private:
   //!
   void SendCommand(
     ClientId clientId,
-    CommandId commandId,
+    protocol::Command commandId,
     CommandSupplier supplier);
 
   bool debugIncomingCommandData = server::constants::IsDevelopmentMode;
   bool debugOutgoingCommandData = server::constants::IsDevelopmentMode;
   bool debugCommands = server::constants::IsDevelopmentMode;
 
-  std::unordered_map<CommandId, RawCommandHandler> _handlers{};
+  std::unordered_map<protocol::Command, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
 
   EventHandlerInterface& _eventHandler;
@@ -148,6 +148,6 @@ private:
   std::thread _serverThread;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // COMMAND_SERVER_HPP

@@ -33,7 +33,7 @@ struct ChatterCommandLogin
   uint32_t val1{};
 };
 
-alicia::ChatterServer::ChatterServer()
+server::ChatterServer::ChatterServer()
   // : _server(
   //     [](ClientId clientId) {},
   //     [](ClientId clientId) {},
@@ -73,14 +73,14 @@ alicia::ChatterServer::ChatterServer()
 {
 }
 
-alicia::ChatterServer::~ChatterServer()
+server::ChatterServer::~ChatterServer()
 {
   // _server.End();
   // if (_serverThread.joinable())
   //   _serverThread.join();
 }
 
-void alicia::ChatterServer::Host()
+void server::ChatterServer::Host()
 {
   /*_serverThread = std::thread([this]()
                               { _server.Begin(boost::asio::ip::address_v4::any(), 10032); });*/

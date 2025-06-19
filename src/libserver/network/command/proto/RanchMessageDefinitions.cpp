@@ -21,7 +21,7 @@
 
 #include <format>
 
-namespace alicia
+namespace server
 {
 
 namespace
@@ -1442,4 +1442,4 @@ void RanchCommandRequestPetBirthNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
-} // namespace alicia
+} // namespace server

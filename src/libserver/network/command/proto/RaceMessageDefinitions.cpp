@@ -19,7 +19,7 @@
 
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
 
-namespace alicia
+namespace server
 {
 
 void WritePlayerRacer(SinkStream& stream, const Avatar& playerRacer)
@@ -532,4 +532,4 @@ void RaceCommandReadyRaceNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
-} // namespace alicia
+} // namespace server

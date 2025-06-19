@@ -22,16 +22,17 @@
 
 #include "LoginHandler.hpp"
 
+#include "server/Settings.hpp"
+
+#include "libserver/data/DataDefinitions.hpp"
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
-namespace soa
+namespace server
 {
-class ServerInstance;
-} // namespace soa
 
-namespace alicia
-{
+class ServerInstance;
+class Settings;
 
 class LobbyDirector final
   : public CommandServer::EventHandlerInterface
@@ -40,7 +41,7 @@ class LobbyDirector final
 
 public:
   //!
-  explicit LobbyDirector(soa::ServerInstance& serverInstance);
+  explicit LobbyDirector(ServerInstance& serverInstance);
 
   LobbyDirector(const LobbyDirector&) = delete;
   LobbyDirector& operator=(const LobbyDirector&) = delete;
@@ -55,8 +56,8 @@ public:
   void HandleClientConnected(ClientId clientId) override;
   void HandleClientDisconnected(ClientId clientId) override;
 
-  soa::ServerInstance& GetServerInstance();
-  soa::Settings::LobbySettings& GetSettings();
+  ServerInstance& GetServerInstance();
+  Settings::LobbySettings& GetSettings();
 
   void UpdateInventory(uint32_t characterUid);
 
@@ -131,7 +132,7 @@ private:
 
   void QueueEnterRanchOK(
     ClientId clientId,
-    soa::data::Uid ranchUid);
+    data::Uid ranchUid);
 
   //!
   void HandleGetMessengerInfo(
@@ -154,7 +155,7 @@ private:
     const LobbyCommandGuildPartyList& message);
 
   //!
-  soa::ServerInstance& _serverInstance;
+  ServerInstance& _serverInstance;
   //!
   CommandServer _commandServer;
   //!
@@ -164,13 +165,13 @@ protected:
   struct ClientContext
   {
     bool authorized;
-    soa::data::Uid characterUid = soa::data::InvalidUid;
+    data::Uid characterUid = data::InvalidUid;
   };
   
   //!
   std::unordered_map<ClientId, ClientContext> _clientContext;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // LOBBYDIRECTOR_HPP

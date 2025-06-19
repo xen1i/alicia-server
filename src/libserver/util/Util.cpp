@@ -23,7 +23,7 @@
 
 #define Int32x32To64(a, b) ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
-namespace soa::util
+namespace server::util
 {
 
 // Sources:
@@ -110,4 +110,4 @@ std::vector<std::string> TokenizeString(const std::string& value, char delimiter
   return tokens;
 }
 
-} // namespace alicia
+} // namespace server

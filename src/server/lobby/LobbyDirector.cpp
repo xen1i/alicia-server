@@ -34,16 +34,16 @@ std::random_device rd;
 
 } // anon namespace
 
-namespace alicia
+namespace server
 {
 
-LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
+LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
   , _commandServer(*this)
   , _loginHandler(*this, _commandServer)
 {
   _commandServer.RegisterCommandHandler<LobbyCommandLogin>(
-    CommandId::LobbyLogin,
+    protocol::Command::LobbyLogin,
     [this](ClientId clientId, const auto& message)
     {
       assert(message.constant0 == 50 && message.constant1 == 281 && "Game version mismatch");
@@ -52,133 +52,133 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandCreateNickname>(
-    CommandId::LobbyCreateNickname,
+    protocol::Command::LobbyCreateNickname,
     [this](ClientId clientId, const auto& message)
     {
       _loginHandler.HandleUserCreateCharacter(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandEnterChannel>(
-    CommandId::LobbyEnterChannel,
+    protocol::Command::LobbyEnterChannel,
     [this](ClientId clientId, const auto& message)
     {
       HandleEnterChannel(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRoomList>(
-    CommandId::LobbyRoomList,
+    protocol::Command::LobbyRoomList,
     [this](ClientId clientId, const auto& message)
     {
      HandleRoomList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandMakeRoom>(
-    CommandId::LobbyMakeRoom,
+    protocol::Command::LobbyMakeRoom,
     [this](ClientId clientId, const auto& message)
     {
       HandleMakeRoom(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandEnterRoom>(
-    CommandId::LobbyEnterRoom,
+    protocol::Command::LobbyEnterRoom,
     [this](ClientId clientId, const auto& message)
     {
       HandleEnterRoom(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandHeartbeat>(
-    CommandId::LobbyHeartbeat,
+    protocol::Command::LobbyHeartbeat,
     [this](ClientId clientId, const auto& message)
     {
       HandleHeartbeat(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandShowInventory>(
-    CommandId::LobbyShowInventory,
+    protocol::Command::LobbyShowInventory,
     [this](ClientId clientId, const auto& message)
     {
       HandleShowInventory(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandAchievementCompleteList>(
-    CommandId::LobbyAchievementCompleteList,
+    protocol::Command::LobbyAchievementCompleteList,
     [this](ClientId clientId, const auto& message)
     {
       HandleAchievementCompleteList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRequestLeagueInfo>(
-    CommandId::LobbyRequestLeagueInfo,
+    protocol::Command::LobbyRequestLeagueInfo,
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestLeagueInfo(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRequestQuestList>(
-    CommandId::LobbyRequestQuestList,
+    protocol::Command::LobbyRequestQuestList,
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestQuestList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRequestDailyQuestList>(
-    CommandId::LobbyRequestDailyQuestList,
+    protocol::Command::LobbyRequestDailyQuestList,
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestDailyQuestList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRequestSpecialEventList>(
-    CommandId::LobbyRequestSpecialEventList,
+    protocol::Command::LobbyRequestSpecialEventList,
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestSpecialEventList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandRequestPersonalInfo>(
-    CommandId::LobbyRequestPersonalInfo,
+    protocol::Command::LobbyRequestPersonalInfo,
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestPersonalInfo(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandSetIntroduction>(
-    CommandId::LobbySetIntroduction,
+    protocol::Command::LobbySetIntroduction,
     [this](ClientId clientId, const auto& message)
     {
       HandleSetIntroduction(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandEnterRanch>(
-    CommandId::LobbyEnterRanch,
+    protocol::Command::LobbyEnterRanch,
     [this](ClientId clientId, const auto& message)
     {
       HandleEnterRanch(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandGetMessengerInfo>(
-    CommandId::LobbyGetMessengerInfo,
+    protocol::Command::LobbyGetMessengerInfo,
     [this](ClientId clientId, const auto& message)
     {
       HandleGetMessengerInfo(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandGoodsShopList>(
-    CommandId::LobbyGoodsShopList,
+    protocol::Command::LobbyGoodsShopList,
     [this](ClientId clientId, const auto& message)
     {
       HandleGoodsShopList(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandInquiryTreecash>(
-    CommandId::LobbyInquiryTreecash,
+    protocol::Command::LobbyInquiryTreecash,
     [this](ClientId clientId, const auto& message)
     {
       HandleInquiryTreecash(clientId, message);
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandClientNotify>(
-    CommandId::LobbyClientNotify,
+    protocol::Command::LobbyClientNotify,
     [this](ClientId clientId, const auto& message)
     {
       if (message.val0 != 1)
@@ -186,11 +186,11 @@ LobbyDirector::LobbyDirector(soa::ServerInstance& serverInstance)
     });
 
   _commandServer.RegisterCommandHandler<LobbyCommandEnterRandomRanch>(
-    CommandId::LobbyEnterRandomRanch,
+    protocol::Command::LobbyEnterRandomRanch,
     [this](ClientId clientId, auto& command)
     {
       auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
-      std::uniform_int_distribution<soa::data::Uid> uidDistribution(
+      std::uniform_int_distribution<data::Uid> uidDistribution(
         0, randomRanchUids.size() - 1);
 
       QueueEnterRanchOK(clientId, randomRanchUids[uidDistribution(rd)]);
@@ -237,12 +237,12 @@ void LobbyDirector::HandleClientDisconnected(ClientId clientId)
   _clientContext.erase(clientId);
 }
 
-soa::ServerInstance& LobbyDirector::GetServerInstance()
+ServerInstance& LobbyDirector::GetServerInstance()
 {
   return _serverInstance;
 }
 
-soa::Settings::LobbySettings& LobbyDirector::GetSettings()
+Settings::LobbySettings& LobbyDirector::GetSettings()
 {
   return GetServerInstance().GetSettings()._lobbySettings;
 }
@@ -269,7 +269,7 @@ void LobbyDirector::HandleEnterChannel(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyEnterChannelOK,
+    protocol::Command::LobbyEnterChannelOK,
     [response]()
     {
       return response;
@@ -285,7 +285,7 @@ void LobbyDirector::HandleRoomList(
   response.unk1 = 1;
   response.unk2 = 1;
 
-  for (const auto & room : soa::RoomRegistry::Get().GetRooms() | std::views::values)
+  for (const auto & room : RoomRegistry::Get().GetRooms() | std::views::values)
   {
     auto& roomResponse = response.rooms.emplace_back();
     roomResponse.id = room.uid;
@@ -296,7 +296,7 @@ void LobbyDirector::HandleRoomList(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyRoomListOK,
+    protocol::Command::LobbyRoomListOK,
     [response]()
     {
       return response;
@@ -307,7 +307,7 @@ void LobbyDirector::HandleMakeRoom(
   ClientId clientId,
   const LobbyCommandMakeRoom& command)
 {
-  auto& roomRegistry = soa::RoomRegistry::Get();
+  auto& roomRegistry = RoomRegistry::Get();
   auto& room = roomRegistry.CreateRoom();
 
   room.name = command.name;
@@ -328,7 +328,7 @@ void LobbyDirector::HandleMakeRoom(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyMakeRoomOK,
+    protocol::Command::LobbyMakeRoomOK,
     [response]()
     {
       return response;
@@ -339,7 +339,7 @@ void LobbyDirector::HandleEnterRoom(
   ClientId clientId,
   const LobbyCommandEnterRoom& command)
 {
-  auto& roomRegistry = soa::RoomRegistry::Get();
+  auto& roomRegistry = RoomRegistry::Get();
 
   LobbyCommandEnterRoomOK response{
     .roomUid =  command.roomUid,
@@ -349,7 +349,7 @@ void LobbyDirector::HandleEnterRoom(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyEnterRoomOK,
+    protocol::Command::LobbyEnterRoomOK,
     [response]()
     {
       return response;
@@ -380,7 +380,7 @@ void LobbyDirector::QueueShowInventory(ClientId clientId)
     .items = {},
     .horses = {}};
 
-  characterRecord->Immutable([this, &response](const soa::data::Character& character)
+  characterRecord->Immutable([this, &response](const data::Character& character)
   {
     const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
       character.inventory());
@@ -393,7 +393,7 @@ void LobbyDirector::QueueShowInventory(ClientId clientId)
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyShowInventoryOK,
+    protocol::Command::LobbyShowInventoryOK,
     [response]()
     {
       return response;
@@ -410,7 +410,7 @@ void LobbyDirector::HandleAchievementCompleteList(
 
   LobbyCommandAchievementCompleteListOK response{};
 
-  characterRecord->Immutable([&response](const soa::data::Character& character)
+  characterRecord->Immutable([&response](const data::Character& character)
   {
     response.unk0 = character.uid();
   });
@@ -420,7 +420,7 @@ void LobbyDirector::HandleAchievementCompleteList(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyAchievementCompleteListOK,
+    protocol::Command::LobbyAchievementCompleteListOK,
     [response]()
     {
       return response;
@@ -435,7 +435,7 @@ void LobbyDirector::HandleRequestLeagueInfo(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyRequestLeagueInfoOK,
+    protocol::Command::LobbyRequestLeagueInfoOK,
     [response]()
     {
       return response;
@@ -452,7 +452,7 @@ void LobbyDirector::HandleRequestQuestList(
 
   LobbyCommandRequestQuestListOK response{};
 
-  characterRecord->Immutable([&response](const soa::data::Character& character)
+  characterRecord->Immutable([&response](const data::Character& character)
   {
     response.unk0 = character.uid();
   });
@@ -475,7 +475,7 @@ void LobbyDirector::HandleRequestQuestList(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyAchievementCompleteListOK,
+    protocol::Command::LobbyAchievementCompleteListOK,
     [response]()
     {
       return response;
@@ -492,14 +492,14 @@ void LobbyDirector::HandleRequestDailyQuestList(
 
   LobbyCommandRequestDailyQuestListOK response{};
 
-  characterRecord->Immutable([&response](const soa::data::Character& character)
+  characterRecord->Immutable([&response](const data::Character& character)
   {
     response.val0 = character.uid();
   });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyRequestDailyQuestListOK,
+    protocol::Command::LobbyRequestDailyQuestListOK,
     [response]()
     {
       return response;
@@ -517,7 +517,7 @@ void LobbyDirector::HandleRequestSpecialEventList(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyAchievementCompleteListOK,
+    protocol::Command::LobbyAchievementCompleteListOK,
     [response]()
     {
       return response;
@@ -537,7 +537,7 @@ void LobbyDirector::HandleRequestPersonalInfo(ClientId clientId, const LobbyComm
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyPersonalInfo,
+    protocol::Command::LobbyPersonalInfo,
     [response]()
     {
       return response;
@@ -550,7 +550,7 @@ void LobbyDirector::HandleSetIntroduction(ClientId clientId, const LobbyCommandS
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  characterRecord->Mutable([&command](soa::data::Character& character)
+  characterRecord->Mutable([&command](data::Character& character)
   {
     character.introduction() = command.introduction;
   });
@@ -573,15 +573,15 @@ void LobbyDirector::HandleEnterRanch(
 
     _commandServer.QueueCommand<decltype(response)>(
       clientId,
-      CommandId::LobbyEnterRanchCancel,
+      protocol::Command::LobbyEnterRanchCancel,
       [response]()
       {
         return response;
       });
   }
 
-  auto ranchUid = soa::data::InvalidUid;
-  characterRecord->Immutable([&ranchUid](const soa::data::Character& character)
+  auto ranchUid = data::InvalidUid;
+  characterRecord->Immutable([&ranchUid](const data::Character& character)
   {
     ranchUid = character.ranchUid();
   });
@@ -591,7 +591,7 @@ void LobbyDirector::HandleEnterRanch(
 
 void LobbyDirector::QueueEnterRanchOK(
   ClientId clientId,
-  soa::data::Uid ranchUid)
+  data::Uid ranchUid)
 {
   LobbyCommandEnterRanchOK response{
     .ranchUid =  ranchUid,
@@ -602,7 +602,7 @@ void LobbyDirector::QueueEnterRanchOK(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyEnterRanchOK,
+    protocol::Command::LobbyEnterRanchOK,
     [response]()
     {
       return response;
@@ -621,7 +621,7 @@ void LobbyDirector::HandleGetMessengerInfo(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyGetMessengerInfoOK,
+    protocol::Command::LobbyGetMessengerInfoOK,
     [response]()
     {
       return response;
@@ -637,7 +637,7 @@ void LobbyDirector::HandleGoodsShopList(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyGoodsShopListOK,
+    protocol::Command::LobbyGoodsShopListOK,
     [response]()
     {
       return response;
@@ -654,14 +654,14 @@ void LobbyDirector::HandleInquiryTreecash(
 
   LobbyCommandInquiryTreecashOK response{};
 
-  characterRecord->Immutable([&response](const soa::data::Character& character)
+  characterRecord->Immutable([&response](const data::Character& character)
   {
     response.cash = character.cash();
   });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyInquiryTreecashOK,
+    protocol::Command::LobbyInquiryTreecashOK,
     [response]()
     {
       return response;
@@ -675,11 +675,11 @@ void LobbyDirector::HandleGuildPartyList(
   const LobbyCommandGuildPartyListOK response{};
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    CommandId::LobbyGuildPartyListOK,
+    protocol::Command::LobbyGuildPartyListOK,
     [response]()
     {
       return response;
     });
 }
 
-} // namespace alicia
+} // namespace server

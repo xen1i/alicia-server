@@ -24,7 +24,7 @@
 
 #include <map>
 
-namespace alicia
+namespace server
 {
 
 //!
@@ -37,18 +37,18 @@ class WorldTracker
 {
 public:
   //! An object map.
-  using ObjectMap = std::map<soa::data::Uid, uint16_t>;
+  using ObjectMap = std::map<server::data::Uid, uint16_t>;
 
   //!
-  Oid AddCharacter(soa::data::Uid character);
+  Oid AddCharacter(server::data::Uid character);
   //!
-  void RemoveCharacter(soa::data::Uid character);
+  void RemoveCharacter(server::data::Uid character);
   //!
-  [[nodiscard]] Oid GetCharacterEntityId(soa::data::Uid character);
+  [[nodiscard]] Oid GetCharacterEntityId(server::data::Uid character);
   //!
-  Oid AddHorse(soa::data::Uid mount);
+  Oid AddHorse(server::data::Uid mount);
   //!
-  [[nodiscard]] Oid GetHorseEntityId(soa::data::Uid mount);
+  [[nodiscard]] Oid GetHorseEntityId(server::data::Uid mount);
 
   //!
   [[nodiscard]] const ObjectMap& GetHorseEntities();
@@ -64,6 +64,6 @@ private:
   ObjectMap _characters;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // WORLDTRACKER_HPP

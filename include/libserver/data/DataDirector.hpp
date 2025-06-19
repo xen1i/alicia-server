@@ -26,7 +26,7 @@
 // #include "pq/PqDataSource.hpp"
 #include "file/FileDataSource.hpp"
 
-namespace soa
+namespace server
 {
 
 class DataDirector
@@ -152,6 +152,6 @@ private:
   RanchStorage _ranchStorage;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif // DATADIRECTOR_HPP

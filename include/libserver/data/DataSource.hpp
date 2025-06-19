@@ -23,7 +23,7 @@
 #include "libserver/data/DataDefinitions.hpp"
 #include "server/Settings.hpp"
 
-namespace soa
+namespace server
 {
 
 //! A class managing a data source.
@@ -88,7 +88,7 @@ public:
   virtual void RetrieveGuild(data::Uid uid, data::Guild& guild) = 0;
   //! Stores the guild on the data source.
   //! @param horse Guild to store.
-  virtual void StoreGuild(data::Uid uid, const soa::data::Guild& guild) = 0;
+  virtual void StoreGuild(data::Uid uid, const data::Guild& guild) = 0;
 
   //! Creates the stored item in the data source.
   //! @para character Stored item to create.
@@ -111,6 +111,6 @@ public:
   virtual void StoreRanch(data::Uid uid, const data::Ranch& ranch) = 0;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif // DATASOURCE_HPP

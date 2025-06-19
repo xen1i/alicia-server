@@ -19,7 +19,7 @@
 
 #include "libserver/data/DataDirector.hpp"
 
-namespace soa
+namespace server
 {
 
 DataDirector::DataDirector()
@@ -167,4 +167,4 @@ DataDirector::RanchStorage& DataDirector::GetRanches()
   return _ranchStorage;
 }
 
-} // namespace soa
+} // namespace server

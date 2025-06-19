@@ -26,7 +26,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace alicia
+namespace server
 {
 
 namespace
@@ -37,7 +37,7 @@ constexpr std::size_t MaxCommandDataSize = 4092;
 
 //! Max size of the whole command payload.
 //! That is command data size + size of the message magic.
-constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic);
+constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(protocol::MessageMagic);
 
 //! Reads every specified byte of the source stream,
 //! performs XOR operation on that byte with the specified sliding key
@@ -47,7 +47,7 @@ constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic)
 //! @param source Source stream.
 //! @param sink Sink stream.
 void XorAlgorithm(
-  const XorCode& key,
+  const protocol::XorCode& key,
   SourceStream& source,
   SinkStream& sink)
 {
@@ -64,17 +64,17 @@ void XorAlgorithm(
   }
 }
 
-bool IsMuted(CommandId id)
+bool IsMuted(protocol::Command id)
 {
-  return id == CommandId::LobbyHeartbeat
-    || id == CommandId::RanchHeartbeat
-    || id == CommandId::RanchSnapshot
-    || id == CommandId::RanchSnapshotNotify;
+  return id == protocol::Command::LobbyHeartbeat
+    || id == protocol::Command::RanchHeartbeat
+    || id == protocol::Command::RanchSnapshot
+    || id == protocol::Command::RanchSnapshotNotify;
 }
 
 } // namespace
 
-void CommandClient::SetCode(XorCode code)
+void CommandClient::SetCode(protocol::XorCode code)
 {
   this->_rollingCode = code;
 }
@@ -84,11 +84,11 @@ void CommandClient::RollCode()
   auto& rollingCode = *reinterpret_cast<int32_t*>(
     _rollingCode.data());
 
-  rollingCode = rollingCode * XorMultiplier;
-  rollingCode = XorControl - rollingCode;
+  rollingCode = rollingCode * protocol::XorMultiplier;
+  rollingCode = protocol::XorControl - rollingCode;
 }
 
-const XorCode& CommandClient::GetRollingCode() const
+const protocol::XorCode& CommandClient::GetRollingCode() const
 {
   return _rollingCode;
 }
@@ -129,7 +129,7 @@ void CommandServer::EndHost()
   _serverThread.join();
 }
 
-void CommandServer::SetCode(ClientId client, XorCode code)
+void CommandServer::SetCode(ClientId client, protocol::XorCode code)
 {
   _clients[client].SetCode(code);
 }
@@ -141,19 +141,19 @@ CommandServer::NetworkEventHandler::NetworkEventHandler(
 }
 
 void CommandServer::NetworkEventHandler::OnClientConnected(
-  server::network::ClientId clientId)
+  network::ClientId clientId)
 {
   _commandServer._eventHandler.HandleClientConnected(clientId);
 }
 
 void CommandServer::NetworkEventHandler::OnClientDisconnected(
-  server::network::ClientId clientId)
+  network::ClientId clientId)
 {
   _commandServer._eventHandler.HandleClientDisconnected(clientId);
 }
 
 size_t CommandServer::NetworkEventHandler::OnClientData(
-  server::network::ClientId clientId,
+  network::ClientId clientId,
   const std::span<const std::byte>& data)
 {
   SourceStream commandStream(data);
@@ -179,10 +179,10 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
     uint32_t magicValue{};
     commandStream.Read(magicValue);
 
-    const MessageMagic magic = decode_message_magic(magicValue);
+    const auto magic = protocol::decode_message_magic(magicValue);
 
     // Command ID must be within the valid range.
-    if (magic.id > static_cast<uint16_t>(CommandId::Count))
+    if (magic.id > static_cast<uint16_t>(protocol::Command::Count))
     {
       throw std::runtime_error(
         std::format(
@@ -193,7 +193,7 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
 
     // The provided payload length must be at least the size
     // of the magic itself and smaller than the max command size.
-    if (magic.length < sizeof(MessageMagic) || magic.length > MaxCommandSize)
+    if (magic.length < sizeof(protocol::MessageMagic) || magic.length > MaxCommandSize)
     {
       throw std::runtime_error(
         std::format(
@@ -203,7 +203,7 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
     }
 
     // Size of the data portion of the command.
-    const size_t commandDataSize = static_cast<size_t>(magic.length) - sizeof(MessageMagic);
+    const size_t commandDataSize = static_cast<size_t>(magic.length) - sizeof(protocol::MessageMagic);
     // The size of data that is available and was not yet read.
     const size_t bufferedDataSize = commandStream.Size() - commandStream.GetCursor();
 
@@ -227,7 +227,7 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
 
     auto& client = _commandServer._clients[clientId];
 
-    const auto commandId = static_cast<CommandId>(magic.id);
+    const auto commandId = static_cast<protocol::Command>(magic.id);
 
     // Validate and process the command data.
     if (commandDataSize > 0)
@@ -284,7 +284,7 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
           commandDataSize,
           padding,
           actualCommandDataSize,
-          soa::util::GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
+          util::GenerateByteDump({commandDataBuffer.data(), commandDataSize}));
       }
     }
 
@@ -329,7 +329,7 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
 
 void CommandServer::SendCommand(
   ClientId clientId,
-  CommandId commandId,
+  protocol::Command commandId,
   CommandSupplier supplier)
 {
   // ToDo: Actual queue.
@@ -344,7 +344,7 @@ void CommandServer::SendCommand(
       SinkStream commandSink(writeBufferView);
 
       const auto streamOrigin = commandSink.GetCursor();
-      commandSink.Seek(streamOrigin + sizeof(MessageMagic));
+      commandSink.Seek(streamOrigin + sizeof(protocol::MessageMagic));
 
       // Write the message data.
       supplier(commandSink);
@@ -361,10 +361,10 @@ void CommandServer::SendCommand(
           GetCommandName(commandId),
           static_cast<uint32_t>(commandId),
           commandSize,
-          soa::util::GenerateByteDump(
+          util::GenerateByteDump(
             std::span(
-              static_cast<std::byte*>(mutableBuffer.data()) + sizeof(MessageMagic),
-              commandSize - sizeof(MessageMagic))));
+              static_cast<std::byte*>(mutableBuffer.data()) + sizeof(protocol::MessageMagic),
+              commandSize - sizeof(protocol::MessageMagic))));
       }
 
       // Traverse back the stream before the message data,
@@ -372,7 +372,7 @@ void CommandServer::SendCommand(
       commandSink.Seek(streamOrigin);
 
       // Write the message magic.
-      const MessageMagic magic{
+      const protocol::MessageMagic magic{
         .id = static_cast<uint16_t>(commandId),
         .length = commandSize};
 
@@ -389,4 +389,4 @@ void CommandServer::SendCommand(
     });
 }
 
-} // namespace alicia
+} // namespace server

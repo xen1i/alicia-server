@@ -27,12 +27,12 @@
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
 
-namespace soa
+namespace server
 {
 class ServerInstance;
-} // namespace soa
+} // namespace server
 
-namespace alicia
+namespace server
 {
 
 class RanchDirector final
@@ -40,7 +40,7 @@ class RanchDirector final
 {
 public:
   //!
-  explicit RanchDirector(soa::ServerInstance& serverInstance);
+  explicit RanchDirector(ServerInstance& serverInstance);
 
   void Initialize();
   void Terminate();
@@ -56,21 +56,21 @@ public:
 
   //!
   void BroadcastUpdateMountInfoNotify(
-    soa::data::Uid characterUid,
-    soa::data::Uid horseUid);
+    data::Uid characterUid,
+    data::Uid horseUid);
 
-  soa::ServerInstance& GetServerInstance();
-  soa::Settings::RanchSettings& GetSettings();
+  ServerInstance& GetServerInstance();
+  Settings::RanchSettings& GetSettings();
 
 private:
   struct ClientContext
   {
-    soa::data::Uid characterUid;
-    soa::data::Uid ranchUid;
+    data::Uid characterUid;
+    data::Uid ranchUid;
     uint8_t busyState{0};
   };
 
-  ClientContext& GetClientContextByCharacterUid(soa::data::Uid characterUid);
+  ClientContext& GetClientContextByCharacterUid(data::Uid characterUid);
 
   //!
   void HandleRanchEnter(
@@ -188,7 +188,7 @@ private:
     const RanchCommandUseItem& command);
 
   //!
-  soa::ServerInstance& _serverInstance;
+  ServerInstance& _serverInstance;
   //!
   CommandServer _commandServer;
   //!
@@ -199,9 +199,9 @@ private:
     WorldTracker _worldTracker;
     std::unordered_set<ClientId> _clients;
   };
-  std::unordered_map<soa::data::Uid, RanchInstance> _ranches;
+  std::unordered_map<data::Uid, RanchInstance> _ranches;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // RANCHDIRECTOR_HPP

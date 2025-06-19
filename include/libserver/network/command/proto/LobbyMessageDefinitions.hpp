@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace alicia
+namespace server
 {
 
 //! Serverbound login command.
@@ -60,7 +60,7 @@ struct LobbyCommandLogin
 struct LobbyCommandLoginOK
 {
   // filetime
-  soa::util::WinFileTime lobbyTime{};
+  util::WinFileTime lobbyTime{};
   uint32_t member0{};
 
   uint32_t uid{};
@@ -1362,6 +1362,6 @@ struct LobbyCommandSetIntroduction
     SourceStream& stream);
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // LOBBY_MESSAGE_DEFINES_HPP

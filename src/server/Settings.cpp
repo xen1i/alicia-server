@@ -29,7 +29,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace soa
+namespace server
 {
 
 void Settings::LoadFromEnvironment()
@@ -291,4 +291,4 @@ std::pair<asio::ip::address_v4, uint16_t> Settings::ParseAddressAndPort(const nl
   }
 }
 
-} // namespace soa
+} // namespace server

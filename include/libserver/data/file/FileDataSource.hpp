@@ -23,7 +23,7 @@
 #include <libserver/data/DataDefinitions.hpp>
 #include <libserver/data/DataSource.hpp>
 
-namespace soa
+namespace server
 {
 
 class FileDataSource
@@ -54,7 +54,7 @@ public:
 
   void CreateGuild(data::Guild& guild) override;
   void RetrieveGuild(data::Uid uid, data::Guild& guild) override;
-  void StoreGuild(data::Uid uid, const soa::data::Guild& guild) override;
+  void StoreGuild(data::Uid uid, const data::Guild& guild) override;
 
   void CreateHorse(data::Horse& horse) override;
   void RetrieveHorse(data::Uid uid, data::Horse& horse) override;
@@ -90,6 +90,6 @@ private:
   uint32_t _sequentialUid = 0;
 };
 
-} // namespace soa
+} // namespace server
 
 #endif // FILEDATASOURCE_HPP

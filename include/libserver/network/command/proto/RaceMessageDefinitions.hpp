@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace alicia
+namespace server
 {
 
 enum class RoomOptionType : uint16_t
@@ -579,6 +579,6 @@ struct RaceCommandReadyRaceNotify
 };
 
 
-} // namespace alicia
+} // namespace server
 
 #endif // RACE_MESSAGE_DEFINES_HPP

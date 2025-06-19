@@ -22,7 +22,7 @@
 
 #include "libserver/network/Server.hpp"
 
-namespace alicia
+namespace server
 {
 
 class ChatterServer
@@ -37,6 +37,6 @@ public:
   // std::thread _serverThread;
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif // CHATTER_SERVER_HPP

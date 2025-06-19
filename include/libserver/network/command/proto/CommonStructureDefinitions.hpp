@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace alicia
+namespace server
 {
 
 //!
@@ -441,6 +441,6 @@ enum class TeamMode : uint8_t
   Team = 2
 };
 
-} // namespace alicia
+} // namespace server
 
 #endif
