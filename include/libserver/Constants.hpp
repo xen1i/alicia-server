@@ -18,7 +18,7 @@ namespace server
 namespace constants
 {
 
-constexpr bool IsDevelopmentMode = SERVER_DEVELOPMENT_BUILD;
+constexpr bool IsDevelopmentMode = true;
 
 } // namespace constants
 

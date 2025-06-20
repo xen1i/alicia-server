@@ -155,13 +155,13 @@ enum class Command : uint16_t
 
   RanchEnterRanch = 0x12b,
   RanchEnterRanchOK = 0x12c,
-  RanchEnterCancel = 0x12d,
+  RanchEnterRanchCancel = 0x12d,
 
-  RanchEnterNotify = 0x12e,
+  RanchEnterRanchNotify = 0x12e,
 
   RanchLeaveRanch = 0x12f,
-  RanchLeaveOK = 0x130,
-  RanchLeaveNotify = 0x132,
+  RanchLeaveRanchOK = 0x130,
+  RanchLeaveRanchNotify = 0x132,
 
   RanchHeartbeat = 0x9e,
 
@@ -259,8 +259,8 @@ enum class Command : uint16_t
   RaceStartRaceNotify = 0x5b,
   RaceStartRaceCancel = 0x5c,
 
-  UserRaceTimer = 0x1024,
-  UserRaceTimerOK = 0x1025,
+  RaceUserRaceTimer = 0x1024,
+  RaceUserRaceTimerOK = 0x1025,
 
   RaceLoadingComplete = 0x1b6,
   RaceLoadingCompleteNotify = 0x1b7,
@@ -268,8 +268,8 @@ enum class Command : uint16_t
   RaceChat = 0x52,
   RaceChatNotify = 0x53,
 
-  RaceReady = 0x58,
-  RaceReadyNotify = 0x59,
+  RaceReadyRace = 0x58,
+  RaceReadyRaceNotify = 0x59,
 
   Count = 0xFFFF
 };

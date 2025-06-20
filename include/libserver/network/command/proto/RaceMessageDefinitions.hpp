@@ -21,13 +21,14 @@
 #define RACE_MESSAGE_DEFINES_HPP
 
 #include "CommonStructureDefinitions.hpp"
+#include "libserver/network/command/CommandProtocol.hpp"
 
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
 
-namespace server
+namespace server::protocol
 {
 
 enum class RoomOptionType : uint16_t
@@ -101,6 +102,11 @@ struct RaceCommandEnterRoom
   uint32_t otp{};
   uint32_t roomUid{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceEnterRoom;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -144,6 +150,11 @@ struct RaceCommandEnterRoomOK
   uint32_t unk12{};
   uint32_t unk13{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceEnterRoomOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -157,6 +168,10 @@ struct RaceCommandEnterRoomOK
 
 struct RaceCommandEnterRoomCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RaceEnterRoomCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -173,6 +188,11 @@ struct RaceCommandEnterRoomNotify
 {
   Racer racer{};
   uint32_t averageTimeRecord{};
+
+  static Command GetCommand()
+  {
+    return Command::RaceEnterRoomNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -201,6 +221,11 @@ struct RaceCommandChangeRoomOptions
   uint8_t option3{};
   uint16_t map{};
   uint8_t raceStarted{};
+
+  static Command GetCommand()
+  {
+    return Command::RaceChangeRoomOptions;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -234,6 +259,11 @@ struct RaceCommandChangeRoomOptionsNotify
   uint16_t option4{};
   uint8_t option5{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceChangeRoomOptionsNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -253,6 +283,11 @@ struct RaceCommandStartRace
 {
   // List size specified with a byte. Max size 10 (potentially)
   std::vector<uint16_t> unk0{};
+
+  static Command GetCommand()
+  {
+    return Command::RaceStartRace;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -349,6 +384,11 @@ struct RaceCommandStartRaceNotify
   };
   std::vector<Unk18Element> unk18{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceStartRaceNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -368,6 +408,11 @@ struct RaceCommandStartRaceCancel
 {
   uint8_t reason{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceStartRaceCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -383,47 +428,62 @@ struct RaceCommandStartRaceCancel
     SourceStream& stream);
 };
 
-struct UserRaceTimer
+struct RaceCommandUserRaceTimer
 {
   uint64_t timestamp{}; // potentially
+
+  static Command GetCommand()
+  {
+    return Command::RaceUserRaceTimer;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const UserRaceTimer& command,
+    const RaceCommandUserRaceTimer& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    UserRaceTimer& command,
+    RaceCommandUserRaceTimer& command,
     SourceStream& stream);
 };
 
-struct UserRaceTimerOK
+struct RaceCommandUserRaceTimerOK
 {
   uint64_t unk0{};
   uint64_t unk1{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceUserRaceTimerOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const UserRaceTimerOK& command,
+    const RaceCommandUserRaceTimerOK& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    UserRaceTimerOK& command,
+    RaceCommandUserRaceTimerOK& command,
     SourceStream& stream);
 };
 
 struct RaceCommandLoadingComplete
 {
+  static Command GetCommand()
+  {
+    return Command::RaceLoadingComplete;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -441,7 +501,12 @@ struct RaceCommandLoadingComplete
 
 struct RaceCommandLoadingCompleteNotify
 {
-  uint16_t member0{};
+  uint16_t oid{};
+
+  static Command GetCommand()
+  {
+    return Command::RaceLoadingCompleteNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -463,6 +528,11 @@ struct RaceCommandChat
   std::string message;
   uint8_t unknown{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceChat;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -483,6 +553,11 @@ struct RaceCommandChatNotify
   std::string author;
   std::string message;
   uint8_t unknown{};
+
+  static Command GetCommand()
+  {
+    return Command::RaceChatNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -543,6 +618,11 @@ struct RaceCommandUpdatePetCancel
 
 struct RaceCommandReadyRace
 {
+  static Command GetCommand()
+  {
+    return Command::RaceReadyRace;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -563,6 +643,11 @@ struct RaceCommandReadyRaceNotify
   uint32_t characterUid{};
   uint8_t ready{};
 
+  static Command GetCommand()
+  {
+    return Command::RaceReadyRaceNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -578,7 +663,6 @@ struct RaceCommandReadyRaceNotify
     SourceStream& stream);
 };
 
-
-} // namespace server
+} // namespace server::protocol
 
 #endif // RACE_MESSAGE_DEFINES_HPP

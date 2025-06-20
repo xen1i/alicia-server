@@ -34,134 +34,115 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
   : _serverInstance(serverInstance)
   , _commandServer(*this)
 {
-  _commandServer.RegisterCommandHandler<RanchCommandRanchEnter>(
-    protocol::Command::RanchEnterRanch,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRanchEnter>(
     [this](ClientId clientId, const auto& message)
     {
       HandleRanchEnter(clientId, message);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRanchLeave>(
-    protocol::Command::RanchLeaveRanch,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandLeaveRanch>(
     [this](ClientId clientId, const auto& message)
     {
       HandleRanchLeave(clientId);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRanchSnapshot>(
-    protocol::Command::RanchSnapshot,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRanchSnapshot>(
     [this](ClientId clientId, const auto& message)
     {
       HandleSnapshot(clientId, message);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRanchCmdAction>(
-    protocol::Command::RanchCmdAction,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRanchCmdAction>(
     [this](ClientId clientId, const auto& message)
     {
       HandleCmdAction(clientId, message);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRanchStuff>(
-    protocol::Command::RanchStuff,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRanchStuff>(
     [this](ClientId clientId, const auto& message)
     {
       HandleRanchStuff(clientId, message);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandUpdateBusyState>(
-    protocol::Command::RanchUpdateBusyState,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandUpdateBusyState>(
     [this](ClientId clientId, auto& command)
     {
       HandleUpdateBusyState(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandSearchStallion>(
-    protocol::Command::RanchSearchStallion,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandSearchStallion>(
     [this](ClientId clientId, auto& command)
     {
       HandleSearchStallion(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandEnterBreedingMarket>(
-    protocol::Command::RanchEnterBreedingMarket,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandEnterBreedingMarket>(
     [this](ClientId clientId, auto& command)
     {
       HandleEnterBreedingMarket(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandTryBreeding>(
-    protocol::Command::RanchTryBreeding,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandTryBreeding>(
     [this](ClientId clientId, auto& command)
     {
       HandleTryBreeding(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandBreedingWishlist>(
-    protocol::Command::RanchBreedingWishlist,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandBreedingWishlist>(
     [this](ClientId clientId, auto& command)
     {
       HandleBreedingWishlist(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandUpdateMountNickname>(
-    protocol::Command::RanchUpdateMountNickname,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandUpdateMountNickname>(
     [this](ClientId clientId, auto& command)
     {
       HandleUpdateMountNickname(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRequestStorage>(
-    protocol::Command::RanchRequestStorage,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestStorage>(
     [this](ClientId clientId, auto& command)
     {
       HandleRequestStorage(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandGetItemFromStorage>(
-    protocol::Command::RanchGetItemFromStorage,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandGetItemFromStorage>(
     [this](ClientId clientId, auto& command)
     {
       HandleGetItemFromStorage(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandChat>(
-    protocol::Command::RanchChat,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandChat>(
     [this](ClientId clientId, auto& command)
     {
       HandleChat(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandWearEquipment>(
-    protocol::Command::RanchWearEquipment,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandWearEquipment>(
     [this](ClientId clientId, auto& command)
     {
       HandleWearEquipment(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRemoveEquipment>(
-    protocol::Command::RanchRemoveEquipment,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRemoveEquipment>(
     [this](ClientId clientId, auto& command)
     {
       HandleRemoveEquipment(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandUseItem>(
-    protocol::Command::RanchUseItem,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandUseItem>(
     [this](ClientId clientId, auto& command)
     {
       HandleUseItem(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandCreateGuild>(
-    protocol::Command::RanchCreateGuild,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandCreateGuild>(
     [this](ClientId clientId, auto& command)
     {
       HandleCreateGuild(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<RanchCommandRequestGuildInfo>(
-    protocol::Command::RanchRequestGuildInfo,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestGuildInfo>(
     [this](ClientId clientId, auto& command)
     {
       HandleRequestGuildInfo(clientId, command);
@@ -175,8 +156,7 @@ void RanchDirector::Initialize()
     GetSettings().address.to_string(),
     GetSettings().port);
 
-  _commandServer.RegisterCommandHandler<RanchCommandRequestNpcDressList>(
-    protocol::Command::RanchRequestNpcDressList,
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestNpcDressList>(
     [this](ClientId clientId, const auto& message)
     {
       HandleRequestNpcDressList(clientId, message);
@@ -214,7 +194,7 @@ void RanchDirector::BroadcastSetIntroductionNotify(
 {
   const auto& clientContext = GetClientContextByCharacterUid(characterUid);
 
-  RanchCommandSetIntroductionNotify notify{
+  protocol::RanchCommandSetIntroductionNotify notify{
     .characterUid = characterUid,
     .introduction = introduction};
 
@@ -226,7 +206,6 @@ void RanchDirector::BroadcastSetIntroductionNotify(
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
-      protocol::Command::RanchSetIntroductionNotify,
       [notify]()
       {
         return notify;
@@ -242,7 +221,7 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
   const auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
     horseUid);
 
-  RanchCommandUpdateMountInfoNotify notify{};
+  protocol::RanchCommandUpdateMountInfoNotify notify{};
   horseRecord->Immutable([&notify](const data::Horse& horse)
   {
     protocol::BuildProtocolHorse(notify.horse, horse);
@@ -256,7 +235,6 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
-      protocol::Command::RanchUpdateMountInfoNotify,
       [notify]()
       {
         return notify;
@@ -274,7 +252,8 @@ Settings::RanchSettings& RanchDirector::GetSettings()
   return GetServerInstance().GetSettings()._ranchSettings;
 }
 
-RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(data::Uid characterUid)
+RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(
+  data::Uid characterUid)
 {
   for (auto& [clientId, clientContext] : _clientContext)
   {
@@ -287,17 +266,17 @@ RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(data
 
 void RanchDirector::HandleRanchEnter(
   ClientId clientId,
-  const RanchCommandRanchEnter& enterRanch)
+  const protocol::RanchCommandRanchEnter& command)
 {
   // todo verify the OTP against the character UID
 
   auto& clientContext = _clientContext[clientId];
 
-  clientContext.characterUid = enterRanch.characterUid;
-  clientContext.ranchUid = enterRanch.ranchUid;
+  clientContext.characterUid = command.characterUid;
+  clientContext.ranchUid = command.ranchUid;
 
-  RanchCommandEnterRanchOK response{
-    .ranchId = enterRanch.ranchUid,
+  protocol::RanchCommandEnterRanchOK response{
+    .ranchId = command.ranchUid,
     .unk0 = "unk0",
     .unk11 = {
       .unk0 = 1,
@@ -305,12 +284,12 @@ void RanchDirector::HandleRanchEnter(
 
   // Get the ranch the user is connecting to.
   const auto ranchRecord = GetServerInstance().GetDataDirector().GetRanches().Get(
-    enterRanch.ranchUid);
+    command.ranchUid);
   if (not ranchRecord)
   {
     throw std::runtime_error(
       std::format("Ranch [{}] not available",
-        enterRanch.characterUid));
+        command.characterUid));
   }
 
   ranchRecord->Immutable([&response](const data::Ranch& ranch)
@@ -318,11 +297,11 @@ void RanchDirector::HandleRanchEnter(
     response.ranchName = ranch.name();
   });
 
-  auto& ranchInstance = _ranches[enterRanch.ranchUid];
+  auto& ranchInstance = _ranches[command.ranchUid];
 
   // Add the character to the ranch.
   ranchInstance._worldTracker.AddCharacter(
-    enterRanch.characterUid);
+    command.characterUid);
 
   RanchCharacter enteringRanchPlayer;
 
@@ -406,7 +385,7 @@ void RanchDirector::HandleRanchEnter(
       });
     });
 
-    if (enterRanch.characterUid == characterUid)
+    if (command.characterUid == characterUid)
     {
       enteringRanchPlayer = ranchCharacter;
     }
@@ -417,14 +396,13 @@ void RanchDirector::HandleRanchEnter(
   _commandServer.SetCode(clientId, {});
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchEnterRanchOK,
     [response]()
     {
       return response;
     });
 
   // Notify to all other players of the entering player.
-  const RanchCommandEnterRanchNotify ranchJoinNotification {
+  const protocol::RanchCommandEnterRanchNotify ranchJoinNotification {
     .character = enteringRanchPlayer
   };
 
@@ -434,7 +412,6 @@ void RanchDirector::HandleRanchEnter(
   {
     _commandServer.QueueCommand<decltype(ranchJoinNotification)>(
       ranchClient,
-      protocol::Command::RanchEnterNotify,
       [ranchJoinNotification](){
         return ranchJoinNotification;
       });
@@ -448,7 +425,7 @@ void RanchDirector::HandleRanchLeave(ClientId clientId)
   const auto& clientContext = _clientContext[clientId];
   auto& ranchInstance = _ranches[clientContext.ranchUid];
 
-  RanchCommandLeaveRanchNotify notify{
+  protocol::RanchCommandLeaveRanchNotify notify{
     .characterId = clientContext.characterUid};
 
   ranchInstance._worldTracker.RemoveCharacter(notify.characterId);
@@ -458,7 +435,6 @@ void RanchDirector::HandleRanchLeave(ClientId clientId)
   {
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
-      protocol::Command::RanchLeaveNotify,
       [notify]()
       {
         return notify;
@@ -468,27 +444,27 @@ void RanchDirector::HandleRanchLeave(ClientId clientId)
 
 void RanchDirector::HandleSnapshot(
   ClientId clientId,
-  const RanchCommandRanchSnapshot& snapshot)
+  const protocol::RanchCommandRanchSnapshot& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto& ranchInstance = _ranches[clientContext.ranchUid];
 
-  RanchCommandRanchSnapshotNotify response {
+  protocol::RanchCommandRanchSnapshotNotify response {
     .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(
       clientContext.characterUid),
-    .type = snapshot.type,
+    .type = command.type,
   };
 
-  switch (snapshot.type)
+  switch (command.type)
   {
-    case RanchCommandRanchSnapshot::Full:
+    case protocol::RanchCommandRanchSnapshot::Full:
     {
-      response.full = snapshot.full;
+      response.full = command.full;
       break;
     }
-    case RanchCommandRanchSnapshot::Partial:
+    case protocol::RanchCommandRanchSnapshot::Partial:
     {
-      response.partial = snapshot.partial;
+      response.partial = command.partial;
       break;
     }
   }
@@ -501,7 +477,6 @@ void RanchDirector::HandleSnapshot(
 
     _commandServer.QueueCommand<decltype(response)>(
       ranchClient,
-      protocol::Command::RanchSnapshotNotify,
       [response]()
       {
         return response;
@@ -509,9 +484,11 @@ void RanchDirector::HandleSnapshot(
   }
 }
 
-void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)
+void RanchDirector::HandleCmdAction(
+  ClientId clientId,
+  const protocol::RanchCommandRanchCmdAction& command)
 {
-  RanchCommandRanchCmdActionNotify response{
+  protocol::RanchCommandRanchCmdActionNotify response{
     .unk0 = 2,
     .unk1 = 3,
     .unk2 = 1,};
@@ -519,14 +496,15 @@ void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCm
   // TODO: Actual implementation of it
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchCmdActionNotify,
     [response]()
     {
       return response;
     });
 }
 
-void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchStuff& command)
+void RanchDirector::HandleRanchStuff(
+  ClientId clientId,
+  const protocol::RanchCommandRanchStuff& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -538,7 +516,7 @@ void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchS
       std::format("Character [{}] not available", clientContext.characterUid));
   }
 
-  RanchCommandRanchStuffOK response{
+  protocol::RanchCommandRanchStuffOK response{
     command.eventId,
     command.value};
 
@@ -551,7 +529,6 @@ void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchS
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchStuffOK,
     [response]
     {
       return response;
@@ -560,12 +537,12 @@ void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchS
 
 void RanchDirector::HandleUpdateBusyState(
   ClientId clientId,
-  const RanchCommandUpdateBusyState& command)
+  const protocol::RanchCommandUpdateBusyState& command)
 {
   auto& clientContext = _clientContext[clientId];
   auto& ranchInstance = _ranches[clientContext.ranchUid];
 
-  RanchCommandUpdateBusyStateNotify response {
+  protocol::RanchCommandUpdateBusyStateNotify response {
     .characterId = clientContext.characterUid,
     .busyState = command.busyState};
 
@@ -575,7 +552,6 @@ void RanchDirector::HandleUpdateBusyState(
   {
     _commandServer.QueueCommand<decltype(response)>(
       ranchClientId,
-      protocol::Command::RanchSnapshotNotify,
       [response]()
       {
         return response;
@@ -585,9 +561,9 @@ void RanchDirector::HandleUpdateBusyState(
 
 void RanchDirector::HandleSearchStallion(
   ClientId clientId,
-  const RanchCommandSearchStallion& command)
+  const protocol::RanchCommandSearchStallion& command)
 {
-  RanchCommandSearchStallionOK response{
+  protocol::RanchCommandSearchStallionOK response{
     .unk0 = 0,
     .unk1 = 0};
 
@@ -620,20 +596,21 @@ void RanchDirector::HandleSearchStallion(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchSearchStallionOK,
     [response]()
     {
       return response;
     });
 }
 
-void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchCommandEnterBreedingMarket& command)
+void RanchDirector::HandleEnterBreedingMarket(
+  ClientId clientId,
+  const protocol::RanchCommandEnterBreedingMarket& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  RanchCommandEnterBreedingMarketOK response;
+  protocol::RanchCommandEnterBreedingMarketOK response;
 
   characterRecord->Immutable([this, &response](const data::Character& character)
   {
@@ -655,7 +632,6 @@ void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchComm
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchEnterBreedingMarketOK,
     [response]()
     {
       return response;
@@ -664,9 +640,9 @@ void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchComm
 
 void RanchDirector::HandleTryBreeding(
   ClientId clientId,
-  const RanchCommandTryBreeding& command)
+  const protocol::RanchCommandTryBreeding& command)
 {
-  RanchCommandTryBreedingOK response{
+  protocol::RanchCommandTryBreedingOK response{
     .uid = command.unk0, // wild guess
     .tid = command.unk1, // lmao
     .val = 0,
@@ -694,7 +670,6 @@ void RanchDirector::HandleTryBreeding(
   // TODO: Actually do something
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchTryBreedingOK,
     [response]()
     {
       return response;
@@ -703,14 +678,13 @@ void RanchDirector::HandleTryBreeding(
 
 void RanchDirector::HandleBreedingWishlist(
   ClientId clientId,
-  const RanchCommandBreedingWishlist& command)
+  const protocol::RanchCommandBreedingWishlist& command)
 {
-  RanchCommandBreedingWishlistOK response{};
+  protocol::RanchCommandBreedingWishlistOK response{};
 
   // TODO: Actually do something
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchBreedingWishlistOK,
     [response]()
     {
       return response;
@@ -719,7 +693,7 @@ void RanchDirector::HandleBreedingWishlist(
 
 void RanchDirector::HandleUpdateMountNickname(
   ClientId clientId,
-  const RanchCommandUpdateMountNickname& command)
+  const protocol::RanchCommandUpdateMountNickname& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -764,10 +738,9 @@ void RanchDirector::HandleUpdateMountNickname(
 
   if (not canRenameHorse)
   {
-    RanchCommandUpdateMountNicknameCancel response{};
+    protocol::RanchCommandUpdateMountNicknameCancel response{};
     _commandServer.QueueCommand<decltype(response)>(
       clientId,
-      protocol::Command::RanchUpdateMountNicknameCancel,
       [response]()
       {
         return response;
@@ -783,7 +756,7 @@ void RanchDirector::HandleUpdateMountNickname(
     horse.name() = horseName;
   });
 
-  RanchCommandUpdateMountNicknameOK response{
+  protocol::RanchCommandUpdateMountNicknameOK response{
     .horseUid = command.horseUid,
     .nickname = command.name,
     .unk1 = command.unk1,
@@ -791,7 +764,6 @@ void RanchDirector::HandleUpdateMountNickname(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchUpdateMountNicknameOK,
     [response]()
     {
       return response;
@@ -802,19 +774,18 @@ void RanchDirector::HandleUpdateMountNickname(
 
 void RanchDirector::HandleRequestStorage(
   ClientId clientId,
-  const RanchCommandRequestStorage& command)
+  const protocol::RanchCommandRequestStorage& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  static uint32_t idx = 0;
-  RanchCommandRequestStorageOK response{
+  protocol::RanchCommandRequestStorageOK response{
     .category = command.category,
     .page = 1,
     .pageCountAndNotification = 0};
 
-  const bool showPurchases = command.category == RanchCommandRequestStorage::Category::Purchases;
+  const bool showPurchases = command.category == protocol::RanchCommandRequestStorage::Category::Purchases;
 
   // Fill the stored items, either from the purchase category or the gift category.
 
@@ -829,7 +800,6 @@ void RanchDirector::HandleRequestStorage(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchRequestStorageOK,
     [response]()
     {
       return response;
@@ -838,7 +808,7 @@ void RanchDirector::HandleRequestStorage(
 
 void RanchDirector::HandleGetItemFromStorage(
   ClientId clientId,
-  const RanchCommandGetItemFromStorage& command)
+  const protocol::RanchCommandGetItemFromStorage& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -873,13 +843,12 @@ void RanchDirector::HandleGetItemFromStorage(
   // If the stored item is invalid cancel the takeout.
   if (not storedItemIsValid)
   {
-    RanchCommandGetItemFromStorageCancel response{
+    protocol::RanchCommandGetItemFromStorageCancel response{
       .storedItemUid = command.storedItemUid,
       .status = 0};
 
     _commandServer.QueueCommand<decltype(response)>(
       clientId,
-      protocol::Command::RanchGetItemFromStorageCancel,
       [response]()
       {
         return response;
@@ -887,7 +856,7 @@ void RanchDirector::HandleGetItemFromStorage(
     return;
   }
 
-  RanchCommandGetItemFromStorageOK response{
+  protocol::RanchCommandGetItemFromStorageOK response{
     .storedItemUid = command.storedItemUid,
     .member0 = 0};
 
@@ -919,23 +888,23 @@ void RanchDirector::HandleGetItemFromStorage(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchGetItemFromStorageOK,
     [response]()
     {
       return response;
     });
 }
 
-void RanchDirector::HandleRequestNpcDressList(ClientId clientId, const RanchCommandRequestNpcDressList& requestNpcDressList)
+void RanchDirector::HandleRequestNpcDressList(
+  ClientId clientId,
+  const protocol::RanchCommandRequestNpcDressList& requestNpcDressList)
 {
-  RanchCommandRequestNpcDressListOK response{
+  protocol::RanchCommandRequestNpcDressListOK response{
     .unk0 = requestNpcDressList.unk0,
     .dressList = {} // TODO: Fetch dress list from somewhere
   };
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchRequestNpcDressListOK,
     [response]()
     {
       return response;
@@ -944,7 +913,7 @@ void RanchDirector::HandleRequestNpcDressList(ClientId clientId, const RanchComm
 
 void RanchDirector::HandleChat(
   ClientId clientId,
-  const RanchCommandChat& chat)
+  const protocol::RanchCommandChat& chat)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -956,7 +925,7 @@ void RanchDirector::HandleChat(
   {
     for (const auto& response : HandleCommand(clientId, chat.message))
     {
-      RanchCommandChatNotify notify{
+      protocol::RanchCommandChatNotify notify{
         .author = "system",
         .message = response,
         .isBlue = true,};
@@ -966,7 +935,7 @@ void RanchDirector::HandleChat(
     return;
   }
 
-  RanchCommandChatNotify response{
+  protocol::RanchCommandChatNotify response{
     .message = chat.message};
 
   characterRecord->Immutable([&response](const data::Character& character)
@@ -1182,11 +1151,10 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
 void RanchDirector::SendChat(
   ClientId clientId,
-  const RanchCommandChatNotify& chat)
+  const protocol::RanchCommandChatNotify& chat)
 {
-  _commandServer.QueueCommand<RanchCommandChatNotify>(
+  _commandServer.QueueCommand<protocol::RanchCommandChatNotify>(
     clientId,
-    protocol::Command::RanchChatNotify,
     [chat]()
     {
       return chat;
@@ -1195,7 +1163,7 @@ void RanchDirector::SendChat(
 
 void RanchDirector::HandleWearEquipment(
   ClientId clientId,
-  const RanchCommandWearEquipment& command)
+  const protocol::RanchCommandWearEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -1220,13 +1188,12 @@ void RanchDirector::HandleWearEquipment(
 
   if (equipSuccessful)
   {
-    RanchCommandWearEquipmentOK response{
+    protocol::RanchCommandWearEquipmentOK response{
       .itemUid = command.itemUid,
       .member = command.member};
 
     _commandServer.QueueCommand<decltype(response)>(
       clientId,
-      protocol::Command::RanchWearEquipmentOK,
       [response]()
       {
         return response;
@@ -1236,13 +1203,12 @@ void RanchDirector::HandleWearEquipment(
     return;
   }
 
-  RanchCommandWearEquipmentCancel response{
+  protocol::RanchCommandWearEquipmentCancel response{
     .itemUid = command.itemUid,
     .member = command.member};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchWearEquipmentCancel,
     [response]()
     {
       return response;
@@ -1251,7 +1217,7 @@ void RanchDirector::HandleWearEquipment(
 
 void RanchDirector::HandleRemoveEquipment(
   ClientId clientId,
-  const RanchCommandRemoveEquipment& command)
+  const protocol::RanchCommandRemoveEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
@@ -1275,12 +1241,11 @@ void RanchDirector::HandleRemoveEquipment(
 
   // We really don't need to cancel the unequip.
   // Always respond with OK.
-  RanchCommandRemoveEquipmentOK response{
+  protocol::RanchCommandRemoveEquipmentOK response{
     .uid = command.itemUid};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchRemoveEquipmentOK,
     [response]()
     {
       return response;
@@ -1291,19 +1256,18 @@ void RanchDirector::HandleRemoveEquipment(
 
 void RanchDirector::HandleCreateGuild(
   ClientId clientId,
-  const RanchCommandCreateGuild& command)
+  const protocol::RanchCommandCreateGuild& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  RanchCommandCreateGuildOK response{
+  protocol::RanchCommandCreateGuildOK response{
     .uid = 0,
     .member2 = 0};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchCreateGuildOK,
     [response]()
     {
       return response;
@@ -1312,13 +1276,13 @@ void RanchDirector::HandleCreateGuild(
 
 void RanchDirector::HandleRequestGuildInfo(
   ClientId clientId,
-  const RanchCommandRequestGuildInfo& command)
+  const protocol::RanchCommandRequestGuildInfo& command)
 {
   const auto& clientContext = _clientContext[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  RanchCommandRequestGuildInfoOK response{
+  protocol::RanchCommandRequestGuildInfoOK response{
     .guildInfo = {
       .uid = 1,
       .name = "test",
@@ -1326,7 +1290,6 @@ void RanchDirector::HandleRequestGuildInfo(
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchRequestGuildInfoOK,
     [response]()
     {
       return response;
@@ -1339,7 +1302,7 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
     clientContext.characterUid);
 
-  RanchCommandUpdateEquipmentNotify notify{
+  protocol::RanchCommandUpdateEquipmentNotify notify{
     .characterUid = clientContext.characterUid};
 
   characterRecord->Immutable([this, &notify](const data::Character& character)
@@ -1374,7 +1337,6 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
-      protocol::Command::RanchUpdateEquipmentNotify,
       [notify]()
       {
         return notify;
@@ -1384,13 +1346,13 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 
 void RanchDirector::HandleUseItem(
   ClientId clientId,
-  const RanchCommandUseItem& command)
+  const protocol::RanchCommandUseItem& command)
 {
-  RanchCommandUseItemOK response
+  protocol::RanchCommandUseItemOK response
   {
     response.itemUid = command.itemUid,
     response.unk1 = command.always1,
-    response.type = RanchCommandUseItemOK::ActionType::Empty
+    response.type = protocol::RanchCommandUseItemOK::ActionType::Empty
   };
 
   // feed, Action 1 through 3
@@ -1405,17 +1367,16 @@ void RanchDirector::HandleUseItem(
   command.itemUid,
   command.always1,
   command.always1too,
-  command.play == RanchCommandUseItem::Play::Bad
+  command.play == protocol::RanchCommandUseItem::Play::Bad
     ? "Bad"
-    : command.play == RanchCommandUseItem::Play::Good
+    : command.play == protocol::RanchCommandUseItem::Play::Good
       ? "Good"
-      : command.play == RanchCommandUseItem::Play::CriticalGood
+      : command.play == protocol::RanchCommandUseItem::Play::CriticalGood
         ? "Critical good"
         : "Perfect");
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::RanchUseItemOK,
     [response]()
     {
       return response;

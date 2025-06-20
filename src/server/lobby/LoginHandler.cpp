@@ -145,7 +145,7 @@ void LoginHandler::Tick()
 
 void LoginHandler::HandleUserLogin(
   const ClientId clientId,
-  const LobbyCommandLogin& login)
+  const protocol::LobbyCommandLogin& login)
 {
   // Validate the command fields.
   if (login.loginId.empty())
@@ -185,7 +185,7 @@ void LoginHandler::HandleUserLogin(
 
 void LoginHandler::HandleUserCreateCharacter(
   ClientId clientId,
-  const LobbyCommandCreateNickname& command)
+  const protocol::LobbyCommandCreateNickname& command)
 {
   const auto& loginContext = _clientLogins[clientId];
 
@@ -295,7 +295,7 @@ void LoginHandler::QueueUserLoginAccepted(
   const auto lobbyServerTime = util::UnixTimeToFileTime(
     std::chrono::system_clock::now());
 
-  LobbyCommandLoginOK response{
+  protocol::LobbyCommandLoginOK response{
     .lobbyTime =
       {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
        .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
@@ -360,7 +360,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
       response.level = character.level();
       response.carrots = character.carrots();
-      response.role = std::bit_cast<LobbyCommandLoginOK::Role>(
+      response.role = std::bit_cast<protocol::LobbyCommandLoginOK::Role>(
         character.role());
       response.ageGroup = AgeGroup::Adult;
       response.hideAge = false;
@@ -414,7 +414,6 @@ void LoginHandler::QueueUserLoginAccepted(
 
   _server.QueueCommand<decltype(response)>(
     clientId,
-    protocol::Command::LobbyLoginOK,
     [response]()
     {
       return response;
@@ -422,24 +421,22 @@ void LoginHandler::QueueUserLoginAccepted(
 }
 void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string& userName)
 {
-  _server.QueueCommand<LobbyCommandCreateNicknameNotify>(
+  _server.QueueCommand<protocol::LobbyCommandCreateNicknameNotify>(
     clientId,
-    protocol::Command::LobbyCreateNicknameNotify,
     []()
     {
-      return LobbyCommandCreateNicknameNotify{};
+      return protocol::LobbyCommandCreateNicknameNotify{};
     });
 }
 
 void LoginHandler::QueueUserLoginRejected(ClientId clientId)
 {
-  _server.QueueCommand<LobbyCommandLoginCancel>(
+  _server.QueueCommand<protocol::LobbyCommandLoginCancel>(
     clientId,
-    protocol::Command::LobbyLoginCancel,
     []()
     {
-      return LobbyCommandLoginCancel{
-        .reason = LoginCancelReason::InvalidUser};
+      return protocol::LobbyCommandLoginCancel{
+        .reason = protocol::LoginCancelReason::InvalidUser};
     });
 }
 

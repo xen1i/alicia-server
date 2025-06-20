@@ -21,13 +21,14 @@
 #define RANCH_MESSAGE_DEFINES_HPP
 
 #include "CommonStructureDefinitions.hpp"
+#include "libserver/network/command/CommandProtocol.hpp"
 
 #include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
 
-namespace server
+namespace server::protocol
 {
 
 //!
@@ -45,6 +46,11 @@ struct RanchCommandUseItem
     Perfect = 3,
   };
   Play play{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchUseItem;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -107,6 +113,11 @@ struct RanchCommandUseItemOK
   ActionTwoBytes actionTwoBytes{};
   ActionOneByte actionOneByte{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUseItemOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -127,6 +138,11 @@ struct RanchCommandUseItemCancel
 {
   uint32_t unk0{};
   uint8_t unk1{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchUseItemCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -219,6 +235,11 @@ struct RanchCommandRanchEnter
   uint32_t otp{};
   uint32_t ranchUid{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchEnterRanch;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -288,6 +309,11 @@ struct RanchCommandEnterRanchOK
 
   uint32_t unk12{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchEnterRanchOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -306,6 +332,11 @@ struct RanchCommandEnterRanchOK
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanchCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RanchEnterRanchCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -325,6 +356,11 @@ struct RanchCommandEnterRanchCancel
 struct RanchCommandEnterRanchNotify
 {
   RanchCharacter character{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchEnterRanchNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -385,6 +421,11 @@ struct RanchCommandRanchSnapshot
   FullSpatial full{};
   PartialSpatial partial{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchSnapshot;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -409,6 +450,11 @@ struct RanchCommandRanchSnapshotNotify
   RanchCommandRanchSnapshot::FullSpatial full{};
   RanchCommandRanchSnapshot::PartialSpatial partial{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchSnapshotNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -429,6 +475,11 @@ struct RanchCommandRanchCmdAction
 {
   uint16_t unk0{};
   std::vector<uint8_t> snapshot{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchCmdAction;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -452,6 +503,11 @@ struct RanchCommandRanchCmdActionNotify
   uint16_t unk1{};
   uint8_t unk2{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchCmdActionNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -471,6 +527,11 @@ struct RanchCommandRanchCmdActionNotify
 struct RanchCommandUpdateBusyState
 {
   uint8_t busyState{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateBusyState;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -493,6 +554,11 @@ struct RanchCommandUpdateBusyStateNotify
   uint32_t characterId{};
   uint8_t busyState{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateBusyStateNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -509,26 +575,36 @@ struct RanchCommandUpdateBusyStateNotify
 };
 
 //! Serverbound get messenger info command.
-struct RanchCommandRanchLeave
+struct RanchCommandLeaveRanch
 {
+  static Command GetCommand()
+  {
+    return Command::RanchLeaveRanch;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandRanchLeave& command,
+    const RanchCommandLeaveRanch& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandRanchLeave& command,
+    RanchCommandLeaveRanch& command,
     SourceStream& stream);
 };
 
 //! Clientbound get messenger info response.
 struct RanchCommandLeaveRanchOK
 {
+  static Command GetCommand()
+  {
+    return Command::RanchLeaveRanchOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -549,6 +625,11 @@ struct RanchCommandLeaveRanchNotify
 {
   uint32_t characterId{}; // Probably
 
+  static Command GetCommand()
+  {
+    return Command::RanchLeaveRanchNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -567,6 +648,11 @@ struct RanchCommandLeaveRanchNotify
 //! Serverbound heartbeat command.
 struct RanchCommandHeartbeat
 {
+  static Command GetCommand()
+  {
+    return Command::RanchHeartbeat;
+  }
+
   //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -587,6 +673,11 @@ struct RanchCommandRanchStuff
 {
   uint32_t eventId{};
   int32_t value{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchStuff;
+  }
 
   //! Writes the command to the provided sink stream.
   //! @param command Command.
@@ -609,6 +700,11 @@ struct RanchCommandRanchStuffOK
   uint32_t eventId{};
   int32_t moneyIncrement{};
   int32_t totalMoney{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchStuffOK;
+  }
 
   //! Writes the command to the provided sink stream.
   //! @param command Command.
@@ -642,6 +738,11 @@ struct RanchCommandSearchStallion
 
   uint8_t unk10{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchSearchStallion;
+  }
+
   //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -659,6 +760,11 @@ struct RanchCommandSearchStallion
 
 struct RanchCommandSearchStallionCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RanchSearchStallionCancel;
+  }
+
   //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -702,6 +808,11 @@ struct RanchCommandSearchStallionOK
   // List size specified with a uint8_t. Max size 10
   std::vector<Stallion> stallions{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchSearchStallionCancel;
+  }
+
   //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -720,6 +831,11 @@ struct RanchCommandSearchStallionOK
 //! Serverbound get messenger info command.
 struct RanchCommandEnterBreedingMarket
 {
+  static Command GetCommand()
+  {
+    return Command::RanchEnterBreedingMarket;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -756,6 +872,11 @@ struct RanchCommandEnterBreedingMarketOK
   };
   std::vector<AvailableHorse> availableHorses{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchEnterBreedingMarketOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -774,6 +895,11 @@ struct RanchCommandEnterBreedingMarketOK
 //! Serverbound get messenger info command.
 struct RanchCommandEnterBreedingMarketCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RanchEnterBreedingMarketCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -794,6 +920,11 @@ struct RanchCommandTryBreeding
 {
   uint32_t unk0{};
   uint32_t unk1{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchTryBreeding;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -835,6 +966,11 @@ struct RanchCommandTryBreedingOK
   uint16_t unk9{};
   uint8_t unk10{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchTryBreedingOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -860,6 +996,11 @@ struct RanchCommandTryBreedingCancel
   uint8_t unk4{};
   uint8_t unk5{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchTryBreedingCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -878,6 +1019,11 @@ struct RanchCommandTryBreedingCancel
 //! Serverbound get messenger info command.
 struct RanchCommandBreedingWishlist
 {
+  static Command GetCommand()
+  {
+    return Command::RanchBreedingWishlist;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -920,6 +1066,11 @@ struct RanchCommandBreedingWishlistOK
   // List length specified with a uint8_t, max size 8
   std::vector<WishlistElement> wishlist{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchBreedingWishlistOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -938,6 +1089,11 @@ struct RanchCommandBreedingWishlistOK
 //! Serverbound get messenger info command.
 struct RanchCommandBreedingWishlistCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RanchBreedingWishlistCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -959,6 +1115,11 @@ struct RanchCommandUpdateMountNickname
   uint32_t horseUid{};
   std::string name{};
   uint32_t unk1{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateMountNickname;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -983,6 +1144,11 @@ struct RanchCommandUpdateMountNicknameOK
   uint32_t unk1{};
   uint32_t unk2{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateMountNicknameOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1002,6 +1168,11 @@ struct RanchCommandUpdateMountNicknameOK
 struct RanchCommandUpdateMountNicknameCancel
 {
   uint8_t unk0{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateMountNicknameCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1035,6 +1206,11 @@ struct RanchCommandUpdateMountInfoNotify
   uint8_t member1{};
   Horse horse{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateMountInfoNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1060,6 +1236,11 @@ struct RanchCommandRequestStorage
 
   Category category{};
   uint16_t page{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchRequestStorage;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1087,6 +1268,11 @@ struct RanchCommandRequestStorageOK
   //! Max 33 elements.
   std::vector<StoredItem> storedItems{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestStorageOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1107,6 +1293,11 @@ struct RanchCommandRequestStorageCancel
   RanchCommandRequestStorage category{};
   uint8_t val1{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestStorageOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1125,6 +1316,11 @@ struct RanchCommandRequestStorageCancel
 struct RanchCommandGetItemFromStorage
 {
   uint32_t storedItemUid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchGetItemFromStorage;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1147,6 +1343,11 @@ struct RanchCommandGetItemFromStorageOK
   std::vector<Item> items{};
   uint32_t member0{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchGetItemFromStorageOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1166,6 +1367,11 @@ struct RanchCommandGetItemFromStorageCancel
 {
   uint32_t storedItemUid{};
   uint8_t status{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchGetItemFromStorageCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1205,6 +1411,11 @@ struct RanchCommandRequestNpcDressList
 {
   uint32_t unk0{}; // NPC ID?
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestNpcDressList;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1227,6 +1438,11 @@ struct RanchCommandRequestNpcDressListOK
   // List size specified with a uint8_t. Max size 10
   std::vector<Item> dressList{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestNpcDressListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1244,6 +1460,11 @@ struct RanchCommandRequestNpcDressListOK
 
 struct RanchCommandRequestNpcDressListCancel
 {
+  static Command GetCommand()
+  {
+    return Command::RanchRequestNpcDressListCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1264,6 +1485,11 @@ struct RanchCommandChat
   std::string message;
   uint8_t unknown{};
   uint8_t unknown2{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchChat;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1287,6 +1513,11 @@ struct RanchCommandChatNotify
   uint8_t isBlue{};
   uint8_t unknown2{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchChatNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1306,6 +1537,11 @@ struct RanchCommandWearEquipment
 {
   uint32_t itemUid{};
   uint8_t member{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchWearEquipment;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1327,6 +1563,11 @@ struct RanchCommandWearEquipmentOK
   uint32_t itemUid{};
   uint8_t member{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchWearEquipmentOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1347,6 +1588,11 @@ struct RanchCommandWearEquipmentCancel
   uint32_t itemUid{};
   uint8_t member{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchWearEquipmentCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1365,6 +1611,11 @@ struct RanchCommandWearEquipmentCancel
 struct RanchCommandRemoveEquipment
 {
   uint32_t itemUid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchRemoveEquipment;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1385,6 +1636,11 @@ struct RanchCommandRemoveEquipmentOK
 {
   uint32_t uid{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRemoveEquipmentOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1404,6 +1660,11 @@ struct RanchCommandRemoveEquipmentCancel
 {
   uint32_t itemUid{};
   uint8_t member{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchRemoveEquipmentCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1427,6 +1688,11 @@ struct RanchCommandUpdateEquipmentNotify
   std::vector<Item> mountEquipment;
   Horse mount{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUpdateEquipmentNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1446,6 +1712,11 @@ struct RanchCommandSetIntroductionNotify
 {
   uint32_t characterUid{};
   std::string introduction{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchSetIntroductionNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1467,6 +1738,11 @@ struct RanchCommandCreateGuild
   std::string name;
   std::string description;
 
+  static Command GetCommand()
+  {
+    return Command::RanchCreateGuild;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1486,6 +1762,11 @@ struct RanchCommandCreateGuildOK
 {
   uint32_t uid{};
   uint32_t member2{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchCreateGuildOK;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1507,6 +1788,11 @@ struct RanchCommandCreateGuildCancel
   uint8_t status{};
   uint32_t member2{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchCreateGuildCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1524,6 +1810,11 @@ struct RanchCommandCreateGuildCancel
 
 struct RanchCommandRequestGuildInfo
 {
+  static Command GetCommand()
+  {
+    return Command::RanchRequestGuildInfo;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1565,6 +1856,11 @@ struct RanchCommandRequestGuildInfoOK
       SourceStream& stream);
   } guildInfo;
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestGuildInfoOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1583,6 +1879,11 @@ struct RanchCommandRequestGuildInfoOK
 struct RanchCommandRequestGuildInfoCancel
 {
   uint8_t status{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchRequestGuildInfoCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1605,6 +1906,11 @@ struct RanchCommandUpdatePet
   //! optional
   uint32_t member2{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchUpdatePet;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1626,6 +1932,11 @@ struct RanchCommandRequestPetBirth
   uint32_t member2{};
   PetInfo petInfo{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestPetBirth;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1644,6 +1955,11 @@ struct RanchCommandRequestPetBirth
 struct RanchCommandRequestPetBirthOK
 {
   PetBirthInfo petBirthInfo{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchRequestPetBirthOK;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1664,6 +1980,11 @@ struct RanchCommandRequestPetBirthCancel
 {
   PetInfo petInfo{};
 
+  static Command GetCommand()
+  {
+    return Command::RanchRequestPetBirthCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1679,25 +2000,30 @@ struct RanchCommandRequestPetBirthCancel
     SourceStream& stream);
 };
 
-struct RanchCommandRequestPetBirthNotify
+struct RanchCommandPetBirthNotify
 {
   PetBirthInfo petBirthInfo{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchPetBirthNotify;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandRequestPetBirthNotify& command,
+    const RanchCommandPetBirthNotify& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandRequestPetBirthNotify& command,
+    RanchCommandPetBirthNotify& command,
     SourceStream& stream);
 };
 
-} // namespace server
+} // namespace server::protocol
 
 #endif // RANCH_MESSAGE_DEFINES_HPP

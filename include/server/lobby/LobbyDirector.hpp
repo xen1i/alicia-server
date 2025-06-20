@@ -64,29 +64,29 @@ public:
 private:
   void HandleEnterChannel(
     ClientId clientId,
-    const LobbyCommandEnterChannel& enterChannel);
+    const protocol::LobbyCommandEnterChannel& command);
 
   void HandleRoomList(
     ClientId,
-    const LobbyCommandRoomList& command);
+    const protocol::LobbyCommandRoomList& command);
 
   void HandleMakeRoom(
     ClientId clientId,
-    const LobbyCommandMakeRoom& command);
+    const protocol::LobbyCommandMakeRoom& command);
 
   void HandleEnterRoom(
     ClientId clientId,
-    const LobbyCommandEnterRoom& command);
+    const protocol::LobbyCommandEnterRoom& command);
 
   //!
   void HandleHeartbeat(
     ClientId clientId,
-    const LobbyCommandHeartbeat& heartbeat);
+    const protocol::LobbyCommandHeartbeat& command);
 
   //!
   void HandleShowInventory(
     ClientId clientId,
-    const LobbyCommandShowInventory& showInventory);
+    const protocol::LobbyCommandShowInventory& command);
 
   void QueueShowInventory(
     ClientId clientId);
@@ -94,41 +94,41 @@ private:
   //!
   void HandleAchievementCompleteList(
     ClientId clientId,
-    const LobbyCommandAchievementCompleteList& achievementCompleteList);
+    const protocol::LobbyCommandAchievementCompleteList& command);
 
   //!
   void HandleRequestLeagueInfo(
     ClientId clientId,
-    const LobbyCommandRequestLeagueInfo& requestLeagueInfo);
+    const protocol::LobbyCommandRequestLeagueInfo& command);
 
   //!
   void HandleRequestQuestList(
     ClientId clientId,
-    const LobbyCommandRequestQuestList& requestQuestList);
+    const protocol::LobbyCommandRequestQuestList& command);
 
   //!
   void HandleRequestDailyQuestList(
     ClientId clientId,
-    const LobbyCommandRequestDailyQuestList& requestQuestList);
+    const protocol::LobbyCommandRequestDailyQuestList& command);
 
   //!
   void HandleRequestSpecialEventList(
     ClientId clientId,
-    const LobbyCommandRequestSpecialEventList& requestQuestList);
+    const protocol::LobbyCommandRequestSpecialEventList& command);
 
   //!
   void HandleRequestPersonalInfo(
     ClientId clientId,
-    const LobbyCommandRequestPersonalInfo& command);
+    const protocol::LobbyCommandRequestPersonalInfo& command);
 
   void HandleSetIntroduction(
     ClientId clientId,
-    const LobbyCommandSetIntroduction& command);
+    const protocol::LobbyCommandSetIntroduction& command);
 
   //!
   void HandleEnterRanch(
     ClientId clientId,
-    const LobbyCommandEnterRanch& requestEnterRanch);
+    const protocol::LobbyCommandEnterRanch& command);
 
   void QueueEnterRanchOK(
     ClientId clientId,
@@ -137,22 +137,22 @@ private:
   //!
   void HandleGetMessengerInfo(
     ClientId clientId,
-    const LobbyCommandGetMessengerInfo& requestMessengerInfo);
+    const protocol::LobbyCommandGetMessengerInfo& command);
 
   //!
   void HandleGoodsShopList(
     ClientId clientId,
-    const LobbyCommandGoodsShopList& message);
+    const protocol::LobbyCommandGoodsShopList& command);
 
   //!
   void HandleInquiryTreecash(
     ClientId clientId,
-    const LobbyCommandInquiryTreecash& message);
+    const protocol::LobbyCommandInquiryTreecash& command);
 
   //!
   void HandleGuildPartyList(
     ClientId clientId,
-    const LobbyCommandGuildPartyList& message);
+    const protocol::LobbyCommandGuildPartyList& command);
 
   //!
   ServerInstance& _serverInstance;

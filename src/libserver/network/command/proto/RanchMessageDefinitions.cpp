@@ -21,7 +21,7 @@
 
 #include <format>
 
-namespace server
+namespace server::protocol
 {
 
 namespace
@@ -517,15 +517,15 @@ void RanchCommandUpdateBusyStateNotify::Read(
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandRanchLeave::Write(
-  const RanchCommandRanchLeave& command,
+void RanchCommandLeaveRanch::Write(
+  const RanchCommandLeaveRanch& command,
   SinkStream& stream)
 {
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandRanchLeave::Read(
-  RanchCommandRanchLeave& command,
+void RanchCommandLeaveRanch::Read(
+  RanchCommandLeaveRanch& command,
   SourceStream& stream)
 {
   // Empty.
@@ -1428,18 +1428,18 @@ void RanchCommandRequestPetBirthCancel::Read(
   throw std::runtime_error("Not implemented");
 }
 
-void RanchCommandRequestPetBirthNotify::Write(
-  const RanchCommandRequestPetBirthNotify& command,
+void RanchCommandPetBirthNotify::Write(
+  const RanchCommandPetBirthNotify& command,
   SinkStream& stream)
 {
   stream.Write(command.petBirthInfo);
 }
 
-void RanchCommandRequestPetBirthNotify::Read(
-  RanchCommandRequestPetBirthNotify& command,
+void RanchCommandPetBirthNotify::Read(
+  RanchCommandPetBirthNotify& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented");
 }
 
-} // namespace server
+} // namespace server::protocol

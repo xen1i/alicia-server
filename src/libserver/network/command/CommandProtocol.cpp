@@ -115,14 +115,14 @@ const std::unordered_map<Command, std::string_view> commands = {
   {Command::LobbySetIntroduction, "LobbySetIntroduction"},
 
   {Command::RanchEnterRanch, "RanchEnter"},
-  {Command::RanchEnterCancel, "RanchEnterCancel"},
-  {Command::RanchEnterNotify, "RanchEnterNotify"},
+  {Command::RanchEnterRanchCancel, "RanchEnterCancel"},
+  {Command::RanchEnterRanchNotify, "RanchEnterNotify"},
   {Command::RanchEnterRanchOK, "RanchEnterRanchOK"},
 
   {Command::RanchLeaveRanch, "RanchLeave"},
-  {Command::RanchLeaveOK, "RanchLeave"},
+  {Command::RanchLeaveRanchOK, "RanchLeave"},
 
-  {Command::RanchLeaveNotify, "RanchLeaveNotify"},
+  {Command::RanchLeaveRanchNotify, "RanchLeaveNotify"},
 
   {Command::RanchHeartbeat, "RanchHeartbeat"},
 
@@ -220,8 +220,8 @@ const std::unordered_map<Command, std::string_view> commands = {
   {Command::RaceStartRaceNotify, "RaceStartRaceNotify"},
   {Command::RaceStartRaceCancel, "RaceStartRaceCancel"},
 
-  {Command::UserRaceTimer, "UserRaceTimer"},
-  {Command::UserRaceTimerOK, "UserRaceTimerOK"},
+  {Command::RaceUserRaceTimer, "UserRaceTimer"},
+  {Command::RaceUserRaceTimerOK, "UserRaceTimerOK"},
 
   {Command::RaceLoadingComplete, "RaceLoadingComplete"},
   {Command::RaceLoadingCompleteNotify, "RaceLoadingCompleteNotify"},

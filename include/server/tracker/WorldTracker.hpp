@@ -37,18 +37,18 @@ class WorldTracker
 {
 public:
   //! An object map.
-  using ObjectMap = std::map<server::data::Uid, uint16_t>;
+  using ObjectMap = std::map<data::Uid, uint16_t>;
 
   //!
-  Oid AddCharacter(server::data::Uid character);
+  Oid AddCharacter(data::Uid character);
   //!
-  void RemoveCharacter(server::data::Uid character);
+  void RemoveCharacter(data::Uid character);
   //!
-  [[nodiscard]] Oid GetCharacterEntityId(server::data::Uid character);
+  [[nodiscard]] Oid GetCharacterEntityId(data::Uid character);
   //!
-  Oid AddHorse(server::data::Uid mount);
+  Oid AddHorse(data::Uid mount);
   //!
-  [[nodiscard]] Oid GetHorseEntityId(server::data::Uid mount);
+  [[nodiscard]] Oid GetHorseEntityId(data::Uid mount);
 
   //!
   [[nodiscard]] const ObjectMap& GetHorseEntities();

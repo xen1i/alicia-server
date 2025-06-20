@@ -21,6 +21,7 @@
 #define LOBBY_MESSAGE_DEFINES_HPP
 
 #include "CommonStructureDefinitions.hpp"
+#include "libserver/network/command/CommandProtocol.hpp"
 #include "libserver/util/Util.hpp"
 
 #include <array>
@@ -28,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace server
+namespace server::protocol
 {
 
 //! Serverbound login command.
@@ -40,6 +41,11 @@ struct LobbyCommandLogin
   uint32_t memberNo{0x00};
   std::string authKey{};
   uint8_t val0{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyLogin;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -192,6 +198,11 @@ struct LobbyCommandLoginOK
 
   Pet pet{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyLoginOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -223,6 +234,11 @@ struct LobbyCommandLoginCancel
 {
   LoginCancelReason reason{0x00};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyLoginCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -241,6 +257,11 @@ struct LobbyCommandLoginCancel
 //! Serverbound show inventory command.
 struct LobbyCommandShowInventory
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyShowInventory;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -262,6 +283,11 @@ struct LobbyCommandShowInventoryOK
   std::vector<Item> items{};
   std::vector<Horse> horses{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyShowInventoryOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -277,9 +303,37 @@ struct LobbyCommandShowInventoryOK
     SourceStream& stream);
 };
 
+//! Clientbound show inventory cancel response.
+struct LobbyCommandShowInventoryCancel
+{
+  static Command GetCommand()
+  {
+    return Command::LobbyShowInventoryCancel;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandShowInventoryCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandShowInventoryCancel& command,
+    SourceStream& stream);
+};
+
 //! Clientbound create nickname command.
 struct LobbyCommandCreateNicknameNotify
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyCreateNicknameNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -302,6 +356,11 @@ struct LobbyCommandCreateNickname
   Character character{};
   uint32_t unk0{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyCreateNickname;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -322,6 +381,11 @@ struct LobbyCommandCreateNicknameCancel
 {
   uint8_t error{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyCreateNicknameCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -337,27 +401,14 @@ struct LobbyCommandCreateNicknameCancel
     SourceStream& stream);
 };
 
-//! Clientbound show inventory cancel response.
-struct LobbyCommandShowInventoryCancel
-{
-  //! Writes the command to a provided sink stream.
-  //! @param command Command.
-  //! @param stream Sink stream.
-  static void Write(
-    const LobbyCommandShowInventoryCancel& command,
-    SinkStream& stream);
-
-  //! Reader a command from a provided source stream.
-  //! @param command Command.
-  //! @param stream Source stream.
-  static void Read(
-    LobbyCommandShowInventoryCancel& command,
-    SourceStream& stream);
-};
-
 //! Serverbound request league info command.
 struct LobbyCommandRequestLeagueInfo
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestLeagueInfo;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -391,6 +442,11 @@ struct LobbyCommandRequestLeagueInfoOK
   uint8_t unk12;
   uint8_t unk13;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestLeagueInfoOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -409,6 +465,11 @@ struct LobbyCommandRequestLeagueInfoOK
 //! Serverbound request league info command.
 struct LobbyCommandRequestLeagueInfoCancel
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestLeagueInfoCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -428,6 +489,11 @@ struct LobbyCommandRequestLeagueInfoCancel
 struct LobbyCommandAchievementCompleteList
 {
   uint32_t unk0{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyAchievementCompleteList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -450,6 +516,11 @@ struct LobbyCommandAchievementCompleteListOK
   uint32_t unk0{};
   std::vector<Quest> achievements;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyAchievementCompleteListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -469,6 +540,11 @@ struct LobbyCommandAchievementCompleteListOK
 struct LobbyCommandEnterChannel
 {
   uint8_t channel;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterChannel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -491,6 +567,11 @@ struct LobbyCommandEnterChannelOK
   uint8_t unk0;
   uint16_t unk1;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterChannelOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -509,6 +590,11 @@ struct LobbyCommandEnterChannelOK
 //! Serverbound enter channel command.
 struct LobbyCommandEnterChannelCancel
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterChannelCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -531,6 +617,11 @@ struct LobbyCommandRoomList
   uint8_t page;
   GameMode gameMode;
   TeamMode teamMode;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyRoomList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -583,6 +674,11 @@ struct LobbyCommandRoomListOK
     uint16_t unk2;
   } unk3;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyRoomListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -620,6 +716,11 @@ struct LobbyCommandMakeRoom
 
   uint8_t unk4;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyMakeRoomCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -644,6 +745,11 @@ struct LobbyCommandMakeRoomOK
   uint16_t port;
   uint8_t unk2;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyMakeRoomOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -663,6 +769,11 @@ struct LobbyCommandMakeRoomOK
 struct LobbyCommandMakeRoomCancel
 {
   uint8_t unk0;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyMakeRoomCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -684,6 +795,11 @@ struct LobbyCommandEnterRoom
   uint32_t roomUid{};
   std::string password{};
   uint32_t member3{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRoom;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -708,6 +824,11 @@ struct LobbyCommandEnterRoomOK
   uint16_t port{};
   uint8_t member6{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRoomOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -726,6 +847,11 @@ struct LobbyCommandEnterRoomOK
 struct LobbyCommandEnterRoomCancel
 {
   uint8_t status{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRoomCancel;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -746,6 +872,11 @@ struct LobbyCommandEnterRoomCancel
 struct LobbyCommandRequestQuestList
 {
   uint32_t unk0{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestQuestList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -768,6 +899,11 @@ struct LobbyCommandRequestQuestListOK
   uint32_t unk0{};
   std::vector<Quest> quests;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestQuestListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -786,6 +922,11 @@ struct LobbyCommandRequestQuestListOK
 struct LobbyCommandRequestDailyQuestList
 {
   uint32_t val0{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestDailyQuestList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -818,6 +959,11 @@ struct LobbyCommandRequestDailyQuestListOK
   //! Size specified with uint16
   std::vector<Unk> val1;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestDailyQuestListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -839,6 +985,11 @@ struct LobbyCommandEnterRanch
   uint32_t characterUid;
   std::string unk1;
   uint8_t unk2;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRanch;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -863,6 +1014,11 @@ struct LobbyCommandEnterRanchOK
   uint32_t ip{};
   uint16_t port{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRanchOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -883,6 +1039,11 @@ struct LobbyCommandEnterRanchCancel
 {
   uint16_t unk0;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRanchCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -901,6 +1062,11 @@ struct LobbyCommandEnterRanchCancel
 //! Serverbound get messenger info command.
 struct LobbyCommandGetMessengerInfo
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyGetMessengerInfo;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -923,6 +1089,11 @@ struct LobbyCommandGetMessengerInfoOK
   uint32_t ip;
   uint16_t port;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyGetMessengerInfoOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -941,6 +1112,11 @@ struct LobbyCommandGetMessengerInfoOK
 //! Serverbound get messenger info command.
 struct LobbyCommandGetMessengerInfoCancel
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyGetMessengerInfoCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -960,6 +1136,11 @@ struct LobbyCommandGetMessengerInfoCancel
 struct LobbyCommandRequestSpecialEventList
 {
   uint32_t unk0;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestSpecialEventList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -989,6 +1170,11 @@ struct LobbyCommandRequestSpecialEventListOK
   std::vector<Quest> quests;
   std::vector<Event> events;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestSpecialEventListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1007,6 +1193,11 @@ struct LobbyCommandRequestSpecialEventListOK
 //! Serverbound heartbeat command.
 struct LobbyCommandHeartbeat
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyHeartbeat;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1026,6 +1217,11 @@ struct LobbyCommandHeartbeat
 struct LobbyCommandGoodsShopList
 {
   std::array<uint8_t, 12> data;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyGoodsShopList;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1047,6 +1243,11 @@ struct LobbyCommandGoodsShopListOK
 {
   std::array<uint8_t, 12> data;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyGoodsShopListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1065,6 +1266,11 @@ struct LobbyCommandGoodsShopListOK
 //! Clientbound shop goods message
 struct LobbyCommandGoodsShopListCancel
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyGoodsShopListCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1082,6 +1288,11 @@ struct LobbyCommandGoodsShopListCancel
 
 struct LobbyCommandInquiryTreecash
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyInquiryTreecash;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1101,6 +1312,11 @@ struct LobbyCommandInquiryTreecashOK
 {
   uint32_t cash{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyInquiryTreecashOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1118,6 +1334,11 @@ struct LobbyCommandInquiryTreecashOK
 
 struct LobbyCommandInquiryTreecashCancel
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyInquiryTreecashCancel;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1144,6 +1365,11 @@ struct LobbyCommandClientNotify
   // For the cancel it is the retry count
   uint32_t val1{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyClientNotify;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1161,6 +1387,11 @@ struct LobbyCommandClientNotify
 
 struct LobbyCommandGuildPartyList
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyGuildPartyList;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1192,6 +1423,11 @@ struct LobbyCommandGuildPartyListOK
   };
   std::vector<Member> members;
 
+  static Command GetCommand()
+  {
+    return Command::LobbyGuildPartyListOK;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1209,6 +1445,11 @@ struct LobbyCommandGuildPartyListOK
 
 struct LobbyCommandEnterRandomRanch
 {
+  static Command GetCommand()
+  {
+    return Command::LobbyEnterRandomRanch;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1235,6 +1476,11 @@ struct LobbyCommandRequestPersonalInfo
 
   uint32_t characterUid{};
   Type type{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyRequestPersonalInfo;
+  }
 
   //! Writes the command to a provided sink stream.
   //! @param command Command.
@@ -1328,6 +1574,11 @@ struct LobbyCommandPersonalInfo
     static void Read(Eight& command, SourceStream& stream);
   } eight{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbyPersonalInfo;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1347,6 +1598,11 @@ struct LobbyCommandSetIntroduction
 {
   std::string introduction{};
 
+  static Command GetCommand()
+  {
+    return Command::LobbySetIntroduction;
+  }
+
   //! Writes the command to a provided sink stream.
   //! @param command Command.
   //! @param stream Sink stream.
@@ -1362,6 +1618,6 @@ struct LobbyCommandSetIntroduction
     SourceStream& stream);
 };
 
-} // namespace server
+} // namespace server::protocol
 
 #endif // LOBBY_MESSAGE_DEFINES_HPP

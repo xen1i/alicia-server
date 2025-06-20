@@ -19,7 +19,7 @@
 
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
 
-namespace server
+namespace server::protocol
 {
 
 void WritePlayerRacer(SinkStream& stream, const Avatar& playerRacer)
@@ -383,30 +383,30 @@ void RaceCommandStartRaceCancel::Read(
   throw std::logic_error("Not implemented.");
 }
 
-void UserRaceTimer::Write(
-  const UserRaceTimer& command,
+void RaceCommandUserRaceTimer::Write(
+  const RaceCommandUserRaceTimer& command,
   SinkStream& stream)
 {
   throw std::logic_error("Not implemented.");
 }
 
-void UserRaceTimer::Read(
-  UserRaceTimer& command,
+void RaceCommandUserRaceTimer::Read(
+  RaceCommandUserRaceTimer& command,
   SourceStream& stream)
 {
   stream.Read(command.timestamp);
 }
 
-void UserRaceTimerOK::Write(
-  const UserRaceTimerOK& command,
+void RaceCommandUserRaceTimerOK::Write(
+  const RaceCommandUserRaceTimerOK& command,
   SinkStream& stream)
 {
   stream.Write(command.unk0)
     .Write(command.unk1);
 }
 
-void UserRaceTimerOK::Read(
-  UserRaceTimerOK& command,
+void RaceCommandUserRaceTimerOK::Read(
+  RaceCommandUserRaceTimerOK& command,
   SourceStream& stream)
 {
   throw std::logic_error("Not implemented.");
@@ -430,7 +430,7 @@ void RaceCommandLoadingCompleteNotify::Write(
   const RaceCommandLoadingCompleteNotify& command,
   SinkStream& stream)
 {
-  stream.Write(command.member0);
+  stream.Write(command.oid);
 }
 
 void RaceCommandLoadingCompleteNotify::Read(
@@ -532,4 +532,4 @@ void RaceCommandReadyRaceNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
-} // namespace server
+} // namespace server::protocol

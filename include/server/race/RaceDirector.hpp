@@ -55,26 +55,26 @@ private:
   //!
   void HandleEnterRoom(
     ClientId clientId,
-    const RaceCommandEnterRoom& enterRoom);
+    const protocol::RaceCommandEnterRoom& command);
 
   //!
   void HandleChangeRoomOptions(
     ClientId clientId,
-    const RaceCommandChangeRoomOptions& changeRoomOptions);
+    const protocol::RaceCommandChangeRoomOptions& command);
 
   //!
   void HandleStartRace(
     ClientId clientId,
-    const RaceCommandStartRace& startRace);
+    const protocol::RaceCommandStartRace& command);
 
   //!
   void HandleRaceTimer(
     ClientId clientId,
-    const UserRaceTimer& raceTimer);
+    const protocol::RaceCommandUserRaceTimer& command);
 
   void HandleReadyRace(
     ClientId clientId,
-    const RaceCommandReadyRace& command);
+    const protocol::RaceCommandReadyRace& command);
 
   //!
   ServerInstance& _serverInstance;

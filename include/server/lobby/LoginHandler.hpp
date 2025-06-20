@@ -40,12 +40,12 @@ public:
   //!
   void HandleUserLogin(
     ClientId clientId,
-    const LobbyCommandLogin& login);
+    const protocol::LobbyCommandLogin& login);
 
   //!
   void HandleUserCreateCharacter(
     ClientId clientId,
-    const LobbyCommandCreateNickname& command);
+    const protocol::LobbyCommandCreateNickname& command);
 
   void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
   void QueueUserCreateNickname(ClientId clientId, const std::string& userName);

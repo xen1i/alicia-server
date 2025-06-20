@@ -75,7 +75,7 @@ private:
   //!
   void HandleRanchEnter(
     ClientId clientId,
-    const RanchCommandRanchEnter& enterRanch);
+    const protocol::RanchCommandRanchEnter& command);
 
   //!
   void HandleRanchLeave(
@@ -84,66 +84,66 @@ private:
   //!
   void HandleSnapshot(
     ClientId clientId,
-    const RanchCommandRanchSnapshot& snapshot);
+    const protocol::RanchCommandRanchSnapshot& command);
 
   //!
   void HandleCmdAction(
     ClientId clientId,
-    const RanchCommandRanchCmdAction& action);
+    const protocol::RanchCommandRanchCmdAction& command);
 
   //!
   void HandleRanchStuff(
     ClientId clientId,
-    const RanchCommandRanchStuff& command);
+    const protocol::RanchCommandRanchStuff& command);
 
   //!
   void HandleUpdateBusyState(
     ClientId clientId,
-    const RanchCommandUpdateBusyState& command);
+    const protocol::RanchCommandUpdateBusyState& command);
 
   //!
   void HandleSearchStallion(
     ClientId clientId,
-    const RanchCommandSearchStallion& command);
+    const protocol::RanchCommandSearchStallion& command);
 
   //!
   void HandleEnterBreedingMarket(
     ClientId clientId,
-    const RanchCommandEnterBreedingMarket& command);
+    const protocol::RanchCommandEnterBreedingMarket& command);
 
   //!
   void HandleTryBreeding(
     ClientId clientId,
-    const RanchCommandTryBreeding& command);
+    const protocol::RanchCommandTryBreeding& command);
 
   //!
   void HandleBreedingWishlist(
     ClientId clientId,
-    const RanchCommandBreedingWishlist& command);
+    const protocol::RanchCommandBreedingWishlist& command);
 
   //!
   void HandleUpdateMountNickname(
     ClientId clientId,
-    const RanchCommandUpdateMountNickname& command);
+    const protocol::RanchCommandUpdateMountNickname& command);
 
   //!
   void HandleRequestStorage(
     ClientId clientId,
-    const RanchCommandRequestStorage& command);
+    const protocol::RanchCommandRequestStorage& command);
 
   //!
   void HandleGetItemFromStorage(
     ClientId clientId,
-    const RanchCommandGetItemFromStorage& command);
+    const protocol::RanchCommandGetItemFromStorage& command);
 
   //!
   void HandleRequestNpcDressList(
     ClientId clientId,
-    const RanchCommandRequestNpcDressList& requestNpcDressList);
+    const protocol::RanchCommandRequestNpcDressList& requestNpcDressList);
 
   void HandleChat(
     ClientId clientId,
-    const RanchCommandChat& command);
+    const protocol::RanchCommandChat& command);
 
   std::vector<std::string> HandleCommand(
     ClientId clientId,
@@ -151,31 +151,31 @@ private:
 
   void SendChat(
     ClientId clientId,
-    const RanchCommandChatNotify& chat);
+    const protocol::RanchCommandChatNotify& chat);
 
   void HandleWearEquipment(
     ClientId clientId,
-    const RanchCommandWearEquipment& command);
+    const protocol::RanchCommandWearEquipment& command);
 
   void HandleRemoveEquipment(
     ClientId clientId,
-    const RanchCommandRemoveEquipment& command);
+    const protocol::RanchCommandRemoveEquipment& command);
 
   void HandleCreateGuild(
     ClientId clientId,
-    const RanchCommandCreateGuild& command);
+    const protocol::RanchCommandCreateGuild& command);
 
   void HandleRequestGuildInfo(
     ClientId clientId,
-    const RanchCommandRequestGuildInfo& command);
+    const protocol::RanchCommandRequestGuildInfo& command);
 
   void HandleUpdatePet(
     ClientId clientId,
-    const RanchCommandUpdatePet& command);
+    const protocol::RanchCommandUpdatePet& command);
 
   void HandleRequestPetBirth(
     ClientId clientId,
-    const RanchCommandRequestPetBirth& command);
+    const protocol::RanchCommandRequestPetBirth& command);
 
   //! Broadcasts an equipment update of the character owned by the client
   //! to the currently connected ranch.
@@ -185,7 +185,7 @@ private:
 
   void HandleUseItem(
     ClientId clientId,
-    const RanchCommandUseItem& command);
+    const protocol::RanchCommandUseItem& command);
 
   //!
   ServerInstance& _serverInstance;

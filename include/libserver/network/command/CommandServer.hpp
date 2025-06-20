@@ -55,6 +55,18 @@ private:
   protocol::XorCode _rollingCode{};
 };
 
+template <typename T>
+concept ReadableCommandStruct = ReadableStruct<T> and requires
+{
+  {T::GetCommand()};
+};
+
+template <typename T>
+concept WritableCommandStruct = WritableStruct<T> and requires
+{
+  {T::GetCommand()};
+};
+
 //! A command server.
 class CommandServer final
 {
@@ -83,12 +95,11 @@ public:
   //! Registers a command handler.
   //! @param commandId ID of the command to register the handler for.
   //! @param handler Handler of the command.
-  template <ReadableStruct C>
+  template <ReadableCommandStruct C>
   void RegisterCommandHandler(
-    protocol::Command commandId,
     std::function<void(ClientId clientId, const C& command)> handler)
   {
-    _handlers[commandId] = [handler](ClientId clientId, SourceStream& source)
+    _handlers[C::GetCommand()] = [handler](ClientId clientId, SourceStream& source)
     {
       C command;
       C::Read(command, source);
@@ -103,10 +114,9 @@ public:
   template <WritableStruct C>
   void QueueCommand(
     ClientId clientId,
-    protocol::Command commandId,
     std::function<C()> supplier)
   {
-    SendCommand(clientId, commandId, [supplier](SinkStream& sink){
+    SendCommand(clientId, C::GetCommand(), [supplier](SinkStream& sink){
       C::Write(supplier(), sink);
     });
   }
