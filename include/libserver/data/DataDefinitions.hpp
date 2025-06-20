@@ -22,8 +22,8 @@
 
 #include <atomic>
 #include <cstdint>
-#include <unordered_set>
 #include <string>
+#include <vector>
 
 namespace server
 {

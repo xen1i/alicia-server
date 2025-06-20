@@ -20,12 +20,14 @@
 #ifndef RANCHDIRECTOR_HPP
 #define RANCHDIRECTOR_HPP
 
-#include "libserver/network/command/CommandServer.hpp"
 #include "server/Settings.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
+
+#include <unordered_map>
+#include <unordered_set>
 
 namespace server
 {
@@ -65,8 +67,8 @@ public:
 private:
   struct ClientContext
   {
-    data::Uid characterUid;
-    data::Uid ranchUid;
+    data::Uid characterUid{data::InvalidUid};
+    data::Uid ranchUid{data::InvalidUid};
     uint8_t busyState{0};
   };
 

@@ -19,6 +19,7 @@
 
 #include "libserver/data/file/FileDataSource.hpp"
 
+#include <format>
 #include <fstream>
 
 #include <nlohmann/json.hpp>

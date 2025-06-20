@@ -28,6 +28,8 @@
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
+#include <unordered_map>
+
 namespace server
 {
 

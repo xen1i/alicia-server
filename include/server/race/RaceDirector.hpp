@@ -26,6 +26,9 @@
 #include "libserver/network/command/proto/RaceMessageDefinitions.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
+#include <unordered_map>
+#include <vector>
+
 namespace server
 {
 class ServerInstance;
@@ -83,8 +86,8 @@ private:
 
   struct ClientContext
   {
-    uint32_t characterUid;
-    uint32_t roomUid;
+    data::Uid characterUid{data::InvalidUid};
+    data::Uid roomUid{data::InvalidUid};
     bool ready = false;
   };
   std::unordered_map<ClientId, ClientContext> _clientContexts;

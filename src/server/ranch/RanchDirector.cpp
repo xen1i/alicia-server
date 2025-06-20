@@ -1181,9 +1181,18 @@ void RanchDirector::HandleWearEquipment(
     equipSuccessful = hasEquippedItem || hasMountedHorse;
 
     if (hasMountedHorse)
+    {
       character.mountUid() = command.itemUid;
+    }
     else if (hasEquippedItem)
-      character.characterEquipment().emplace_back(command.itemUid);
+    {
+      const bool isItemAlreadyEquipped = std::ranges::contains(
+        character.characterEquipment(), command.itemUid);
+      if (not isItemAlreadyEquipped)
+      {
+        character.characterEquipment().emplace_back(command.itemUid);
+      }
+    }
   });
 
   if (equipSuccessful)

@@ -249,8 +249,18 @@ public:
     for (const auto& key : _retrieveQueue)
     {
       auto& entry = _entries[key];
-      _dataSourceRetrieveListener(key, entry.value);
-      entry.available = true;
+
+      try
+      {
+        _dataSourceRetrieveListener(key, entry.value);
+        entry.available = true;
+      }
+      catch (const std::exception& x)
+      {
+        spdlog::error(
+          "Exception retrieving data from data source: {}",
+          x.what());
+      }
     }
     _retrieveQueue.clear();
 
@@ -258,7 +268,17 @@ public:
     for (const auto& key : _storeQueue)
     {
       auto& entry = _entries[key];
-      _dataSourceStoreListener(key, entry.value);
+
+      try
+      {
+        _dataSourceStoreListener(key, entry.value);
+      }
+      catch (const std::exception&  x)
+      {
+        spdlog::error(
+          "Exception storing data on data source: {}",
+          x.what());
+      }
     }
     _storeQueue.clear();
   }

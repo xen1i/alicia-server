@@ -468,6 +468,7 @@ void LobbyDirector::HandleRequestDailyQuestList(
       return response;
     });
 }
+
 void LobbyDirector::HandleRequestSpecialEventList(
   ClientId clientId,
   const protocol::LobbyCommandRequestSpecialEventList& command)
