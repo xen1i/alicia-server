@@ -38,11 +38,13 @@ To connect to the server, you'll need patched version of the client. This is bec
 ### Configuring game
 There's two game available game configurations in the production version:
 - **development**
-  - lobby server address: `127.0.0.1`
+  - lobby server address: `aliciadev`
   - lobby server port: `10030`
 - **production**
   - lobby server address: `system.storyofalicia.com`
   - lobby server port: `10030`
+
+Please notice the development server's configuration uses `aliciadev` hostname. You must add this hostname to your hosts file (`C:\Windows\System32\drivers\etc\hosts`) and point it to an IP where the server is listening on. Usually that is going to be `127.0.0.1` (loopback).
 
 You can't configure the game directly, unless you have the development version of the game. Todo tutorial.
 

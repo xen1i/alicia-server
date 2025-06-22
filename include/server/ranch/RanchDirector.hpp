@@ -31,11 +31,8 @@
 
 namespace server
 {
-class ServerInstance;
-} // namespace server
 
-namespace server
-{
+class ServerInstance;
 
 class RanchDirector final
   : public CommandServer::EventHandlerInterface
