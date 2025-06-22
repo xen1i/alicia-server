@@ -718,7 +718,7 @@ struct LobbyCommandMakeRoom
 
   static Command GetCommand()
   {
-    return Command::LobbyMakeRoomCancel;
+    return Command::LobbyMakeRoom;
   }
 
   //! Writes the command to a provided sink stream.
