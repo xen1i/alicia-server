@@ -26,83 +26,213 @@ DataDirector::DataDirector()
   : _userStorage(
       [&](const auto& key, auto& user)
       {
-        _dataSource->RetrieveUser(key, user);
+        try
+        {
+          _primaryDataSource->RetrieveUser(key, user);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving user '{}' from the primary data source: {}",
+            key,
+            x.what());
+        }
       },
       [&](const auto& key, auto& user)
       {
-        _dataSource->StoreUser(key, user);
+        try
+        {
+          _primaryDataSource->StoreUser(key, user);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing user '{}' on the primary data source: {}", key, x.what());
+        }
       })
   , _characterStorage(
       [&](const auto& key, auto& character)
       {
-        _dataSource->RetrieveCharacter(key, character);
+        try
+        {
+          _primaryDataSource->RetrieveCharacter(key, character);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving character {} from the primary data source: {}", key, x.what());
+        }
       },
       [&](const auto& key, auto& character)
       {
-        _dataSource->StoreCharacter(key, character);
+        try
+        {
+          _primaryDataSource->StoreCharacter(key, character);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing character {} on the primary data source: {}", key, x.what());
+        }
       })
   , _itemStorage(
       [&](const auto& key, auto& item)
       {
-        _dataSource->RetrieveItem(key, item);
+        try
+        {
+          _primaryDataSource->RetrieveItem(key, item);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving item {} from the primary data source: {}", key, x.what());
+        }
       },
       [&](const auto& key, auto& item)
       {
-        _dataSource->StoreItem(key, item);
+        try
+        {
+          _primaryDataSource->StoreItem(key, item);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing item {} on the primary data source: {}", key, x.what());
+        }
       })
   , _storedItemStorage(
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& storedItem)
       {
-        _dataSource->RetrieveStoredItem(key, item);
+        try
+        {
+          _primaryDataSource->RetrieveStoredItem(key, storedItem);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving stored item {} from the primary data source: {}", key, x.what());
+        }
       },
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& storedItem)
       {
-        _dataSource->StoreStoredItem(key, item);
+        try
+        {
+          _primaryDataSource->StoreStoredItem(key, storedItem);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing stored item {} on the primary data source: {}", key, x.what());
+        }
       })
   , _petStorage(
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& pet)
       {
-        _dataSource->RetrievePet(key, item);
+        try
+        {
+          _primaryDataSource->RetrievePet(key, pet);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving pet {} from the primary data source: {}", key, x.what());
+        }
       },
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& pet)
       {
-        _dataSource->StorePet(key, item);
+        try
+        {
+          _primaryDataSource->StorePet(key, pet);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing pet {} on the primary data source: {}", key, x.what());
+        }
       })
   , _guildStorage(
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& guild)
       {
-        _dataSource->RetrieveGuild(key, item);
+        try
+        {
+          _primaryDataSource->RetrieveGuild(key, guild);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving guild {} from the primary data source: {}", key, x.what());
+        }
       },
-      [&](const auto& key, auto& item)
+      [&](const auto& key, auto& guild)
       {
-        _dataSource->StoreGuild(key, item);
+        try
+        {
+          _primaryDataSource->StoreGuild(key, guild);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing guild {} on the primary data source: {}", key, x.what());
+        }
       })
   , _horseStorage(
       [&](const auto& key, auto& horse)
       {
-        _dataSource->RetrieveHorse(key, horse);
+        try
+        {
+          _primaryDataSource->RetrieveHorse(key, horse);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving horse {} from the primary data source: {}", key, x.what());
+        }
       },
       [&](const auto& key, auto& horse)
       {
-        _dataSource->StoreHorse(key, horse);
+        try
+        {
+          _primaryDataSource->StoreHorse(key, horse);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing horse {} on the primary data source: {}", key, x.what());
+        }
       })
   , _ranchStorage(
       [&](const auto& key, auto& ranch)
       {
-        _dataSource->RetrieveRanch(key, ranch);
+        try
+        {
+          _primaryDataSource->RetrieveRanch(key, ranch);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving ranch {} from the primary data source: {}", key, x.what());
+        }
       },
       [&](const auto& key, auto& ranch)
       {
-        _dataSource->StoreRanch(key, ranch);
+        try
+        {
+          _primaryDataSource->StoreRanch(key, ranch);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing ranch {} on the primary data source: {}", key, x.what());
+        }
       })
 {
-  _dataSource = std::make_unique<FileDataSource>();
-  _dataSource->Initialize("./data");
+  _primaryDataSource = std::make_unique<FileDataSource>();
+  _primaryDataSource->Initialize("./data");
 }
 
 DataDirector::~DataDirector()
 {
-  _dataSource->Terminate();
+  _primaryDataSource->Terminate();
 }
 
 void DataDirector::Initialize()
@@ -138,7 +268,7 @@ Record<data::Character> DataDirector::CreateCharacter()
     [this]()
     {
       data::Character character;
-      _dataSource->CreateCharacter(character);
+      _primaryDataSource->CreateCharacter(character);
 
       return std::make_pair(character.uid(), std::move(character));
     });
@@ -155,7 +285,7 @@ Record<data::Item> DataDirector::CreateItem()
     [this]()
     {
       data::Item item;
-      _dataSource->CreateItem(item);
+      _primaryDataSource->CreateItem(item);
 
       return std::make_pair(item.uid(), std::move(item));
     });
@@ -172,7 +302,7 @@ Record<data::Pet> DataDirector::CreatePet()
     [this]()
     {
       data::Pet pet;
-      _dataSource->CreatePet(pet);
+      _primaryDataSource->CreatePet(pet);
 
       return std::make_pair(pet.uid(), std::move(pet));
     });
@@ -189,7 +319,7 @@ Record<data::Guild> DataDirector::CreateGuild()
     [this]()
     {
       data::Guild guild;
-      _dataSource->CreateGuild(guild);
+      _primaryDataSource->CreateGuild(guild);
 
       return std::make_pair(guild.uid(), std::move(guild));
     });
@@ -206,7 +336,7 @@ Record<data::StoredItem> DataDirector::CreateStoredItem()
     [this]()
     {
       data::StoredItem item;
-      _dataSource->CreateStoredItem(item);
+      _primaryDataSource->CreateStoredItem(item);
 
       return std::make_pair(item.uid(), std::move(item));
     });
@@ -223,7 +353,7 @@ Record<data::Horse> DataDirector::CreateHorse()
     [this]()
     {
       data::Horse horse;
-      _dataSource->CreateHorse(horse);
+      _primaryDataSource->CreateHorse(horse);
 
       return std::make_pair(horse.uid(), std::move(horse));
     });
@@ -240,7 +370,7 @@ Record<data::Ranch> DataDirector::CreateRanch()
     [this]()
     {
       data::Ranch ranch;
-      _dataSource->CreateRanch(ranch);
+      _primaryDataSource->CreateRanch(ranch);
 
       return std::make_pair(ranch.uid(), std::move(ranch));
     });

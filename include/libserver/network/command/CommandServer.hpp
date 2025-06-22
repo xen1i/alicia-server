@@ -144,9 +144,9 @@ private:
     protocol::Command commandId,
     CommandSupplier supplier);
 
-  bool debugIncomingCommandData = server::constants::IsDevelopmentMode;
-  bool debugOutgoingCommandData = server::constants::IsDevelopmentMode;
-  bool debugCommands = server::constants::IsDevelopmentMode;
+  bool debugIncomingCommandData = constants::DebugCommands;
+  bool debugOutgoingCommandData = constants::DebugCommands;
+  bool debugCommands = constants::DebugCommands;
 
   std::unordered_map<protocol::Command, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};

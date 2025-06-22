@@ -68,6 +68,7 @@ void LoginHandler::Tick()
     {
       if (not hasCharacter)
       {
+        spdlog::info("Sending user '{}' to character creator", loginContext.userName);
         QueueUserCreateNickname(clientId, loginContext.userName);
         break;
       }
@@ -77,7 +78,7 @@ void LoginHandler::Tick()
     }
     else
     {
-      spdlog::debug("Rejecting user login. Not authenticated.");
+      spdlog::info("Rejecting user login for '{}'", loginContext.userName);
       QueueUserLoginRejected(clientId);
     }
 
@@ -138,6 +139,8 @@ void LoginHandler::Tick()
     _lobbyDirector._clientContext[clientId] = {
       .authorized = true,
       .characterUid = characterUid};
+
+    spdlog::info("Accepting user login for '{}'", loginContext.userName);
 
     QueueUserLoginAccepted(clientId, loginContext.userName);
   }

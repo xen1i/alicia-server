@@ -76,7 +76,7 @@ public:
 
 private:
   //! An underlying data source of the data director.
-  std::unique_ptr<FileDataSource> _dataSource;
+  std::unique_ptr<FileDataSource> _primaryDataSource;
 
   //! A user storage.
   UserStorage _userStorage;
