@@ -97,11 +97,14 @@ void server::FileDataSource::RetrieveUser(std::string name, data::User& user)
 
   user.name = name;
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("User file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
   user.name = json["name"].get<std::string>();
   user.token = json["token"].get<std::string>();
   user.characterUid = json["characterUid"].get<data::Uid>();
@@ -112,16 +115,19 @@ void server::FileDataSource::StoreUser(std::string name, const data::User& user)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _userDataPath, name);
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("User file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["name"] = user.name();
   json["token"] = user.token();
   json["characterUid"] = user.characterUid();
 
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreateCharacter(data::Character& character)
@@ -135,11 +141,14 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _characterDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Character file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   character.uid = json["uid"].get<data::Uid>();
   character.name = json["name"].get<std::string>();
@@ -186,9 +195,12 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _characterDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Character file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = character.uid();
@@ -231,7 +243,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   json["mountUid"] = character.mountUid();
   json["ranchUid"] = character.ranchUid();
 
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreateItem(data::Item& item)
@@ -245,11 +257,14 @@ void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _itemDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Item file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   item.uid = json["uid"].get<data::Uid>();
   item.tid = json["tid"].get<data::Tid>();
@@ -261,15 +276,18 @@ void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _itemDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Item file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = item.uid();
   json["tid"] = item.tid();
   json["count"] = item.count();
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreatePet(data::Pet& pet)
@@ -283,11 +301,14 @@ void server::FileDataSource::RetrievePet(data::Uid uid, data::Pet& pet)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _petDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Pet file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   pet.uid = json["uid"].get<data::Uid>();
   pet.tid = json["tid"].get<data::Tid>();
@@ -299,15 +320,18 @@ void server::FileDataSource::StorePet(data::Uid uid, const data::Pet& pet)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _petDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Pet file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = pet.uid();
   json["tid"] = pet.tid();
   json["name"] = pet.name();
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreateGuild(data::Guild& guild)
@@ -321,11 +345,14 @@ void server::FileDataSource::RetrieveGuild(data::Uid uid, data::Guild& guild)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _guildDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Guild file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   guild.uid = json["uid"].get<data::Uid>();
   guild.name = json["name"].get<std::string>();
@@ -336,14 +363,17 @@ void server::FileDataSource::StoreGuild(data::Uid uid, const data::Guild& guild)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _guildDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Guild file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = guild.uid();
   json["name"] = guild.name();
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreateStoredItem(data::StoredItem& item)
@@ -357,11 +387,14 @@ void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem&
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _storedItemPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Stored item file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   item.uid = json["uid"].get<data::Uid>();
   item.items = json["items"].get<std::vector<data::Uid>>();
@@ -373,12 +406,15 @@ void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem&
 
 void server::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredItem& item)
 {
-  const std::filesystem::path dataPath = ProduceDataPath(
+  const std::filesystem::path dataFilePath = ProduceDataPath(
     _storedItemPath, std::format("{}", uid));
 
-  std::ofstream file(dataPath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Stored item file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = item.uid();
@@ -400,11 +436,14 @@ void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _horseDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Horse file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
   horse.uid = json["uid"].get<data::Uid>();
   horse.tid = json["tid"].get<data::Tid>();
   horse.name = json["name"].get<std::string>();
@@ -457,9 +496,12 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _horseDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Horse file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = horse.uid();
@@ -508,7 +550,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   json["luckState"] = horse.luckState();
   json["emblem"] = horse.emblem();
 
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
 
 void server::FileDataSource::CreateRanch(data::Ranch& ranch)
@@ -522,11 +564,14 @@ void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _ranchDataPath, std::format("{}", uid));
 
-  std::ifstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Ranch file '{}' not accessible", dataFilePath));
+  }
 
-  const auto json = nlohmann::json::parse(file);
+  const auto json = nlohmann::json::parse(dataFile);
 
   ranch.uid = json["uid"].get<data::Uid>();
   ranch.name = json["name"].get<std::string>();
@@ -537,12 +582,15 @@ void server::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
   const std::filesystem::path dataFilePath = ProduceDataPath(
     _ranchDataPath, std::format("{}", uid));
 
-  std::ofstream file(dataFilePath);
-  if (not file.is_open())
-    return;
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Ranch file '{}' not accessible", dataFilePath));
+  }
 
   nlohmann::json json;
   json["uid"] = ranch.uid();
   json["name"] = ranch.name();
-  file << json.dump(2);
+  dataFile << json.dump(2);
 }
