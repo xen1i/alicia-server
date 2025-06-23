@@ -69,7 +69,14 @@ void LoginHandler::Tick()
       if (not hasCharacter)
       {
         spdlog::info("Sending user '{}' to character creator", loginContext.userName);
-        QueueUserCreateNickname(clientId, loginContext.userName);
+        try
+        {
+          QueueUserCreateNickname(clientId, loginContext.userName);
+        }
+        catch (std::exception& x)
+        {
+          spdlog::error("Couldn't queue create nickname: {}", x.what());
+        }
         break;
       }
 
@@ -134,15 +141,22 @@ void LoginHandler::Tick()
     if (not isCharacterLoaded)
       continue;
 
-    _clientLoginResponseQueue.pop();
-
     _lobbyDirector._clientContext[clientId] = {
       .authorized = true,
       .characterUid = characterUid};
 
     spdlog::info("Accepting user login for '{}'", loginContext.userName);
 
-    QueueUserLoginAccepted(clientId, loginContext.userName);
+    try
+    {
+      QueueUserLoginAccepted(clientId, loginContext.userName);
+    }
+    catch (const std::exception& x)
+    {
+      spdlog::error("Couldn't queue login accept: {}", x.what());
+    }
+
+    _clientLoginResponseQueue.pop();
   }
 }
 

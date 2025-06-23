@@ -346,8 +346,8 @@ void RanchDirector::HandleRanchEnter(
       ranchCharacter.gender = Gender::Unspecified;
       ranchCharacter.introduction = character.introduction();
 
-      ranchCharacter.unk0 = 1;
-      ranchCharacter.unk1 = 1;
+      ranchCharacter.unk0 = 0;
+      ranchCharacter.unk1 = 0;
 
       protocol::BuildProtocolCharacter(ranchCharacter.character, character);
 
