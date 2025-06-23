@@ -19,6 +19,7 @@
 
 #include "libserver/data/file/FileDataSource.hpp"
 
+#include <algorithm>
 #include <format>
 #include <fstream>
 
