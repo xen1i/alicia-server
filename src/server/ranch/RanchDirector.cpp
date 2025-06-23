@@ -796,7 +796,7 @@ void RanchDirector::HandleRequestStorage(
       return;
 
     const auto pagination = std::views::chunk(*storedItemRecords, 5);
-    page = std::max(std::min(page - 1, pagination.size()), 0ull);
+    page = std::max(std::min(page - 1, pagination.size()), size_t{0});
 
     response.pageCountAndNotification = pagination.size() << 2;
 
