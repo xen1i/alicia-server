@@ -86,7 +86,7 @@ private:
 
   std::filesystem::path _metaFilePath;
 
-  uint32_t _sequentialUid = 0;
+  std::atomic_uint32_t _sequentialUid = 0;
 };
 
 } // namespace server

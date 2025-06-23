@@ -782,20 +782,26 @@ void RanchDirector::HandleRequestStorage(
 
   protocol::RanchCommandRequestStorageOK response{
     .category = command.category,
-    .page = 1,
-    .pageCountAndNotification = 0};
+    .page = command.page};
 
   const bool showPurchases = command.category == protocol::RanchCommandRequestStorage::Category::Purchases;
 
   // Fill the stored items, either from the purchase category or the gift category.
 
-  characterRecord->Immutable([this, showPurchases, &response](const data::Character& character)
+  characterRecord->Immutable([this, showPurchases, page = static_cast<size_t>(command.page), &response](const data::Character& character) mutable
   {
     const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStoredItems().Get(
       showPurchases ? character.purchases() : character.gifts());
+    if (not storedItemRecords || storedItemRecords->empty())
+      return;
+
+    const auto pagination = std::views::chunk(*storedItemRecords, 5);
+    page = std::max(std::min(page - 1, pagination.size()), 0ull);
+
+    response.pageCountAndNotification = pagination.size() << 2;
 
     // todo pagination of stored item records with std::ranges::chunks
-    protocol::BuildProtocolStoredItems(response.storedItems, *storedItemRecords);
+    protocol::BuildProtocolStoredItems(response.storedItems, pagination[page ]);
   });
 
   _commandServer.QueueCommand<decltype(response)>(

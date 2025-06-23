@@ -173,7 +173,7 @@ void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const data::StoredI
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::vector<Record<data::StoredItem>>& storedItems)
+  const std::span<const Record<data::StoredItem>>& storedItems)
 {
   for (const auto& storedItem : storedItems)
   {

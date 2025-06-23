@@ -57,7 +57,7 @@ void BuildProtocolStoredItem(
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::vector<Record<data::StoredItem>>& storedItems);
+  const std::span<const Record<data::StoredItem>>& storedItems);
 
 } // namespace protocol
 

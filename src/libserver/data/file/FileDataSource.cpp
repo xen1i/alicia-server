@@ -85,7 +85,7 @@ void server::FileDataSource::Terminate()
   }
 
   nlohmann::json meta;
-  meta["sequentialUid"] = _sequentialUid;
+  meta["sequentialUid"] = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 
   metaFile << meta.dump(2);
 }
@@ -101,7 +101,7 @@ void server::FileDataSource::RetrieveUser(std::string name, data::User& user)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("User file '{}' not accessible", dataFilePath));
+      std::format("User file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -119,7 +119,7 @@ void server::FileDataSource::StoreUser(std::string name, const data::User& user)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("User file '{}' not accessible", dataFilePath));
+      std::format("User file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -132,8 +132,7 @@ void server::FileDataSource::StoreUser(std::string name, const data::User& user)
 
 void server::FileDataSource::CreateCharacter(data::Character& character)
 {
-  _sequentialUid++;
-  character.uid = _sequentialUid;
+  character.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)
@@ -145,7 +144,7 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Character file '{}' not accessible", dataFilePath));
+      std::format("Character file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -199,7 +198,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Character file '{}' not accessible", dataFilePath));
+      std::format("Character file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -248,8 +247,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
 
 void server::FileDataSource::CreateItem(data::Item& item)
 {
-  _sequentialUid++;
-  item.uid = _sequentialUid;
+  item.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
@@ -261,7 +259,7 @@ void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Item file '{}' not accessible", dataFilePath));
+      std::format("Item file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -280,7 +278,7 @@ void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Item file '{}' not accessible", dataFilePath));
+      std::format("Item file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -292,8 +290,7 @@ void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
 
 void server::FileDataSource::CreatePet(data::Pet& pet)
 {
-  _sequentialUid++;
-  pet.uid = _sequentialUid;
+  pet.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrievePet(data::Uid uid, data::Pet& pet)
@@ -305,7 +302,7 @@ void server::FileDataSource::RetrievePet(data::Uid uid, data::Pet& pet)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Pet file '{}' not accessible", dataFilePath));
+      std::format("Pet file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -324,7 +321,7 @@ void server::FileDataSource::StorePet(data::Uid uid, const data::Pet& pet)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Pet file '{}' not accessible", dataFilePath));
+      std::format("Pet file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -336,8 +333,7 @@ void server::FileDataSource::StorePet(data::Uid uid, const data::Pet& pet)
 
 void server::FileDataSource::CreateGuild(data::Guild& guild)
 {
-  _sequentialUid++;
-  guild.uid = _sequentialUid;
+  guild.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveGuild(data::Uid uid, data::Guild& guild)
@@ -349,7 +345,7 @@ void server::FileDataSource::RetrieveGuild(data::Uid uid, data::Guild& guild)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Guild file '{}' not accessible", dataFilePath));
+      std::format("Guild file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -367,7 +363,7 @@ void server::FileDataSource::StoreGuild(data::Uid uid, const data::Guild& guild)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Guild file '{}' not accessible", dataFilePath));
+      std::format("Guild file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -378,8 +374,7 @@ void server::FileDataSource::StoreGuild(data::Uid uid, const data::Guild& guild)
 
 void server::FileDataSource::CreateStoredItem(data::StoredItem& item)
 {
-  _sequentialUid++;
-  item.uid = _sequentialUid;
+  item.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
@@ -391,7 +386,7 @@ void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem&
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Stored item file '{}' not accessible", dataFilePath));
+      std::format("Stored item file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -413,7 +408,7 @@ void server::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredIt
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Stored item file '{}' not accessible", dataFilePath));
+      std::format("Stored item file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -427,8 +422,7 @@ void server::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredIt
 
 void server::FileDataSource::CreateHorse(data::Horse& horse)
 {
-  _sequentialUid++;
-  horse.uid = _sequentialUid;
+  horse.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
@@ -440,7 +434,7 @@ void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Horse file '{}' not accessible", dataFilePath));
+      std::format("Horse file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -500,7 +494,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Horse file '{}' not accessible", dataFilePath));
+      std::format("Horse file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
@@ -555,8 +549,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
 void server::FileDataSource::CreateRanch(data::Ranch& ranch)
 {
-  _sequentialUid++;
-  ranch.uid = _sequentialUid;
+  ranch.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
 }
 
 void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
@@ -568,7 +561,7 @@ void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Ranch file '{}' not accessible", dataFilePath));
+      std::format("Ranch file '{}' not accessible", dataFilePath.string()));
   }
 
   const auto json = nlohmann::json::parse(dataFile);
@@ -586,7 +579,7 @@ void server::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
   if (not dataFile.is_open())
   {
     throw std::runtime_error(
-      std::format("Ranch file '{}' not accessible", dataFilePath));
+      std::format("Ranch file '{}' not accessible", dataFilePath.string()));
   }
 
   nlohmann::json json;
