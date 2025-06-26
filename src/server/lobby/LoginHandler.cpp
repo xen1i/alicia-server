@@ -167,7 +167,7 @@ void LoginHandler::HandleUserLogin(
   // Validate the command fields.
   if (login.loginId.empty())
   {
-    if (login.loginId.empty() && not constants::IsDevelopmentMode)
+    if (login.authKey.empty() && not constants::IsDevelopmentMode)
     {
       spdlog::debug(
         "LoginHandler::HandleUserLogin - Rejecting login for client {}."
@@ -175,8 +175,8 @@ void LoginHandler::HandleUserLogin(
         clientId);
 
       QueueUserLoginRejected(clientId);
+      return;
     }
-    return;
   }
 
   // The login request must be unique for the client.
