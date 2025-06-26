@@ -100,6 +100,8 @@ void LoginHandler::Tick()
       continue;
     }
 
+    _clientLoginResponseQueue.pop();
+
     const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUser(
       loginContext.userName);
 
@@ -125,8 +127,6 @@ void LoginHandler::Tick()
       QueueUserLoginAccepted(clientId, loginContext.userName);
 
       clientContext.characterUid = characterUid;
-
-      _clientLoginResponseQueue.pop();
     }
 
     // Only one response per tick.

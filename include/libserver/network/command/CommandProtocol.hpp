@@ -247,6 +247,8 @@ enum class Command : uint16_t
 
   RanchPetBirthNotify = 0x39d,
 
+  RanchAchievementUpdateProperty = 0x16b,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,

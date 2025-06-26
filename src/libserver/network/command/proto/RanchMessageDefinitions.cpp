@@ -1442,4 +1442,19 @@ void RanchCommandPetBirthNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
+void RanchAchievementUpdateProperty::Write(
+  const RanchAchievementUpdateProperty& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchAchievementUpdateProperty::Read(
+  RanchAchievementUpdateProperty& command,
+  SourceStream& stream)
+{
+  stream.Read(command.member1)
+    .Read(command.userAchievementEvent);
+}
+
 } // namespace server::protocol

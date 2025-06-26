@@ -208,6 +208,8 @@ const std::unordered_map<Command, std::string_view> commands = {
 
   {Command::RanchPetBirthNotify, "RanchPetBirthNotify"},
 
+  {Command::RanchAchievementUpdateProperty, "RanchAchievementUpdateProperty"},
+
   {Command::RaceEnterRoom, "RaceEnterRoom"},
   {Command::RaceEnterRoomNotify, "RaceEnterRoomNotify"},
   {Command::RaceEnterRoomOK, "RaceEnterRoomOK"},

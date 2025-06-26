@@ -399,6 +399,9 @@ void LobbyDirector::HandleAchievementCompleteList(
 
   response.achievements.emplace_back().tid = 20'008;
   response.achievements.emplace_back().tid = 20'004;
+  response.achievements.emplace_back().tid = 10'172;
+  response.achievements.emplace_back().tid = 10'186;
+  response.achievements.emplace_back().tid = 10'176;
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
