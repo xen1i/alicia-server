@@ -1070,6 +1070,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         mountUid = character.mountUid();
       });
 
+      BroadcastUpdateMountInfoNotify(clientContext.characterUid, mountUid);
       return {"Parts set! Restart the client."};
     }
 
@@ -1102,10 +1103,10 @@ std::vector<std::string> RanchDirector::HandleCommand(
         });
         mountUid = character.mountUid();
       });
-    }
 
-    BroadcastUpdateMountInfoNotify(clientContext.characterUid, mountUid);
-    return {"Parts set! Restart the client."};
+      BroadcastUpdateMountInfoNotify(clientContext.characterUid, mountUid);
+      return {"Appearance set! Restart the client."};
+    }
   }
   if (command[0] == "give")
   {
