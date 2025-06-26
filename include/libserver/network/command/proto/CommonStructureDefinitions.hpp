@@ -171,6 +171,14 @@ struct Horse
   uint32_t tid{};
   //! Max length is 255.
   std::string name{};
+  //!
+  enum class HorseType : uint8_t
+  {
+    Adult = 0,
+    Foal = 1,
+    Stallion = 2,
+    Rented = 3
+  };
 
   //!
   struct Parts
@@ -255,12 +263,13 @@ struct Horse
 
   struct
   {
-    uint8_t val0{};
+    HorseType type{};
     uint32_t val1{};
     uint32_t dateOfBirth{};
 
-    uint8_t val3{};
-    uint8_t val4{};
+    //! The different horse tendencies can be found in the Tendency table
+    uint8_t tendency{};
+    uint8_t spirit{};
     uint32_t classProgression{};
     uint32_t val5{};
 
