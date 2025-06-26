@@ -92,7 +92,8 @@ public:
     return _value != nullptr && _mutex != nullptr;
   }
 
-  //!
+  //! An overload for bool operator. Checks whether the record value is available.
+  //! @returns `true` if the value is available, otherwise `false`.
   operator bool() const noexcept
   {
     return IsAvailable();
@@ -114,7 +115,7 @@ public:
   //! Access to the underlying data.
   //! @param consumer Consumer that receives the data.
   //! @throws std::runtime_error if the value is unavailable.
-  void Mutable(std::function<void(Data&)> consumer) const
+  void Mutable(MutableAccessConsumer consumer) const
   {
     if (not IsAvailable())
       throw std::runtime_error("Value of the record is unavailable");
@@ -264,8 +265,15 @@ public:
     {
       auto& entry = _entries[key];
 
-      _dataSourceRetrieveListener(key, entry.value);
-      entry.available.store(true, std::memory_order_release);
+      try
+      {
+        _dataSourceRetrieveListener(key, entry.value);
+        entry.available.store(true, std::memory_order_release);
+      }
+      catch (std::exception& x)
+      {
+        throw x;
+      }
     }
     _retrieveQueue.clear();
 

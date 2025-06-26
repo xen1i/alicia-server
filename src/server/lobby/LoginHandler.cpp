@@ -258,8 +258,6 @@ void LoginHandler::HandleUserCreateCharacter(
       };
 
       character.mountUid() = characterMountUid;
-      character.horses().emplace_back(characterMountUid);
-
       character.ranchUid() = characterRanchUid;
     });
 
@@ -410,6 +408,7 @@ void LoginHandler::QueueUserLoginAccepted(
       return response;
     });
 }
+
 void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string& userName)
 {
   _server.QueueCommand<protocol::LobbyCommandCreateNicknameNotify>(
