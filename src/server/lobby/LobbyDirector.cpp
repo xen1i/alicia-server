@@ -47,7 +47,7 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
     {
       assert(message.constant0 == 50 && message.constant1 == 281 && "Game version mismatch");
 
-      spdlog::info("Handling user login for '{}'", message.authKey);
+      spdlog::info("Handling user login for '{}'", message.loginId);
 
       _loginHandler.HandleUserLogin(clientId, message);
     });
