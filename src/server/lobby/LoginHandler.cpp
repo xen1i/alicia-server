@@ -40,123 +40,97 @@ LoginHandler::LoginHandler(
 
 void LoginHandler::Tick()
 {
-  // Process the login queue.
   while (not _clientLoginRequestQueue.empty())
   {
     const ClientId clientId = _clientLoginRequestQueue.front();
     const auto& loginContext = _clientLogins[clientId];
 
-    // Load the user.
-    const auto user = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
+    // Get the user.
+    const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
       loginContext.userName);
-    if (not user)
+    if (not userRecord)
       continue;
 
     _clientLoginRequestQueue.pop();
 
     bool isAuthenticated = false;
-    bool hasCharacter = false;
-    user->Immutable(
-      [&isAuthenticated, &hasCharacter, &loginContext](const data::User& user)
+    userRecord->Immutable(
+      [&isAuthenticated, &loginContext](const data::User& user)
       {
         isAuthenticated = user.token() == loginContext.userToken;
-        hasCharacter = user.characterUid() != data::InvalidUid;
       });
 
-    // If the user succeeds in authentication queue user for further processing.
-    if (isAuthenticated)
+    // If the user is not authenticated reject the login.
+    if (not isAuthenticated)
     {
-      if (not hasCharacter)
-      {
-        spdlog::info("Sending user '{}' to character creator", loginContext.userName);
-        try
-        {
-          QueueUserCreateNickname(clientId, loginContext.userName);
-        }
-        catch (std::exception& x)
-        {
-          spdlog::error("Couldn't queue create nickname: {}", x.what());
-        }
-        break;
-      }
-
-      // Queue the processing of the response.
-      _clientLoginResponseQueue.emplace(clientId);
+      spdlog::debug("User '{}' failed in authentication", loginContext.userName);
+      QueueUserLoginRejected(clientId);
     }
     else
     {
-      spdlog::info("Rejecting user login for '{}'", loginContext.userName);
-      QueueUserLoginRejected(clientId);
+      _clientLoginResponseQueue.emplace(clientId);
     }
 
-    // Only one user login per tick.
+    // Only one request per tick.
     break;
   }
 
   while (not _clientLoginResponseQueue.empty())
   {
     const ClientId clientId = _clientLoginResponseQueue.front();
-    const auto& loginContext = _clientLogins[clientId];
+    auto& clientContext = _lobbyDirector._clientContext[clientId];
+    auto& loginContext = _clientLogins[clientId];
 
-    // Preload all the user data.
+    // Request the load of the user data if not requested yet.
+    if (not loginContext.userLoadRequested)
+    {
+      _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUserData(
+        loginContext.userName);
 
-    auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
-      loginContext.userName);
-    if (not userRecord)
+      loginContext.userLoadRequested = true;
+
+      // Continue the loop, as the user will for sure not be available immediately.
       continue;
+    }
+
+    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsUserDataLoaded(
+      loginContext.userName))
+    {
+      // Continue the loop, the user data are not loaded.
+      continue;
+    }
+
+    const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUser(
+      loginContext.userName);
+
+    assert(userRecord && "User must be available");
 
     auto characterUid = data::InvalidUid;
-    userRecord->Immutable(
+
+    userRecord.Immutable(
       [&characterUid](const data::User& user)
       {
         characterUid = user.characterUid();
       });
 
-    auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(
-      characterUid);
-    if (not characterRecord)
-      continue;
-
-    bool isCharacterLoaded = false;
-
-    characterRecord->Immutable(
-      [this, &isCharacterLoaded](const data::Character& character)
-      {
-        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.inventory()))
-          return;
-        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.characterEquipment()))
-          return;
-        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(character.mountEquipment()))
-          return;
-
-        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetHorses().Get(character.horses()))
-          return;
-
-        if (not _lobbyDirector.GetServerInstance().GetDataDirector().GetRanches().Get(character.ranchUid()))
-          return;
-
-        isCharacterLoaded = true;
-      });
-
-    if (not isCharacterLoaded)
-      continue;
-
-    _lobbyDirector._clientContext[clientId] = {
-      .authorized = true,
-      .characterUid = characterUid};
-
-    spdlog::info("Accepting user login for '{}'", loginContext.userName);
-
-    try
+    // If the user does not have a character send them to character creator.
+    if (characterUid == data::InvalidUid)
     {
+      spdlog::debug("User '{}' sent to character creator", loginContext.userName);
+      QueueUserCreateNickname(clientId, loginContext.userName);
+    }
+    else
+    {
+      spdlog::debug("User '{}' succeeded in authentication", loginContext.userName);
       QueueUserLoginAccepted(clientId, loginContext.userName);
-    }
-    catch (const std::exception& x)
-    {
-      spdlog::error("Couldn't queue login accept: {}", x.what());
+
+      clientContext.characterUid = characterUid;
+
+      _clientLoginResponseQueue.pop();
     }
 
-    _clientLoginResponseQueue.pop();
+    // Only one response per tick.
+    break;
   }
 }
 
@@ -349,7 +323,7 @@ void LoginHandler::QueueUserLoginAccepted(
     .val20 = 0x1c6};
 
   // Get the character UID of the user.
-  data::Uid userCharacterUid{data::InvalidUid};
+  auto userCharacterUid{data::InvalidUid};
   userRecord->Immutable(
     [&userCharacterUid](
       const data::User& user)
@@ -359,14 +333,14 @@ void LoginHandler::QueueUserLoginAccepted(
 
   // Get the character record and fill the protocol data.
   // Also get the UID of the horse mounted by the character.
-  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacters().Get(userCharacterUid);
+  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacter(userCharacterUid);
   if (not characterRecord)
     throw std::runtime_error("Character record unavailable");
 
   data::Uid characterMountUid{
     data::InvalidUid};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [this, &response, &characterMountUid](const data::Character& character)
     {
       response.uid = character.uid();

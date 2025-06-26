@@ -181,7 +181,7 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   character.gifts = json["gifts"].get<std::vector<data::Uid>>();
   character.purchases = json["purchases"].get<std::vector<data::Uid>>();
 
-  character.inventory = json["inventory"].get<std::vector<data::Uid>>();
+  character.items = json["inventory"].get<std::vector<data::Uid>>();
   character.characterEquipment = json["characterEquipment"].get<std::vector<data::Uid>>();
   character.mountEquipment = json["horseEquipment"].get<std::vector<data::Uid>>();
 
@@ -235,7 +235,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   json["gifts"] = character.gifts();
   json["purchases"] = character.purchases();
 
-  json["inventory"] = character.inventory();
+  json["inventory"] = character.items();
   json["characterEquipment"] = character.characterEquipment();
   json["horseEquipment"] = character.mountEquipment();
 

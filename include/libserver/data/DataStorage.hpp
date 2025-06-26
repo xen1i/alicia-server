@@ -22,99 +22,113 @@
 
 #include <atomic>
 #include <functional>
+#include <mutex>
+#include <optional>
+#include <ranges>
 #include <shared_mutex>
 #include <span>
-#include <spdlog/spdlog.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <ranges>
 
 namespace server
 {
 
+//! Record holds a non-owning pointer to any value along with the access mutex of that value.
+//! A record provies two access methods to the underlying value:
+//! - A mutable access which requests an exclusive lock of the value.
+//! - An immutable access which requests a shared lock of the value.
 template <typename Data>
 class Record
 {
 public:
-  using DataPtr = Data*;
-  using Mutex = std::shared_mutex;
-  using MutexPtr = Mutex*;
+  //! A consumer with immutable access to the underlying value.
+  using ImmutableAccessConsumer = std::function<void(const Data&)>;
+  //! A consumer with mutable access to the underlying value.
+  using MutableAccessConsumer = std::function<void(Data&)>;
 
+  //! Constructor initializing an empty record.
   Record()
     : _mutex(nullptr)
     , _value(nullptr)
   {
-
   }
-
-  Record(DataPtr value, MutexPtr mutex)
+  //! Constructor initializing a record.
+  //! @param value Pointer to value.
+  //! @param mutex Pointer to value's mutex.
+  Record(Data* const value, std::shared_mutex* const mutex)
     : _mutex(mutex)
-    , _exclusiveLock(*_mutex, std::defer_lock)
-    , _sharedLock(*_mutex, std::defer_lock)
     , _value(value)
   {
   }
 
-  ~Record()
-  {
-  }
+  //! Default destructor.
+  ~Record() = default;
 
   //! Deleted copy constructor.
   Record(const Record&) = delete;
-  //! Deleted move constructor.
+  //! Deleted copy assignement operator.
   void operator=(const Record&) = delete;
 
   //! Move constructor.
   Record(Record&& other) noexcept
     : _mutex(other._mutex)
-    , _exclusiveLock(std::move(other._exclusiveLock))
-    , _sharedLock(std::move(other._sharedLock))
     , _value(other._value)
   {
   }
-
-  //! Move assignment.
-  void operator=(Record&& other) noexcept
+  //! Move assignment operator.
+  //! @param other Record to move from.
+  Record& operator=(Record&& other) noexcept
   {
     _mutex = other._mutex;
-    _exclusiveLock = std::move(other._exclusiveLock);
-    _sharedLock = std::move(other._sharedLock);
     _value = other._value;
+
+    return *this;
   }
 
-  //! Returns and exclusively locks the underlying data.
-  //! @return Reference to the data.
-  Data& operator()()
+  //! Returns whether the record value is available.
+  //! @returns `true` if the value is available, otherwise `false`.
+  bool IsAvailable() const noexcept
   {
-    if (not _exclusiveLock.owns_lock())
-      _exclusiveLock.lock();
-    return *_value;
+    return _value != nullptr && _mutex != nullptr;
+  }
+
+  //!
+  operator bool() const noexcept
+  {
+    return IsAvailable();
   }
 
   //! Immutable shared access to the underlying data.
   //! @param consumer Consumer that receives the data.
-  void Immutable(std::function<void(const Data&)> consumer) const
+  //! @throws std::runtime_error if the value is unavailable.
+  void Immutable(ImmutableAccessConsumer consumer) const
   {
-    _sharedLock.lock();
+    if (not IsAvailable())
+      throw std::runtime_error("Value of the record is unavailable");
+
+    // Lock the value for shared access.
+    std::shared_lock lock(*_mutex);
     consumer(*_value);
-    _sharedLock.unlock();
   }
 
   //! Access to the underlying data.
   //! @param consumer Consumer that receives the data.
+  //! @throws std::runtime_error if the value is unavailable.
   void Mutable(std::function<void(Data&)> consumer) const
   {
-    _exclusiveLock.lock();
+    if (not IsAvailable())
+      throw std::runtime_error("Value of the record is unavailable");
+
+    // Lock the value for exclusive access
+    std::scoped_lock lock(*_mutex);
     consumer(*_value);
-    _exclusiveLock.unlock();
   }
 
 private:
-  mutable MutexPtr _mutex;
-  mutable std::unique_lock<std::shared_mutex> _exclusiveLock;
-  mutable std::shared_lock<std::shared_mutex> _sharedLock;
-
-  DataPtr _value;
+  //! An access mutex of the value.
+  mutable std::shared_mutex* _mutex;
+  //! A value.
+  Data* _value;
 };
 
 template <typename Key, typename Data>
@@ -231,7 +245,7 @@ public:
   std::vector<Key> GetKeys()
   {
     std::vector<Key> keys;
-    for (const auto & key : std::ranges::views::keys(_entries))
+    for (const auto& key : std::ranges::views::keys(_entries))
     {
       keys.emplace_back(key);
     }
@@ -250,17 +264,8 @@ public:
     {
       auto& entry = _entries[key];
 
-      try
-      {
-        _dataSourceRetrieveListener(key, entry.value);
-        entry.available = true;
-      }
-      catch (const std::exception& x)
-      {
-        spdlog::error(
-          "Exception retrieving data from data source: {}",
-          x.what());
-      }
+      _dataSourceRetrieveListener(key, entry.value);
+      entry.available.store(true, std::memory_order_release);
     }
     _retrieveQueue.clear();
 
@@ -269,16 +274,7 @@ public:
     {
       auto& entry = _entries[key];
 
-      try
-      {
-        _dataSourceStoreListener(key, entry.value);
-      }
-      catch (const std::exception&  x)
-      {
-        spdlog::error(
-          "Exception storing data on data source: {}",
-          x.what());
-      }
+      _dataSourceStoreListener(key, entry.value);
     }
     _storeQueue.clear();
   }

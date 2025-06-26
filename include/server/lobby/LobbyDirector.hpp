@@ -166,7 +166,8 @@ private:
 protected:
   struct ClientContext
   {
-    bool authorized;
+    //! Whether the client is authorized.
+    bool isAuthorized{false};
     data::Uid characterUid = data::InvalidUid;
   };
   

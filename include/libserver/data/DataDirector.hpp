@@ -26,6 +26,9 @@
 // #include "pq/PqDataSource.hpp"
 #include "file/FileDataSource.hpp"
 
+#include <list>
+#include <queue>
+
 namespace server
 {
 
@@ -51,32 +54,63 @@ public:
   //! Ticks the data director.
   void Tick();
 
-  UserStorage& GetUsers();
+  void RequestLoadUserData(const std::string& userName);
+  void RequestUnloadUserData(const std::string& userName);
+  bool IsUserDataLoaded(const std::string& userName);
 
-  Record<data::Character> CreateCharacter();
-  CharacterStorage& GetCharacters();
+  [[nodiscard]] Record<data::User> GetUser(const std::string& userName);
+  [[nodiscard]] UserStorage& GetUsers();
 
-  Record<data::Item> CreateItem();
-  ItemStorage& GetItems();
+  //! Gets a character.
+  //! @param characterUid UID of the character.
+  //! @returns The character record.
+  [[nodiscard]] Record<data::Character> GetCharacter(data::Uid characterUid) noexcept;
+  [[nodiscard]] Record<data::Character> CreateCharacter() noexcept;
+  [[nodiscard]] CharacterStorage& GetCharacters();
 
-  Record<data::Pet> CreatePet();
-  PetStorage& GetPets();
+  [[nodiscard]] Record<data::Pet> GetPet(data::Uid petUid) noexcept;
+  [[nodiscard]] Record<data::Pet> CreatePet() noexcept;
+  [[nodiscard]] PetStorage& GetPets();
 
-  Record<data::Guild> CreateGuild();
-  GuildStorage& GetGuilds();
+  [[nodiscard]] Record<data::Guild> GetGuild(data::Uid guildUid) noexcept;
+  [[nodiscard]] Record<data::Guild> CreateGuild() noexcept;
+  [[nodiscard]] GuildStorage& GetGuilds();
 
-  Record<data::StoredItem> CreateStoredItem();
-  StoredItemStorage& GetStoredItems();
+  [[nodiscard]] Record<data::StoredItem> GetStoredItem(data::Uid storedItemUid) noexcept;
+  [[nodiscard]] Record<data::StoredItem> CreateStoredItem() noexcept;
+  [[nodiscard]] StoredItemStorage& GetStoredItems();
 
-  Record<data::Horse> CreateHorse();
-  HorseStorage& GetHorses();
+  [[nodiscard]] Record<data::Item> GetItem(data::Uid itemUid) noexcept;
+  [[nodiscard]] Record<data::Item> CreateItem() noexcept;
+  [[nodiscard]] ItemStorage& GetItems();
 
-  Record<data::Ranch> CreateRanch();
-  RanchStorage& GetRanches();
+  [[nodiscard]] Record<data::Horse> GetHorse(data::Uid horseUid) noexcept;
+  [[nodiscard]] Record<data::Horse> CreateHorse() noexcept;
+  [[nodiscard]] HorseStorage& GetHorses();
+
+  [[nodiscard]] Record<data::Ranch> GetRanch(data::Uid ranchUid) noexcept;
+  [[nodiscard]] Record<data::Ranch> CreateRanch() noexcept;
+  [[nodiscard]] RanchStorage& GetRanches();
 
 private:
   //! An underlying data source of the data director.
   std::unique_ptr<FileDataSource> _primaryDataSource;
+
+  using Clock = std::chrono::steady_clock;
+  struct Job
+  {
+    Clock::time_point when;
+    std::function<void()> job;
+  };
+  std::list<Job> _queuedJobs;
+
+  struct UserDataContext
+  {
+    std::atomic_bool isBeingLoaded = false;
+    std::atomic_bool isBeingUnloaded = false;
+    std::atomic_bool isLoadedCompletely = false;
+  };
+  std::unordered_map<std::string, UserDataContext> _userDataContext;
 
   //! A user storage.
   UserStorage _userStorage;

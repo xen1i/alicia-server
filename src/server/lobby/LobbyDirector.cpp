@@ -351,18 +351,21 @@ void LobbyDirector::HandleShowInventory(
 void LobbyDirector::QueueShowInventory(ClientId clientId)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
+
+  if (not characterRecord)
+    throw std::runtime_error("Character record unavailable");
 
   protocol::LobbyCommandShowInventoryOK response{
     .items = {},
     .horses = {}};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [this, &response](const data::Character& character)
     {
       const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
-        character.inventory());
+        character.items());
       protocol::BuildProtocolItems(response.items, *itemRecords);
 
       const auto horseRecords = GetServerInstance().GetDataDirector().GetHorses().Get(
@@ -383,12 +386,12 @@ void LobbyDirector::HandleAchievementCompleteList(
   const protocol::LobbyCommandAchievementCompleteList& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::LobbyCommandAchievementCompleteListOK response{};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [&response](const data::Character& character)
     {
       response.unk0 = character.uid();
@@ -424,12 +427,12 @@ void LobbyDirector::HandleRequestQuestList(
   const protocol::LobbyCommandRequestQuestList& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::LobbyCommandRequestQuestListOK response{};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [&response](const data::Character& character)
     {
       response.unk0 = character.uid();
@@ -452,12 +455,12 @@ void LobbyDirector::HandleRequestDailyQuestList(
   const protocol::LobbyCommandRequestDailyQuestList& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::LobbyCommandRequestDailyQuestListOK response{};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [&response](const data::Character& character)
     {
       response.val0 = character.uid();
@@ -476,7 +479,7 @@ void LobbyDirector::HandleRequestSpecialEventList(
   const protocol::LobbyCommandRequestSpecialEventList& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::LobbyCommandRequestSpecialEventListOK response{};
@@ -493,7 +496,7 @@ void LobbyDirector::HandleRequestPersonalInfo(
   ClientId clientId,
   const protocol::LobbyCommandRequestPersonalInfo& command)
 {
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     command.characterUid);
 
   protocol::LobbyCommandPersonalInfo response{
@@ -512,10 +515,10 @@ void LobbyDirector::HandleRequestPersonalInfo(
 void LobbyDirector::HandleSetIntroduction(ClientId clientId, const protocol::LobbyCommandSetIntroduction& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
-  characterRecord->Mutable(
+  characterRecord.Mutable(
     [&command](data::Character& character)
     {
       character.introduction() = command.introduction;
@@ -530,7 +533,7 @@ void LobbyDirector::HandleEnterRanch(
   const protocol::LobbyCommandEnterRanch& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     command.characterUid);
 
   if (not characterRecord)
@@ -545,7 +548,7 @@ void LobbyDirector::HandleEnterRanch(
   }
 
   auto ranchUid = data::InvalidUid;
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [&ranchUid](const data::Character& character)
     {
       ranchUid = character.ranchUid();
@@ -611,12 +614,12 @@ void LobbyDirector::HandleInquiryTreecash(
   const protocol::LobbyCommandInquiryTreecash& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::LobbyCommandInquiryTreecashOK response{};
 
-  characterRecord->Immutable(
+  characterRecord.Immutable(
     [&response](const data::Character& character)
     {
       response.cash = character.cash();

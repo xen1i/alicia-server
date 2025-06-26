@@ -332,14 +332,14 @@ void RanchDirector::HandleRanchEnter(
     ranchCharacter.guild = {
       .val1 = 1};
 
-    auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(characterUid);
+    auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(characterUid);
     if (not characterRecord)
     {
       throw std::runtime_error(
         std::format("Character [{}] not available", characterUid));
     }
 
-    characterRecord->Immutable([this, &ranchCharacter](const data::Character& character)
+    characterRecord.Immutable([this, &ranchCharacter](const data::Character& character)
     {
       ranchCharacter.uid = character.uid();
       ranchCharacter.name = character.name();
@@ -507,7 +507,7 @@ void RanchDirector::HandleRanchStuff(
   const protocol::RanchCommandRanchStuff& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   if (not characterRecord)
@@ -521,7 +521,7 @@ void RanchDirector::HandleRanchStuff(
     command.value};
 
   // Todo: needs validation
-  characterRecord->Mutable([&command, &response](data::Character& character)
+  characterRecord.Mutable([&command, &response](data::Character& character)
   {
     character.carrots() += command.value;
     response.totalMoney = character.carrots();
@@ -607,12 +607,12 @@ void RanchDirector::HandleEnterBreedingMarket(
   const protocol::RanchCommandEnterBreedingMarket& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::RanchCommandEnterBreedingMarketOK response;
 
-  characterRecord->Immutable([this, &response](const data::Character& character)
+  characterRecord.Immutable([this, &response](const data::Character& character)
   {
     const auto horseRecords = GetServerInstance().GetDataDirector().GetHorses().Get(
       character.horses());
@@ -696,11 +696,11 @@ void RanchDirector::HandleUpdateMountNickname(
   const protocol::RanchCommandUpdateMountNickname& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   bool canRenameHorse = false;
-  characterRecord->Mutable([this, &canRenameHorse, horseUid = command.horseUid](data::Character& character)
+  characterRecord.Mutable([this, &canRenameHorse, horseUid = command.horseUid](data::Character& character)
   {
     const bool ownsHorse = std::ranges::contains(character.horses(), horseUid);
     if (not ownsHorse)
@@ -708,7 +708,7 @@ void RanchDirector::HandleUpdateMountNickname(
 
     constexpr data::Tid HorseRenameItem = 45003;
     const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
-      character.inventory());
+      character.items());
 
     // Find the horse rename item.
     auto horseRenameItemUid = data::InvalidUid;
@@ -729,10 +729,10 @@ void RanchDirector::HandleUpdateMountNickname(
 
     // Find the item in the inventory.
     const auto itemInventoryIter = std::ranges::find(
-      character.inventory(), horseRenameItemUid);
+      character.items(), horseRenameItemUid);
 
     // Remove the item from the inventory.
-    character.inventory().erase(itemInventoryIter);
+    character.items().erase(itemInventoryIter);
     canRenameHorse = true;
   });
 
@@ -777,7 +777,7 @@ void RanchDirector::HandleRequestStorage(
   const protocol::RanchCommandRequestStorage& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::RanchCommandRequestStorageOK response{
@@ -788,21 +788,22 @@ void RanchDirector::HandleRequestStorage(
 
   // Fill the stored items, either from the purchase category or the gift category.
 
-  characterRecord->Immutable([this, showPurchases, page = static_cast<size_t>(command.page), &response](const data::Character& character) mutable
-  {
-    const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStoredItems().Get(
-      showPurchases ? character.purchases() : character.gifts());
-    if (not storedItemRecords || storedItemRecords->empty())
-      return;
+  characterRecord.Immutable(
+    [this, showPurchases, page = static_cast<size_t>(command.page), &response](
+      const data::Character& character) mutable
+    {
+      const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStoredItems().Get(
+        showPurchases ? character.purchases() : character.gifts());
+      if (not storedItemRecords || storedItemRecords->empty())
+        return;
 
-    const auto pagination = std::views::chunk(*storedItemRecords, 5);
-    page = std::max(std::min(page - 1, pagination.size()), size_t{0});
+      const auto pagination = std::views::chunk(*storedItemRecords, 5);
+      page = std::max(std::min(page - 1, pagination.size() - 1), size_t{0});
 
-    response.pageCountAndNotification = pagination.size() << 2;
+      response.pageCountAndNotification = pagination.size() << 2;
 
-    // todo pagination of stored item records with std::ranges::chunks
-    protocol::BuildProtocolStoredItems(response.storedItems, pagination[page ]);
-  });
+      protocol::BuildProtocolStoredItems(response.storedItems, pagination[page]);
+    });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -817,13 +818,13 @@ void RanchDirector::HandleGetItemFromStorage(
   const protocol::RanchCommandGetItemFromStorage& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   bool storedItemIsValid = true;
 
   // Try to remove the stored item from the character.
-  characterRecord->Mutable([this, &storedItemIsValid, storedItemUid = command.storedItemUid](
+  characterRecord.Mutable([this, &storedItemIsValid, storedItemUid = command.storedItemUid](
     data::Character& character)
     {
       // The stored item is either a gift or a purchase.
@@ -867,7 +868,7 @@ void RanchDirector::HandleGetItemFromStorage(
     .member0 = 0};
 
   // Get the items assigned to the stored item and fill the protocol command.
-  characterRecord->Mutable([this, &response](
+  characterRecord.Mutable([this, &response](
     data::Character& character)
     {
       const auto storedItemRecord = GetServerInstance().GetDataDirector().GetStoredItems().Get(
@@ -886,8 +887,8 @@ void RanchDirector::HandleGetItemFromStorage(
       });
 
       // Add the items to the character's inventory.
-      character.inventory().insert(
-        character.inventory().end(),
+      character.items().insert(
+        character.items().end(),
         items.begin(),
         items.end());
     });
@@ -922,7 +923,7 @@ void RanchDirector::HandleChat(
   const protocol::RanchCommandChat& chat)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   auto& ranchInstance = _ranches[clientContext.ranchUid];
@@ -944,7 +945,7 @@ void RanchDirector::HandleChat(
   protocol::RanchCommandChatNotify response{
     .message = chat.message};
 
-  characterRecord->Immutable([&response](const data::Character& character)
+  characterRecord.Immutable([&response](const data::Character& character)
   {
     response.author = character.name();
   });
@@ -960,7 +961,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
   const std::string& message)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   const auto command = util::TokenizeString(
@@ -1006,6 +1007,15 @@ std::vector<std::string> RanchDirector::HandleCommand(
       };
   }
 
+  if (command[0] == "visit")
+  {
+    if (command.size() < 2)
+      return {"Invalid command argument. (//visit <name>)"};
+
+    const std::string userName = command[1];
+    return {std::format("Next time you enter the portal, you'll visit {}", userName)};
+  }
+
   if (command[0] == "online")
   {
     std::vector<std::string> response;
@@ -1015,9 +1025,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
     for (const auto& clientContext : _clientContext)
     {
-      const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+      const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
         clientContext.second.characterUid);
-      characterRecord->Immutable([&response, &clientContext, clientId](const data::Character& character)
+      characterRecord.Immutable([&response, &clientContext, clientId](const data::Character& character)
       {
         response.emplace_back() = std::format(
           "{}{}", character.name(), clientContext.first == clientId ? " (you)" : "");
@@ -1043,7 +1053,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         .maneId = static_cast<uint32_t>(std::atoi(command[4].c_str())),
         .tailId = static_cast<uint32_t>(std::atoi(command[5].c_str()))};
 
-      characterRecord->Immutable([this, &mountUid, &parts](const data::Character& character)
+      characterRecord.Immutable([this, &mountUid, &parts](const data::Character& character)
       {
         GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&parts](data::Horse& horse)
         {
@@ -1074,7 +1084,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         .bodyLength = static_cast<uint32_t>(std::atoi(command[5].c_str())),
         .bodyVolume = static_cast<uint32_t>(std::atoi(command[6].c_str()))};
 
-      characterRecord->Immutable([this, &mountUid, &appearance](const data::Character& character)
+      characterRecord.Immutable([this, &mountUid, &appearance](const data::Character& character)
       {
         GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&appearance](
           data::Horse& horse)
@@ -1135,7 +1145,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
       // Add the stored item as a gift.
 
-      characterRecord->Mutable([giftUid](data::Character& character)
+      characterRecord.Mutable([giftUid](data::Character& character)
       {
         character.gifts().emplace_back(giftUid);
       });
@@ -1172,14 +1182,14 @@ void RanchDirector::HandleWearEquipment(
   const protocol::RanchCommandWearEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   bool equipSuccessful = false;
-  characterRecord->Mutable([&command, &equipSuccessful](data::Character& character)
+  characterRecord.Mutable([&command, &equipSuccessful](data::Character& character)
   {
     const bool hasEquippedItem = std::ranges::contains(
-      character.inventory(), command.itemUid);
+      character.items(), command.itemUid);
     const bool hasMountedHorse = std::ranges::contains(
       character.horses(), command.itemUid);
 
@@ -1235,13 +1245,13 @@ void RanchDirector::HandleRemoveEquipment(
   const protocol::RanchCommandRemoveEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
-  characterRecord->Mutable([&command](data::Character& character)
+  characterRecord.Mutable([&command](data::Character& character)
   {
     const bool ownsItem = std::ranges::contains(
-      character.inventory(), command.itemUid);
+      character.items(), command.itemUid);
 
     // You can't really unequip a horse. You can only switch to a different one.
     // At least in Alicia 1.0.
@@ -1274,7 +1284,7 @@ void RanchDirector::HandleCreateGuild(
   const protocol::RanchCommandCreateGuild& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::RanchCommandCreateGuildOK response{
@@ -1294,7 +1304,7 @@ void RanchDirector::HandleRequestGuildInfo(
   const protocol::RanchCommandRequestGuildInfo& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::RanchCommandRequestGuildInfoOK response{
@@ -1314,13 +1324,13 @@ void RanchDirector::HandleRequestGuildInfo(
 void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   protocol::RanchCommandUpdateEquipmentNotify notify{
     .characterUid = clientContext.characterUid};
 
-  characterRecord->Immutable([this, &notify](const data::Character& character)
+  characterRecord.Immutable([this, &notify](const data::Character& character)
   {
     // Character equipment
     const auto characterEquipment = GetServerInstance().GetDataDirector().GetItems().Get(

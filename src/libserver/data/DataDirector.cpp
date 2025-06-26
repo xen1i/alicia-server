@@ -18,6 +18,9 @@
  **/
 
 #include "libserver/data/DataDirector.hpp"
+#include "libserver/util/Deferred.hpp"
+
+#include <spdlog/spdlog.h>
 
 namespace server
 {
@@ -241,20 +244,200 @@ void DataDirector::Initialize()
 
 void DataDirector::Terminate()
 {
-  _userStorage.Terminate();
-  _characterStorage.Terminate();
-  _itemStorage.Terminate();
-  _horseStorage.Terminate();
-  _ranchStorage.Terminate();
+  try
+  {
+    _userStorage.Terminate();
+    _characterStorage.Terminate();
+    _itemStorage.Terminate();
+    _horseStorage.Terminate();
+    _ranchStorage.Terminate();
+  }
+  catch (const std::exception& x)
+  {
+    spdlog::error("Unhandled in exception while terminating data director: {}", x.what());
+  }
 }
 
 void DataDirector::Tick()
 {
-  _userStorage.Tick();
-  _characterStorage.Tick();
-  _itemStorage.Tick();
-  _horseStorage.Tick();
-  _ranchStorage.Tick();
+  try
+  {
+    _userStorage.Tick();
+    _characterStorage.Tick();
+    _itemStorage.Tick();
+    _horseStorage.Tick();
+    _ranchStorage.Tick();
+  }
+  catch (const std::exception& x)
+  {
+    spdlog::error("Unhandled in exception ticking the storages in data director: {}", x.what());
+  }
+
+  try
+  {
+    const auto now = Clock::now();
+    for (auto jobIt = _queuedJobs.begin(); jobIt != _queuedJobs.end(); ++jobIt)
+    {
+      const auto& job = *jobIt;
+      if (now >= job.when)
+      {
+        job.job();
+        _queuedJobs.erase(jobIt);
+        break;
+      }
+    }
+
+  } catch (std::exception& x)
+  {
+    spdlog::error("Unhandled in exception ticking the jobs in the data director: {}", x.what());
+  }
+}
+
+void DataDirector::RequestLoadUserData(const std::string& userName)
+{
+  auto& userDataContext = _userDataContext[userName];
+
+  auto& job = _queuedJobs.emplace_back();
+  job.when = Clock::now();
+  job.job = [this, &userDataContext, userName]()
+  {
+    spdlog::info("Loading data for user '{}'", userName);
+
+    const Deferred requestLoadAgain(
+      [this, &userDataContext, &userName]()
+      {
+        const bool isLoadedCompletely = userDataContext.isLoadedCompletely.load(
+          std::memory_order::acquire);
+
+        // If the user data were not loaded completely perform the request again.
+        if (not isLoadedCompletely)
+        {
+          RequestLoadUserData(userName);
+        }
+      });
+
+    // Load the user.
+    const auto userRecord = GetUser(userName);
+    if (not userRecord)
+    {
+      return;
+    }
+
+    auto characterUid{data::InvalidUid};
+
+    userRecord.Immutable(
+      [&characterUid](const data::User& user)
+      {
+        characterUid = user.characterUid();
+      });
+
+    // Load the character.
+    const auto characterRecord = GetCharacter(characterUid);
+
+    if (not characterRecord)
+    {
+      if (characterUid == data::InvalidUid)
+      {
+        // Since the user does not have a character,
+        // the user data are loaded completely.
+        userDataContext.isLoadedCompletely.store(
+          true,
+          std::memory_order::release);
+      }
+
+      return;
+    }
+
+    auto guildUid = data::InvalidUid;
+    auto petUid = data::InvalidUid;
+
+    std::vector<data::Uid> gifts;
+    std::vector<data::Uid> purchases;
+    std::vector<data::Uid> items;
+
+    std::vector<data::Uid> horses;
+
+    auto ranch = data::InvalidUid;
+
+    characterRecord.Immutable(
+      [&guildUid, &petUid, &ranch, &horses, &items, &gifts, &purchases](const data::Character& character)
+      {
+        guildUid = character.guildUid();
+        petUid = character.petUid();
+
+        gifts = character.gifts();
+        purchases = character.purchases();
+        items = character.items();
+        horses = character.horses();
+
+        // Add the mount to the horses list,
+        // so that it is loaded with all the horses.
+        horses.emplace_back(character.mountUid());
+
+        ranch = character.ranchUid();
+      });
+
+    const auto guildRecord = GetGuild(guildUid);
+    const auto petRecord = GetPet(petUid);
+
+    const auto giftRecords = GetStoredItems().Get(gifts);
+    const auto purchaseRecords = GetStoredItems().Get(purchases);
+    const auto itemRecords = GetItems().Get(items);
+
+    const auto horseRecords = GetHorses().Get(horses);
+
+    const auto ranchRecord = GetRanch(ranch);
+
+    // Only require guild and pet records if UIDs are valid.
+    if (not guildRecord && guildUid != data::InvalidUid
+      || not petRecord && petUid != data::InvalidUid)
+    {
+      return;
+    }
+
+    // Require gifts and purchases for the storage and items for the inventory.
+    if (not giftRecords || not purchaseRecords || not itemRecords)
+    {
+      return;
+    }
+
+    // Require the horse records.
+    if (not horseRecords)
+    {
+      return;
+    }
+
+    // Require the ranch record.
+    if (not ranchRecord)
+    {
+      return;
+    }
+
+    userDataContext.isLoadedCompletely.store(
+      true,
+      std::memory_order::release);
+  };
+}
+
+void DataDirector::RequestUnloadUserData(const std::string& userName)
+{
+  auto& job = _queuedJobs.emplace_back();
+  job.when = Clock::now() + std::chrono::minutes(10);
+  job.job = [userName]()
+  {
+    spdlog::info("Unloading data for user '{}'", userName);
+  };
+}
+
+bool DataDirector::IsUserDataLoaded(const std::string& userName)
+{
+  const auto& userDataContext = _userDataContext[userName];
+  return userDataContext.isLoadedCompletely.load(std::memory_order::acquire);
+}
+
+Record<data::User> DataDirector::GetUser(const std::string& userName)
+{
+  return _userStorage.Get(userName).value_or(Record<data::User>{});
 }
 
 DataDirector::UserStorage& DataDirector::GetUsers()
@@ -262,7 +445,14 @@ DataDirector::UserStorage& DataDirector::GetUsers()
   return _userStorage;
 }
 
-Record<data::Character> DataDirector::CreateCharacter()
+Record<data::Character> DataDirector::GetCharacter(data::Uid characterUid) noexcept
+{
+  if (characterUid == data::InvalidUid)
+    return {};
+  return _characterStorage.Get(characterUid).value_or(Record<data::Character>{});
+}
+
+Record<data::Character> DataDirector::CreateCharacter() noexcept
 {
   return _characterStorage.Create(
     [this]()
@@ -279,24 +469,14 @@ DataDirector::CharacterStorage& DataDirector::GetCharacters()
   return _characterStorage;
 }
 
-Record<data::Item> DataDirector::CreateItem()
+Record<data::Pet> DataDirector::GetPet(data::Uid petUid) noexcept
 {
-  return _itemStorage.Create(
-    [this]()
-    {
-      data::Item item;
-      _primaryDataSource->CreateItem(item);
-
-      return std::make_pair(item.uid(), std::move(item));
-    });
+  if (petUid == data::InvalidUid)
+    return {};
+  return _petStorage.Get(petUid).value_or(Record<data::Pet>{});
 }
 
-DataDirector::ItemStorage& DataDirector::GetItems()
-{
-  return _itemStorage;
-}
-
-Record<data::Pet> DataDirector::CreatePet()
+Record<data::Pet> DataDirector::CreatePet() noexcept
 {
   return _petStorage.Create(
     [this]()
@@ -313,7 +493,14 @@ DataDirector::PetStorage& DataDirector::GetPets()
   return _petStorage;
 }
 
-Record<data::Guild> DataDirector::CreateGuild()
+Record<data::Guild> DataDirector::GetGuild(data::Uid guildUid) noexcept
+{
+  if (guildUid == data::InvalidUid)
+    return {};
+  return _guildStorage.Get(guildUid).value_or(Record<data::Guild>{});
+}
+
+Record<data::Guild> DataDirector::CreateGuild() noexcept
 {
   return _guildStorage.Create(
     [this]()
@@ -330,7 +517,14 @@ DataDirector::GuildStorage& DataDirector::GetGuilds()
   return _guildStorage;
 }
 
-Record<data::StoredItem> DataDirector::CreateStoredItem()
+Record<data::StoredItem> DataDirector::GetStoredItem(data::Uid storedItemUid) noexcept
+{
+  if (storedItemUid == data::InvalidUid)
+    return {};
+  return _storedItemStorage.Get(storedItemUid).value_or(Record<data::StoredItem>{});
+}
+
+Record<data::StoredItem> DataDirector::CreateStoredItem() noexcept
 {
   return _storedItemStorage.Create(
     [this]()
@@ -347,7 +541,38 @@ DataDirector::StoredItemStorage& DataDirector::GetStoredItems()
   return _storedItemStorage;
 }
 
-Record<data::Horse> DataDirector::CreateHorse()
+Record<data::Item> DataDirector::GetItem(data::Uid itemUid) noexcept
+{
+  if (itemUid == data::InvalidUid)
+    return {};
+  return _itemStorage.Get(itemUid).value_or(Record<data::Item>{});
+}
+
+Record<data::Item> DataDirector::CreateItem() noexcept
+{
+  return _itemStorage.Create(
+    [this]()
+    {
+      data::Item item;
+      _primaryDataSource->CreateItem(item);
+
+      return std::make_pair(item.uid(), std::move(item));
+    });
+}
+
+DataDirector::ItemStorage& DataDirector::GetItems()
+{
+  return _itemStorage;
+}
+
+Record<data::Horse> DataDirector::GetHorse(data::Uid horseUid) noexcept
+{
+  if (horseUid == data::InvalidUid)
+    return {};
+  return _horseStorage.Get(horseUid).value_or(Record<data::Horse>{});
+}
+
+Record<data::Horse> DataDirector::CreateHorse() noexcept
 {
   return _horseStorage.Create(
     [this]()
@@ -364,7 +589,14 @@ DataDirector::HorseStorage& DataDirector::GetHorses()
   return _horseStorage;
 }
 
-Record<data::Ranch> DataDirector::CreateRanch()
+Record<data::Ranch> DataDirector::GetRanch(data::Uid ranchUid) noexcept
+{
+  if (ranchUid == data::InvalidUid)
+    return {};
+  return _ranchStorage.Get(ranchUid).value_or(Record<data::Ranch>{});
+}
+
+Record<data::Ranch> DataDirector::CreateRanch() noexcept
 {
   return _ranchStorage.Create(
     [this]()

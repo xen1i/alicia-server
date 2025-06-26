@@ -57,6 +57,11 @@ private:
     ClientId clientId;
     std::string userName;
     std::string userToken;
+
+    //! Whether the load of the user was requested.
+    bool userLoadRequested{false};
+    //! Whether we're waiting for character creator.
+    bool waitingForCharacterCreator{false};
   };
 
   std::unordered_map<ClientId, LoginContext> _clientLogins;

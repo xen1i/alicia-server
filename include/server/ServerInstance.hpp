@@ -12,6 +12,8 @@
 
 #include "libserver/data/DataDirector.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace server
 {
 

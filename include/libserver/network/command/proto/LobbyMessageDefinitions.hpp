@@ -564,8 +564,8 @@ struct LobbyCommandEnterChannel
 //! Clientbound enter channel response.
 struct LobbyCommandEnterChannelOK
 {
-  uint8_t unk0;
-  uint16_t unk1;
+  uint8_t unk0{};
+  uint16_t unk1{};
 
   static Command GetCommand()
   {
@@ -641,25 +641,25 @@ struct LobbyCommandRoomList
 //! Clientbound room list response.
 struct LobbyCommandRoomListOK
 {
-  uint8_t page;
-  uint8_t unk1;
-  uint8_t unk2;
+  uint8_t page{};
+  uint8_t unk1{};
+  uint8_t unk2{};
 
   struct Room
   {
-    uint32_t id;
-    std::string name;
-    uint8_t playerCount;
-    uint8_t maxPlayers;
-    uint8_t isLocked;
-    uint8_t unk0;
-    uint8_t unk1;
-    uint16_t map;
-    uint8_t hasStarted;
-    uint16_t unk2;
-    uint8_t unk3;
-    uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
-    uint32_t unk4;
+    uint32_t id{};
+    std::string name{};
+    uint8_t playerCount{};
+    uint8_t maxPlayers{};
+    uint8_t isLocked{};
+    uint8_t unk0{};
+    uint8_t unk1{};
+    uint16_t map{};
+    uint8_t hasStarted{};
+    uint16_t unk2{};
+    uint8_t unk3{};
+    uint8_t level{}; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
+    uint32_t unk4{};
 
     static void Write(const Room& value, SinkStream& stream);
     static void Read(Room& value, SourceStream& stream);
@@ -669,10 +669,10 @@ struct LobbyCommandRoomListOK
 
   struct
   {
-    uint32_t unk0;
-    std::string unk1;
-    uint16_t unk2;
-  } unk3;
+    uint32_t unk0{};
+    std::string unk1{};
+    uint16_t unk2{};
+  } unk3{};
 
   static Command GetCommand()
   {
@@ -739,11 +739,11 @@ struct LobbyCommandMakeRoom
 //! Clientbound make room response.
 struct LobbyCommandMakeRoomOK
 {
-  uint32_t roomUid;
-  uint32_t otp;
-  uint32_t address;
-  uint16_t port;
-  uint8_t unk2;
+  uint32_t roomUid{};
+  uint32_t otp{};
+  uint32_t address{};
+  uint16_t port{};
+  uint8_t unk2{};
 
   static Command GetCommand()
   {
@@ -768,7 +768,7 @@ struct LobbyCommandMakeRoomOK
 //! Serverbound make room command.
 struct LobbyCommandMakeRoomCancel
 {
-  uint8_t unk0;
+  uint8_t unk0{};
 
   static Command GetCommand()
   {

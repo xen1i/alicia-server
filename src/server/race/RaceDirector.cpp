@@ -156,9 +156,9 @@ void RaceDirector::HandleEnterRoom(
   {
     auto& protocolRacer = response.racers.emplace_back();
 
-    const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+    const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
       characterUid);
-    characterRecord->Immutable(
+    characterRecord.Immutable(
       [this, characterOid, &protocolRacer](const data::Character& character)
       {
         protocolRacer.level = character.level();
