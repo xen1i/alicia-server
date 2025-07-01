@@ -170,6 +170,7 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
 
   auto appearance = json["appearance"];
   character.appearance = data::Character::Appearance{
+    .voiceId = appearance["voiceId"].get<uint32_t>(),
     .headSize = appearance["headSize"].get<uint32_t>(),
     .height = appearance["height"].get<uint32_t>(),
     .thighVolume = appearance["thighVolume"].get<uint32_t>(),
@@ -223,6 +224,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
 
   // Character appearance
   nlohmann::json appearance;
+  appearance["voiceId"] = character.appearance.voiceId();
   appearance["headSize"] = character.appearance.headSize();
   appearance["height"] = character.appearance.height();
   appearance["thighVolume"] = character.appearance.thighVolume();

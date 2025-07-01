@@ -213,7 +213,7 @@ struct Character
     dao::Field<uint32_t> thighVolume{0u};
     dao::Field<uint32_t> legVolume{0u};
     //! An ID of the emblem.
-    dao::Field<uint32_t> emblem{0u};
+    dao::Field<uint32_t> emblemId{0u};
   } appearance{};
 
   dao::Field<Uid> petUid;

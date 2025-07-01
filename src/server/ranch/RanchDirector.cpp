@@ -702,7 +702,7 @@ void RanchDirector::HandleUpdateMountNickname(
   bool canRenameHorse = false;
   characterRecord.Mutable([this, &canRenameHorse, horseUid = command.horseUid](data::Character& character)
   {
-    const bool ownsHorse = std::ranges::contains(character.horses(), horseUid);
+    const bool ownsHorse =  character.mountUid() == horseUid || std::ranges::contains(character.horses(), horseUid);
     if (not ownsHorse)
       return;
 

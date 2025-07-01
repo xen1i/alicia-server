@@ -109,6 +109,10 @@ private:
     std::atomic_bool isBeingLoaded = false;
     std::atomic_bool isBeingUnloaded = false;
     std::atomic_bool isLoadedCompletely = false;
+
+    std::string debugMessage;
+    //! The time point when loading or unloading times out.
+    Clock::time_point timeout;
   };
   std::unordered_map<std::string, UserDataContext> _userDataContext;
 
