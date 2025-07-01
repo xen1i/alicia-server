@@ -152,7 +152,7 @@ struct Character
     //! FigShape
     uint16_t legVolume{};
     //!
-    uint16_t emblem{};
+    uint16_t emblemId{};
 
     static void Write(const Appearance& value, SinkStream& stream);
     static void Read(Appearance& value, SourceStream& stream);

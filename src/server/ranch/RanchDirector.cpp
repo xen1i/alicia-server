@@ -978,6 +978,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
       "//online\n"
       "Lists online players",
 
+      "//emblem <ID>\n"
+      "Sets your character's emblem",
+
       "//give item <count> <tid>\n"
       "  - count - Count of items\n"
       "  - tid - TID of item",
@@ -1005,6 +1008,19 @@ std::vector<std::string> RanchDirector::HandleCommand(
       "Note: to ignore any parameter,\n"
       "       simply specify 0 as the value.",
       };
+  }
+
+  if (command[0] == "emblem")
+  {
+    if (command.size() < 2)
+      return {"Invalid command argument. (//emblem <ID>)"};
+
+    const uint32_t emblemId = std::atoi(command[1].c_str());
+    characterRecord.Mutable([emblemId](data::Character& character)
+    {
+      character.appearance.emblemId = emblemId;
+    });
+    return {std::format("Set your emblem, restart your game.")};
   }
 
   if (command[0] == "visit")

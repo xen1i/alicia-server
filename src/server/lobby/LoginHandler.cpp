@@ -256,7 +256,7 @@ void LoginHandler::HandleUserCreateCharacter(
         .height = command.character.appearance.height,
         .thighVolume = command.character.appearance.thighVolume,
         .legVolume = command.character.appearance.legVolume,
-        .emblemId = command.character.appearance.emblem,
+        .emblemId = command.character.appearance.emblemId,
       };
 
       character.mountUid() = characterMountUid;

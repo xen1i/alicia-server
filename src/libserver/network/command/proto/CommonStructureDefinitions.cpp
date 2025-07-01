@@ -141,7 +141,7 @@ void Character::Appearance::Write(const Appearance& value, SinkStream& stream)
     .Write(value.height)
     .Write(value.thighVolume)
     .Write(value.legVolume)
-    .Write(value.emblem);
+    .Write(value.emblemId);
 }
 
 void Character::Appearance::Read(Appearance& value, SourceStream& stream)
@@ -151,7 +151,7 @@ void Character::Appearance::Read(Appearance& value, SourceStream& stream)
     .Read(value.height)
     .Read(value.thighVolume)
     .Read(value.legVolume)
-    .Read(value.emblem);
+    .Read(value.emblemId);
 }
 
 void Character::Write(const Character& value, SinkStream& stream)
