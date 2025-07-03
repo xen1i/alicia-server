@@ -44,8 +44,7 @@ void server::FileDataSource::Initialize(const std::filesystem::path& path)
   _dataPath = path;
   _metaFilePath = _dataPath;
 
-  const auto prepareDataPath = [this](
-                                 std::filesystem::path folder)
+  const auto prepareDataPath = [this](std::filesystem::path folder)
   {
     const auto path = _dataPath / folder;
     create_directories(path);
@@ -86,7 +85,7 @@ void server::FileDataSource::Terminate()
   }
 
   nlohmann::json meta;
-  meta["sequentialUid"] = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  meta["sequentialUid"] = _sequentialUid;
 
   metaFile << meta.dump(2);
 }
@@ -133,7 +132,7 @@ void server::FileDataSource::StoreUser(std::string name, const data::User& user)
 
 void server::FileDataSource::CreateCharacter(data::Character& character)
 {
-  character.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  character.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& character)
@@ -250,7 +249,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
 
 void server::FileDataSource::CreateItem(data::Item& item)
 {
-  item.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  item.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
@@ -293,7 +292,7 @@ void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
 
 void server::FileDataSource::CreatePet(data::Pet& pet)
 {
-  pet.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  pet.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrievePet(data::Uid uid, data::Pet& pet)
@@ -336,7 +335,7 @@ void server::FileDataSource::StorePet(data::Uid uid, const data::Pet& pet)
 
 void server::FileDataSource::CreateGuild(data::Guild& guild)
 {
-  guild.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  guild.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveGuild(data::Uid uid, data::Guild& guild)
@@ -377,7 +376,7 @@ void server::FileDataSource::StoreGuild(data::Uid uid, const data::Guild& guild)
 
 void server::FileDataSource::CreateStoredItem(data::StoredItem& item)
 {
-  item.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  item.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveStoredItem(data::Uid uid, data::StoredItem& item)
@@ -425,7 +424,7 @@ void server::FileDataSource::StoreStoredItem(data::Uid uid, const data::StoredIt
 
 void server::FileDataSource::CreateHorse(data::Horse& horse)
 {
-  horse.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  horse.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
@@ -552,7 +551,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
 void server::FileDataSource::CreateRanch(data::Ranch& ranch)
 {
-  ranch.uid = _sequentialUid.fetch_add(1, std::memory_order::relaxed);
+  ranch.uid = ++_sequentialUid;
 }
 
 void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
