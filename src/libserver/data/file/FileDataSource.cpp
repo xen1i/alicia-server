@@ -85,7 +85,7 @@ void server::FileDataSource::Terminate()
   }
 
   nlohmann::json meta;
-  meta["sequentialUid"] = _sequentialUid;
+  meta["sequentialUid"] = _sequentialUid.load();
 
   metaFile << meta.dump(2);
 }
