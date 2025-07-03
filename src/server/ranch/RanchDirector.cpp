@@ -21,6 +21,7 @@
 #include  "server/ServerInstance.hpp"
 
 #include "libserver/data/helper/ProtocolHelper.hpp"
+#include "libserver/registry/HorseRegistry.hpp"
 #include "libserver/util/Util.hpp"
 
 #include <ranges>
@@ -1005,6 +1006,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
       "  - bodyLength - Defaults to 5\n"
       "  - bodyVolume - Defaults to 5",
 
+      "//horse randomize\n"
+      "  Randomizes your horse appearance and parts."
+
       "Note: to ignore any parameter,\n"
       "       simply specify 0 as the value.",
       };
@@ -1055,7 +1059,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
   if (command[0] == "horse")
   {
     if (command.size() < 2)
-      return {"Invalid command sub-literal. (//horse <appearance/parts>)"};
+      return {"Invalid command sub-literal. (//horse <appearance/parts/randomize>)"};
 
     auto mountUid = data::InvalidUid;
 
@@ -1064,23 +1068,23 @@ std::vector<std::string> RanchDirector::HandleCommand(
       if (command.size() < 6)
         return {"Invalid command arguments. (//horse parts <skinId> <faceId> <maneId> <tailId>)"};
       data::Horse::Parts parts{
-        .skinId = static_cast<uint32_t>(std::atoi(command[2].c_str())),
-        .faceId = static_cast<uint32_t>(std::atoi(command[3].c_str())),
-        .maneId = static_cast<uint32_t>(std::atoi(command[4].c_str())),
-        .tailId = static_cast<uint32_t>(std::atoi(command[5].c_str()))};
+        .skinTid = static_cast<uint32_t>(std::atoi(command[2].c_str())),
+        .faceTid = static_cast<uint32_t>(std::atoi(command[3].c_str())),
+        .maneTid = static_cast<uint32_t>(std::atoi(command[4].c_str())),
+        .tailTid = static_cast<uint32_t>(std::atoi(command[5].c_str()))};
 
       characterRecord.Immutable([this, &mountUid, &parts](const data::Character& character)
       {
         GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([&parts](data::Horse& horse)
         {
-          if (parts.faceId() != 0)
-            horse.parts.faceId() = parts.faceId();
-          if (parts.maneId() != 0)
-            horse.parts.maneId() = parts.maneId();
-          if (parts.skinId() != 0)
-            horse.parts.skinId() = parts.skinId();
-          if (parts.tailId() != 0)
-            horse.parts.tailId() = parts.tailId();
+          if (parts.faceTid() != 0)
+            horse.parts.faceTid() = parts.faceTid();
+          if (parts.maneTid() != 0)
+            horse.parts.maneTid() = parts.maneTid();
+          if (parts.skinTid() != 0)
+            horse.parts.skinTid() = parts.skinTid();
+          if (parts.tailTid() != 0)
+            horse.parts.tailTid() = parts.tailTid();
         });
 
         mountUid = character.mountUid();
@@ -1122,6 +1126,19 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
       BroadcastUpdateMountInfoNotify(clientContext.characterUid, mountUid);
       return {"Appearance set! Restart the client."};
+    }
+
+    if (command[1] == "randomize")
+    {
+      characterRecord.Immutable([this, &mountUid](const data::Character& character)
+      {
+        GetServerInstance().GetDataDirector().GetHorses().Get(character.mountUid())->Mutable([](data::Horse& horse)
+        {
+          HorseRegistry::Get().BuildRandomHorse(horse.parts, horse.appearance);
+        });
+        mountUid = character.mountUid();
+      });
+      return {"Appearance and parts randomized! Restart the client."};
     }
   }
   if (command[0] == "give")

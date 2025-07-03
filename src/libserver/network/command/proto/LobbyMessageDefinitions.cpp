@@ -1103,12 +1103,12 @@ void LobbyCommandPersonalInfo::Write(const LobbyCommandPersonalInfo& command, Si
   {
     case LobbyCommandRequestPersonalInfo::Type::Basic:
       {
-        stream.Write(command.six);
+        stream.Write(command.basic);
         break;
       }
     case LobbyCommandRequestPersonalInfo::Type::Courses:
       {
-        stream.Write(command.seven);
+        stream.Write(command.courses);
         break;
       }
     case LobbyCommandRequestPersonalInfo::Type::Eight:

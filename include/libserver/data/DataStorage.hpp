@@ -160,7 +160,8 @@ public:
 
     for (auto& entry : _entries)
     {
-      _dataSourceStoreListener(entry.first, entry.second.value);
+      if (entry.second.available)
+        _dataSourceStoreListener(entry.first, entry.second.value);
     }
 
     _entries.clear();
@@ -282,7 +283,8 @@ public:
     {
       auto& entry = _entries[key];
 
-      _dataSourceStoreListener(key, entry.value);
+      if (entry.available)
+        _dataSourceStoreListener(key, entry.value);
     }
     _storeQueue.clear();
   }

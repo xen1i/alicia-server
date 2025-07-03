@@ -235,15 +235,15 @@ struct Character
 struct Horse
 {
   dao::Field<Uid> uid{InvalidUid};
-  dao::Field<Uid> tid{InvalidTid};
+  dao::Field<Tid> tid{InvalidTid};
   dao::Field<std::string> name{};
 
   struct Parts
   {
-    dao::Field<uint32_t> skinId{0u};
-    dao::Field<uint32_t> faceId{0u};
-    dao::Field<uint32_t> maneId{0u};
-    dao::Field<uint32_t> tailId{0u};
+    dao::Field<Tid> skinTid{0u};
+    dao::Field<Tid> faceTid{0u};
+    dao::Field<Tid> maneTid{0u};
+    dao::Field<Tid> tailTid{0u};
   } parts{};
 
   struct Appearance
@@ -278,11 +278,11 @@ struct Horse
   dao::Field<uint32_t> grade{0u};
   dao::Field<uint32_t> growthPoints{0u};
 
-  dao::Field<uint32_t> potentialType{0u};
+  dao::Field<Tid> potentialType{0u};
   dao::Field<uint32_t> potentialLevel{0u};
 
   dao::Field<uint32_t> luckState{0u};
-  dao::Field<uint32_t> emblem{0u};
+  dao::Field<uint32_t> emblemUid{0u};
 };
 
 struct Ranch

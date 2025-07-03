@@ -19,11 +19,12 @@
 
 #include "server/lobby/LoginHandler.hpp"
 
-#include "libserver/Constants.hpp"
 #include "server/lobby/LobbyDirector.hpp"
 #include "server/ServerInstance.hpp"
 
+#include "libserver/Constants.hpp"
 #include "libserver/data/helper/ProtocolHelper.hpp"
+#include "libserver/registry/HorseRegistry.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -84,6 +85,7 @@ void LoginHandler::Tick()
     // Request the load of the user data if not requested yet.
     if (not loginContext.userLoadRequested)
     {
+      spdlog::info("Loading data for user '{}'", loginContext.userName);
       _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUserData(
         loginContext.userName);
 
@@ -185,34 +187,32 @@ void LoginHandler::HandleUserCreateCharacter(
   if (not userRecord)
     throw std::runtime_error("User record does not exist");
 
-  // Create a new horse for the character.
-  const auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
+  std::vector<data::Uid> horses;
+
+  for (uint32_t i = 0; i < 3; ++i)
+  {
+    // Create a new horse for the character.
+    const auto horseRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateHorse();
+
+    horseRecord.Mutable(
+      [&horses](data::Horse& horse)
+      {
+        horse.name() = "default";
+
+        // The TID of the horse specifies which body mesh is used for that horse.
+        // Can be found in the `MountPartInfo` table.
+        horse.tid() = 20002;
+
+        HorseRegistry::Get().BuildRandomHorse(
+          horse.parts,
+          horse.appearance);
+
+        horses.emplace_back(horse.uid());
+      });
+  }
+
   // The UID of the newly created horse.
-  auto characterMountUid{data::InvalidUid};
-
-  horseRecord.Mutable(
-    [&characterMountUid](data::Horse& horse)
-    {
-      horse.name() = "default";
-
-      // The TID of the horse specifies which body mesh is used for that horse.
-      // Can be found in the `MountPartInfo` table.
-      horse.tid() = 20002;
-
-      // The default parts and appearance of each horse TID
-      // can be found in the `MountPartSet` table.
-      horse.parts.skinId() = 4;
-      horse.parts.faceId() = 1;
-      horse.parts.maneId() = 1;
-      horse.parts.tailId() = 1;
-      horse.appearance.bodyLength() = 5;
-      horse.appearance.bodyVolume() = 5;
-      horse.appearance.legLength() = 5;
-      horse.appearance.legVolume() = 5;
-      horse.appearance.scale() = 5;
-
-      characterMountUid = horse.uid();
-    });
+  const data::Uid characterMountUid = horses.front();
 
   // Create a new ranch for the character.
   const auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
@@ -236,6 +236,7 @@ void LoginHandler::HandleUserCreateCharacter(
 
   characterRecord.Mutable(
     [&userCharacterUid,
+     &horses,
      &characterMountUid,
      &characterRanchUid,
      &command](data::Character& character)
@@ -259,6 +260,7 @@ void LoginHandler::HandleUserCreateCharacter(
         .emblemId = command.character.appearance.emblemId,
       };
 
+      character.horses = horses;
       character.mountUid() = characterMountUid;
       character.ranchUid() = characterRanchUid;
     });

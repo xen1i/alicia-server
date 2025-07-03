@@ -450,8 +450,6 @@ void DataDirector::RequestLoadUserData(const std::string& userName)
       true,
       std::memory_order::release);
   };
-
-  spdlog::info("Loading data for user '{}'", userName);
 }
 
 void DataDirector::RequestUnloadUserData(const std::string& userName)
@@ -462,7 +460,6 @@ void DataDirector::RequestUnloadUserData(const std::string& userName)
   {
   };
 
-  spdlog::info("Unloading data for user '{}'", userName);
 }
 
 bool DataDirector::IsUserDataLoaded(const std::string& userName)

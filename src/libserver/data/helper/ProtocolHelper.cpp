@@ -74,7 +74,7 @@ void BuildProtocolHorse(
     .val12 = 0x00,
     .fatigue = 0x00,
     .val14 = 0x00,
-    .emblem = static_cast<uint16_t>(horse.emblem())};
+    .emblem = static_cast<uint16_t>(horse.emblemUid())};
 
   BuildProtocolHorseParts(protocolHorse.parts, horse.parts);
   BuildProtocolHorseAppearance(protocolHorse.appearance, horse.appearance);
@@ -87,10 +87,10 @@ void BuildProtocolHorseParts(
   const data::Horse::Parts& parts)
 {
   protocolHorseParts = {
-    .skinId = static_cast<uint8_t>(parts.skinId()),
-    .maneId = static_cast<uint8_t>(parts.maneId()),
-    .tailId = static_cast<uint8_t>(parts.tailId()),
-    .faceId = static_cast<uint8_t>(parts.faceId())};
+    .skinId = static_cast<uint8_t>(parts.skinTid()),
+    .maneId = static_cast<uint8_t>(parts.maneTid()),
+    .tailId = static_cast<uint8_t>(parts.tailTid()),
+    .faceId = static_cast<uint8_t>(parts.faceTid())};
 }
 
 void BuildProtocolHorseAppearance(

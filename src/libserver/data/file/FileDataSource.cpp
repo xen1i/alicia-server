@@ -447,10 +447,10 @@ void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
 
   auto parts = json["parts"];
   horse.parts = data::Horse::Parts{
-    .skinId = parts["skinId"].get<uint32_t>(),
-    .faceId = parts["faceId"].get<uint32_t>(),
-    .maneId = parts["maneId"].get<uint32_t>(),
-    .tailId = parts["tailId"].get<uint32_t>()};
+    .skinTid = parts["skinId"].get<uint32_t>(),
+    .faceTid = parts["faceId"].get<uint32_t>(),
+    .maneTid = parts["maneId"].get<uint32_t>(),
+    .tailTid = parts["tailId"].get<uint32_t>()};
 
   auto appearance = json["appearance"];
   horse.appearance = data::Horse::Appearance{
@@ -485,7 +485,7 @@ void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   horse.potentialLevel = json["potentialLevel"].get<uint32_t>();
 
   horse.luckState = json["luckState"].get<uint32_t>();
-  horse.emblem = json["emblem"].get<uint32_t>();
+  horse.emblemUid = json["emblem"].get<uint32_t>();
 }
 
 void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
@@ -506,10 +506,10 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   json["name"] = horse.name();
 
   nlohmann::json parts;
-  parts["skinId"] = horse.parts.skinId();
-  parts["faceId"] = horse.parts.faceId();
-  parts["maneId"] = horse.parts.maneId();
-  parts["tailId"] = horse.parts.tailId();
+  parts["skinId"] = horse.parts.skinTid();
+  parts["faceId"] = horse.parts.faceTid();
+  parts["maneId"] = horse.parts.maneTid();
+  parts["tailId"] = horse.parts.tailTid();
   json["parts"] = parts;
 
   nlohmann::json appearance;
@@ -545,7 +545,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   json["potentialLevel"] = horse.potentialLevel();
 
   json["luckState"] = horse.luckState();
-  json["emblem"] = horse.emblem();
+  json["emblem"] = horse.emblemUid();
 
   dataFile << json.dump(2);
 }

@@ -1538,7 +1538,7 @@ struct LobbyCommandPersonalInfo
 
     static void Write(const Basic& command, SinkStream& stream);
     static void Read(Basic& command, SourceStream& stream);
-  } six{};
+  } basic{};
 
   struct Courses
   {
@@ -1558,7 +1558,7 @@ struct LobbyCommandPersonalInfo
 
     static void Write(const Courses& command, SinkStream& stream);
     static void Read(Courses& command, SourceStream& stream);
-  } seven{};
+  } courses{};
 
   struct Eight
   {
