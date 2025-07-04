@@ -1032,35 +1032,36 @@ std::vector<std::string> RanchDirector::HandleCommand(
     if (command.size() < 2)
       return {"Invalid command argument. (//visit <name>)"};
 
-    const std::string userName = command[1];
-
-    const auto userRecord = GetServerInstance().GetDataDirector().GetUsers().Get(userName, false);
-    if (not userRecord)
-    {
-      return {std::format("User '{}' not online, try again later.", userName)};
-    }
-
-    auto characterUid = data::InvalidUid;
-    userRecord->Immutable([&characterUid](const data::User& user)
-    {
-      characterUid = user.characterUid();
-    });
-
-    const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(characterUid, false);
-    if (not userRecord)
-    {
-      return {std::format("Server error, try again later.", userName)};
-    }
+    const std::string characterName = command[1];
 
     auto ranchUid = data::InvalidUid;
-    characterRecord->Immutable([&ranchUid](const data::Character& character)
+
+    const auto onlineCharacters = GetServerInstance().GetDataDirector().GetCharacters().GetKeys();
+    for (const data::Uid characterUid : onlineCharacters)
     {
-      ranchUid = character.ranchUid();
-    });
+      const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+        characterUid, false);
+      if (not characterRecord)
+        continue;
 
-    GetServerInstance().GetLobbyDirector().UpdateVisitPreference(characterUid, ranchUid);
+      characterRecord->Immutable([&ranchUid](const data::Character& character)
+      {
+        ranchUid = character.ranchUid();
+      });
 
-    return {std::format("Next time you enter the portal, you'll visit {}", userName)};
+      if (ranchUid != data::InvalidUid)
+        break;
+    }
+
+    if (ranchUid != data::InvalidUid)
+    {
+      GetServerInstance().GetLobbyDirector().UpdateVisitPreference(
+        clientContext.characterUid, ranchUid);
+
+      return {std::format("Next time you enter the portal, you'll visit {}", characterName)};
+    }
+
+    return {std::format("Nobody with name '{}' online. Use //online to view online player.", characterName)};
   }
 
   if (command[0] == "online")
@@ -1259,7 +1260,12 @@ void RanchDirector::HandleWearEquipment(
 
     if (hasMountedHorse)
     {
+      // Add the mount back to the horse list.
+      character.horses().emplace_back(character.mountUid());
       character.mountUid() = command.itemUid;
+
+      // Remove the new mount from the horse list.
+      character.horses().erase(std::ranges::find(character.horses(), command.itemUid));
     }
     else if (hasEquippedItem)
     {
