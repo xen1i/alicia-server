@@ -176,10 +176,18 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
       data::Uid ranchUid = data::InvalidUid;
       if (clientContext.visitPreference != data::InvalidUid)
       {
-        ranchUid = clientContext.visitPreference;
-        clientContext.visitPreference = data::InvalidUid;
+        const auto visitingCharacterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+          clientContext.visitPreference, false);
+        if (visitingCharacterRecord)
+        {
+          visitingCharacterRecord->Immutable([&ranchUid](const data::Character& character)
+          {
+            ranchUid = character.ranchUid();
+          });
+        }
       }
-      else
+
+      if (ranchUid == data::InvalidUid)
       {
         auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
         std::uniform_int_distribution<data::Uid> uidDistribution(
@@ -242,7 +250,7 @@ Settings::LobbySettings& LobbyDirector::GetSettings()
   return GetServerInstance().GetSettings()._lobbySettings;
 }
 
-void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid ranchUid)
+void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid visitingCharacterUid)
 {
   const auto clientContextIter = std::ranges::find_if(_clientContext, [characterUid](const auto pair)
   {
@@ -253,7 +261,7 @@ void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid ranc
   if (clientContextIter == _clientContext.cend())
     return;
 
-  clientContextIter->second.visitPreference = ranchUid;
+  clientContextIter->second.visitPreference = visitingCharacterUid;
 }
 
 

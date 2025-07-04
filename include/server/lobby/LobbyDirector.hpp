@@ -61,7 +61,7 @@ public:
   ServerInstance& GetServerInstance();
   Settings::LobbySettings& GetSettings();
 
-  void UpdateVisitPreference(data::Uid characterUid, data::Uid ranchUid);
+  void UpdateVisitPreference(data::Uid characterUid, data::Uid visitingCharacterUid);
 
 private:
   void HandleEnterChannel(

@@ -1034,29 +1034,30 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
     const std::string characterName = command[1];
 
-    auto ranchUid = data::InvalidUid;
+    auto visitingCharacterUid = data::InvalidUid;
 
     const auto onlineCharacters = GetServerInstance().GetDataDirector().GetCharacters().GetKeys();
-    for (const data::Uid characterUid : onlineCharacters)
+    for (const data::Uid onlineCharacterUid : onlineCharacters)
     {
-      const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
-        characterUid, false);
-      if (not characterRecord)
+      const auto onlineCharacterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
+        onlineCharacterUid, false);
+      if (not onlineCharacterRecord)
         continue;
 
-      characterRecord->Immutable([&ranchUid](const data::Character& character)
+      onlineCharacterRecord->Immutable([&visitingCharacterUid, &characterName](const data::Character& character)
       {
-        ranchUid = character.ranchUid();
+        if (characterName == character.name())
+          visitingCharacterUid = character.uid();
       });
 
-      if (ranchUid != data::InvalidUid)
+      if (visitingCharacterUid != data::InvalidUid)
         break;
     }
 
-    if (ranchUid != data::InvalidUid)
+    if (visitingCharacterUid != data::InvalidUid)
     {
       GetServerInstance().GetLobbyDirector().UpdateVisitPreference(
-        clientContext.characterUid, ranchUid);
+        clientContext.characterUid, visitingCharacterUid);
 
       return {std::format("Next time you enter the portal, you'll visit {}", characterName)};
     }
