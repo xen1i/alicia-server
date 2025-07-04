@@ -235,7 +235,6 @@ DataDirector::DataDirector()
 
 DataDirector::~DataDirector()
 {
-  _primaryDataSource->Terminate();
 }
 
 void DataDirector::Initialize()
@@ -256,6 +255,8 @@ void DataDirector::Terminate()
   {
     spdlog::error("Unhandled in exception while terminating data director: {}", x.what());
   }
+
+  _primaryDataSource->Terminate();
 }
 
 void DataDirector::Tick()
@@ -275,197 +276,73 @@ void DataDirector::Tick()
 
   try
   {
-    const auto now = Clock::now();
-    for (auto jobIt = _queuedJobs.begin(); jobIt != _queuedJobs.end(); ++jobIt)
-    {
-      const auto& job = *jobIt;
-      if (now >= job.when)
-      {
-        job.job();
-        _queuedJobs.erase(jobIt);
-        break;
-      }
-    }
-
-  } catch (std::exception& x)
+    _scheduler.Tick();
+  }
+  catch (std::exception& x)
   {
-    spdlog::error("Unhandled in exception ticking the jobs in the data director: {}", x.what());
+    spdlog::error("Unhandled in exception ticking the scheduler in the data director: {}", x.what());
   }
 }
 
-void DataDirector::RequestLoadUserData(const std::string& userName)
+void DataDirector::RequestLoadUser(
+  const std::string& userName)
 {
   auto& userDataContext = _userDataContext[userName];
-  userDataContext.timeout = Clock::now() + std::chrono::seconds(10);
 
-  auto& job = _queuedJobs.emplace_back();
-  job.when = Clock::now();
-  job.job = [this, &userDataContext, userName]()
+  // If the user data are being loaded or are already loaded, prevent the user load.
+  if (userDataContext.isBeingLoaded.load(std::memory_order::acquire) ||
+    userDataContext.isUserLoaded.load(std::memory_order::acquire))
   {
-    // Todo this sucks, make it a direct access to data source, the debug message sucks :(
+    return;
+  }
 
-    const Deferred requestLoadAgain(
-      [this, &userDataContext, &userName]()
-      {
-        if (Clock::now() > userDataContext.timeout)
-        {
-          spdlog::warn(
-            "Loading of the user '{}' has reached a timeout: {}",
-            userName,
-            userDataContext.debugMessage);
-          return;
-        }
+  // Indicate that the user data are being loaded and set the timeout.
+  userDataContext.isBeingLoaded.store(true, std::memory_order::release);
+  userDataContext.timeout = Scheduler::Clock::now() + std::chrono::seconds(10);
 
-        const bool isLoadedCompletely = userDataContext.isLoadedCompletely.load(
-          std::memory_order::acquire);
+  spdlog::info("Load for data of user '{}' requested", userName);
 
-        // If the user data were not loaded completely perform the request again.
-        if (not isLoadedCompletely)
-        {
-          RequestLoadUserData(userName);
-        }
-      });
-
-    // Load the user.
-    const auto userRecord = GetUser(userName);
-    if (not userRecord)
-    {
-      userDataContext.debugMessage = std::format("User {} is not available", userName);
-      return;
-    }
-
-    auto characterUid{data::InvalidUid};
-
-    userRecord.Immutable(
-      [&characterUid](const data::User& user)
-      {
-        characterUid = user.characterUid();
-      });
-
-    // Load the character.
-    const auto characterRecord = GetCharacter(characterUid);
-
-    if (not characterRecord)
-    {
-      if (characterUid == data::InvalidUid)
-      {
-        // Since the user does not have a character,
-        // the user data are loaded completely.
-        userDataContext.isLoadedCompletely.store(
-          true,
-          std::memory_order::release);
-      }
-      else
-      {
-        userDataContext.debugMessage = std::format(
-          "Character '{}' not available for user '{}'",
-          characterUid,
-          userName);
-      }
-
-      return;
-    }
-
-    auto guildUid = data::InvalidUid;
-    auto petUid = data::InvalidUid;
-
-    std::vector<data::Uid> gifts;
-    std::vector<data::Uid> purchases;
-    std::vector<data::Uid> items;
-
-    std::vector<data::Uid> horses;
-
-    auto ranchUid = data::InvalidUid;
-
-    characterRecord.Immutable(
-      [&guildUid, &petUid, &ranchUid, &horses, &items, &gifts, &purchases](const data::Character& character)
-      {
-        guildUid = character.guildUid();
-        petUid = character.petUid();
-
-        gifts = character.gifts();
-        purchases = character.purchases();
-        items = character.items();
-        horses = character.horses();
-
-        // Add the mount to the horses list,
-        // so that it is loaded with all the horses.
-        horses.emplace_back(character.mountUid());
-
-        ranchUid = character.ranchUid();
-      });
-
-    const auto guildRecord = GetGuild(guildUid);
-    const auto petRecord = GetPet(petUid);
-
-    const auto giftRecords = GetStoredItems().Get(gifts);
-    const auto purchaseRecords = GetStoredItems().Get(purchases);
-    const auto itemRecords = GetItems().Get(items);
-
-    const auto horseRecords = GetHorses().Get(horses);
-
-    const auto ranchRecord = GetRanch(ranchUid);
-
-    // Only require guild if the UID is not invalid.
-    if (not guildRecord && guildUid != data::InvalidUid)
-    {
-      userDataContext.debugMessage = std::format(
-        "Guild '{}' not available for user '{}'", guildUid, userName);
-      return;
-    }
-
-    // Only require pet if the UID is not invalid.
-    if (not petRecord && petUid != data::InvalidUid)
-    {
-      userDataContext.debugMessage = std::format(
-        "Pet '{}' not available for user '{}'", guildUid, userName);
-      return;
-    }
-
-    // Require gifts and purchases for the storage and items for the inventory.
-    if (not giftRecords || not purchaseRecords || not itemRecords)
-    {
-      userDataContext.debugMessage = std::format(
-        "Gifts, purchases or items not available for user '{}'", userName);
-      return;
-    }
-
-    // Require the horse records and the current mount record.
-    if (not horseRecords)
-    {
-      userDataContext.debugMessage = std::format(
-        "Horses or mount not available for user '{}'", userName);
-      return;
-    }
-
-    // Require the ranch record.
-    if (not ranchRecord)
-    {
-      userDataContext.debugMessage = std::format(
-        "Ranch '{}' not available for user '{}'", ranchUid, userName);
-      return;
-    }
-
-    userDataContext.isLoadedCompletely.store(
-      true,
-      std::memory_order::release);
-  };
+  ScheduleUserLoad(userDataContext, userName);
 }
 
-void DataDirector::RequestUnloadUserData(const std::string& userName)
+void DataDirector::RequestLoadCharacter(
+  const std::string& userName,
+  data::Uid characterUid)
 {
-  auto& job = _queuedJobs.emplace_back();
-  job.when = Clock::now() + std::chrono::minutes(10);
-  job.job = [userName]()
-  {
-  };
+  auto& userDataContext = _userDataContext[userName];
 
+  // If the user data are being loaded or are already loaded, prevent the character load.
+  if (userDataContext.isBeingLoaded.load(std::memory_order::acquire) ||
+    userDataContext.isCharacterLoaded.load(std::memory_order::acquire))
+  {
+    return;
+  }
+
+  // Indicate that the user data are being loaded and set the timeout.
+  userDataContext.isBeingLoaded.store(true, std::memory_order::release);
+  userDataContext.timeout = Scheduler::Clock::now() + std::chrono::seconds(10);
+
+  spdlog::info("Load for character data of user '{}' requested", userName);
+
+  ScheduleCharacterLoad(userDataContext, characterUid);
 }
 
-bool DataDirector::IsUserDataLoaded(const std::string& userName)
+bool DataDirector::IsDataBeingLoaded(const std::string& userName)
 {
   const auto& userDataContext = _userDataContext[userName];
-  return userDataContext.isLoadedCompletely.load(std::memory_order::acquire);
+  return userDataContext.isBeingLoaded.load(std::memory_order::acquire);
+}
+
+bool DataDirector::IsUserLoaded(const std::string& userName)
+{
+  const auto& userDataContext = _userDataContext[userName];
+  return userDataContext.isUserLoaded.load(std::memory_order::acquire);
+}
+
+bool DataDirector::IsCharacterLoaded(const std::string& userName)
+{
+  const auto& userDataContext = _userDataContext[userName];
+  return userDataContext.isCharacterLoaded.load(std::memory_order::acquire);
 }
 
 Record<data::User> DataDirector::GetUser(const std::string& userName)
@@ -644,6 +521,164 @@ Record<data::Ranch> DataDirector::CreateRanch() noexcept
 DataDirector::RanchStorage& DataDirector::GetRanches()
 {
   return _ranchStorage;
+}
+
+void DataDirector::ScheduleUserLoad(
+  UserDataContext& userDataContext,
+  const std::string& userName)
+{
+  _scheduler.Queue([this, &userDataContext, userName]()
+  {
+    const Deferred deferred([this, &userDataContext, userName]()
+    {
+      // If the user is completely loaded we can return.
+      if (userDataContext.isUserLoaded.load(std::memory_order::acquire))
+      {
+        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        return;
+      }
+
+      // If the timeout is reached we should return and warn about the timeout.
+      if (Scheduler::Clock::now() > userDataContext.timeout)
+      {
+        spdlog::warn("Timeout reached loading data for user '{}'", userName);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        return;
+      }
+
+      ScheduleUserLoad(userDataContext, userName);
+    });
+
+    const auto userRecord = GetUser(userName);
+    if (not userRecord)
+    {
+      userDataContext.debugMessage = std::format(
+        "User {} is not available", userName);
+      return;
+    }
+
+    userDataContext.isUserLoaded.store(true, std::memory_order::release);
+  });
+}
+
+void DataDirector::ScheduleCharacterLoad(
+  UserDataContext& userDataContext,
+  data::Uid characterUid)
+{
+  _scheduler.Queue([this, &userDataContext, characterUid]()
+  {
+    const Deferred deferred([this, &userDataContext, characterUid]()
+    {
+      // If the character is completely loaded we can return.
+      if (userDataContext.isCharacterLoaded.load(std::memory_order::acquire))
+      {
+        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        return;
+      }
+
+      // If the timeout is reached we should return and warn about the timeout.
+      if (Scheduler::Clock::now() > userDataContext.timeout)
+      {
+        spdlog::warn("Timeout reached loading data for character '{}'", characterUid);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        return;
+      }
+
+      ScheduleCharacterLoad(userDataContext, characterUid);
+    });
+
+    const auto characterRecord = GetCharacter(characterUid);
+
+    if (not characterRecord)
+    {
+      userDataContext.debugMessage = std::format(
+        "Character '{}' not available",
+        characterUid);
+      return;
+    }
+
+    auto guildUid = data::InvalidUid;
+    auto petUid = data::InvalidUid;
+
+    std::vector<data::Uid> gifts;
+    std::vector<data::Uid> purchases;
+    std::vector<data::Uid> items;
+
+    std::vector<data::Uid> horses;
+
+    auto ranchUid = data::InvalidUid;
+
+    characterRecord.Immutable(
+      [&guildUid, &petUid, &ranchUid, &horses, &items, &gifts, &purchases](const data::Character& character)
+      {
+        guildUid = character.guildUid();
+        petUid = character.petUid();
+
+        gifts = character.gifts();
+        purchases = character.purchases();
+        items = character.items();
+        horses = character.horses();
+
+        // Add the mount to the horses list,
+        // so that it is loaded with all the horses.
+        horses.emplace_back(character.mountUid());
+
+        ranchUid = character.ranchUid();
+      });
+
+    const auto guildRecord = GetGuild(guildUid);
+    const auto petRecord = GetPet(petUid);
+
+    const auto giftRecords = GetStoredItems().Get(gifts);
+    const auto purchaseRecords = GetStoredItems().Get(purchases);
+    const auto itemRecords = GetItems().Get(items);
+
+    const auto horseRecords = GetHorses().Get(horses);
+
+    const auto ranchRecord = GetRanch(ranchUid);
+
+    // Only require guild if the UID is not invalid.
+    if (not guildRecord && guildUid != data::InvalidUid)
+    {
+      userDataContext.debugMessage = std::format(
+        "Guild '{}' not available", guildUid);
+      return;
+    }
+
+    // Only require pet if the UID is not invalid.
+    if (not petRecord && petUid != data::InvalidUid)
+    {
+      userDataContext.debugMessage = std::format(
+        "Pet '{}' not available", guildUid);
+      return;
+    }
+
+    // Require gifts and purchases for the storage and items for the inventory.
+    if (not giftRecords || not purchaseRecords || not itemRecords)
+    {
+      userDataContext.debugMessage = std::format(
+        "Gifts, purchases or items not available");
+      return;
+    }
+
+    // Require the horse records and the current mount record.
+    if (not horseRecords)
+    {
+      userDataContext.debugMessage = std::format(
+        "Horses or mount not available");
+      return;
+    }
+
+    // Require the ranch record.
+    if (not ranchRecord)
+    {
+      userDataContext.debugMessage = std::format(
+        "Ranch '{}' not available", ranchUid);
+      return;
+    }
+
+    userDataContext.isCharacterLoaded.store(true, std::memory_order::release);
+  });
 }
 
 } // namespace server

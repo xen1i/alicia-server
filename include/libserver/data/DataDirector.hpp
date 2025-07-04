@@ -22,12 +22,9 @@
 
 #include "DataDefinitions.hpp"
 #include "DataStorage.hpp"
-
 // #include "pq/PqDataSource.hpp"
 #include "file/FileDataSource.hpp"
-
-#include <list>
-#include <queue>
+#include "libserver/util/Scheduler.hpp"
 
 namespace server
 {
@@ -54,9 +51,15 @@ public:
   //! Ticks the data director.
   void Tick();
 
-  void RequestLoadUserData(const std::string& userName);
-  void RequestUnloadUserData(const std::string& userName);
-  bool IsUserDataLoaded(const std::string& userName);
+  void RequestLoadUser(
+    const std::string& userName);
+  void RequestLoadCharacter(
+  const std::string& userName,
+    data::Uid characterUid);
+  bool IsDataBeingLoaded(const std::string& userName);
+
+  bool IsUserLoaded(const std::string& userName);
+  bool IsCharacterLoaded(const std::string& userName);
 
   [[nodiscard]] Record<data::User> GetUser(const std::string& userName);
   [[nodiscard]] UserStorage& GetUsers();
@@ -96,31 +99,30 @@ private:
   //! An underlying data source of the data director.
   std::unique_ptr<FileDataSource> _primaryDataSource;
 
-  using Clock = std::chrono::steady_clock;
-  struct Job
-  {
-    Clock::time_point when;
-    std::function<void()> job;
-  };
-  std::list<Job> _queuedJobs;
+  Scheduler _scheduler;
 
   struct UserDataContext
   {
     std::atomic_bool isBeingLoaded = false;
     std::atomic_bool isBeingUnloaded = false;
-    std::atomic_bool isLoadedCompletely = false;
+
+    std::atomic_bool isUserLoaded = false;
+    std::atomic_bool isCharacterLoaded = false;
 
     std::string debugMessage;
     //! The time point when loading or unloading times out.
-    Clock::time_point timeout;
+    Scheduler::Clock::time_point timeout;
   };
   std::unordered_map<std::string, UserDataContext> _userDataContext;
 
-  //! A user storage.
+  void ScheduleUserLoad(UserDataContext& userDataContext, const std::string& userName);
+  void ScheduleCharacterLoad(UserDataContext& userDataContext, data::Uid characterUid);
+
+  //! An user storage.
   UserStorage _userStorage;
   //! A character storage.
   CharacterStorage _characterStorage;
-  //! A item storage.
+  //! An item storage.
   ItemStorage _itemStorage;
   //! A stored item storage.
   StoredItemStorage _storedItemStorage;

@@ -218,21 +218,22 @@ struct LobbyCommandLoginOK
     SourceStream& stream);
 };
 
-//! Cancel reason for login.
-enum class LoginCancelReason : uint8_t
-{
-  InvalidUser = 1,
-  Duplicated = 2,
-  InvalidVersion = 3,
-  InvalidEquipment = 4,
-  InvalidLoginId = 5,
-  DisconnectYourself = 6,
-};
-
 //! Clientbound login CANCEL command.
 struct LobbyCommandLoginCancel
 {
-  LoginCancelReason reason{0x00};
+  //! Cancel reason for login.
+  enum class Reason : uint8_t
+  {
+    Generic = 0,
+    InvalidUser = 1,
+    Duplicated = 2,
+    InvalidVersion = 3,
+    InvalidEquipment = 4,
+    InvalidLoginId = 5,
+    DisconnectYourself = 6,
+  };
+
+  Reason reason{0x00};
 
   static Command GetCommand()
   {

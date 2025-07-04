@@ -44,18 +44,40 @@ void LoginHandler::Tick()
   while (not _clientLoginRequestQueue.empty())
   {
     const ClientId clientId = _clientLoginRequestQueue.front();
-    const auto& loginContext = _clientLogins[clientId];
+    auto& loginContext = _clientLogins[clientId];
 
-    // Get the user.
-    const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUsers().Get(
-      loginContext.userName);
-    if (not userRecord)
+    // Request the load of the user data if not requested yet.
+    if (not loginContext.userLoadRequested)
+    {
+      _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUser(
+        loginContext.userName);
+
+      loginContext.userLoadRequested = true;
       continue;
+    }
+
+    if (_lobbyDirector.GetServerInstance().GetDataDirector().IsDataBeingLoaded(
+      loginContext.userName))
+    {
+      continue;
+    }
 
     _clientLoginRequestQueue.pop();
 
+    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsUserLoaded(
+      loginContext.userName))
+    {
+      spdlog::error("User data for '{}' not available", loginContext.userName);
+      QueueUserLoginRejected(clientId);
+      break;
+    }
+
+    const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUser(
+      loginContext.userName);
+    assert(userRecord.IsAvailable());
+
     bool isAuthenticated = false;
-    userRecord->Immutable(
+    userRecord.Immutable(
       [&isAuthenticated, &loginContext](const data::User& user)
       {
         isAuthenticated = user.token() == loginContext.userToken;
@@ -65,10 +87,11 @@ void LoginHandler::Tick()
     if (not isAuthenticated)
     {
       spdlog::debug("User '{}' failed in authentication", loginContext.userName);
-      QueueUserLoginRejected(clientId);
+      QueueUserLoginRejected(clientId, true);
     }
     else
     {
+      // Queue the user response.
       _clientLoginResponseQueue.emplace(clientId);
     }
 
@@ -82,32 +105,19 @@ void LoginHandler::Tick()
     auto& clientContext = _lobbyDirector._clientContext[clientId];
     auto& loginContext = _clientLogins[clientId];
 
-    // Request the load of the user data if not requested yet.
-    if (not loginContext.userLoadRequested)
+    // If the user character load was already requested wait for the load to complete.
+    if (loginContext.userCharacterLoadRequested)
     {
-      spdlog::info("Loading data for user '{}'", loginContext.userName);
-      _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUserData(
-        loginContext.userName);
-
-      loginContext.userLoadRequested = true;
-
-      // Continue the loop, as the user will for sure not be available immediately.
-      continue;
+      if (_lobbyDirector.GetServerInstance().GetDataDirector().IsDataBeingLoaded(
+        loginContext.userName))
+      {
+        continue;
+      }
     }
-
-    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsUserDataLoaded(
-      loginContext.userName))
-    {
-      // Continue the loop, the user data are not loaded.
-      continue;
-    }
-
-    _clientLoginResponseQueue.pop();
 
     const auto userRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetUser(
       loginContext.userName);
-
-    assert(userRecord && "User must be available");
+    assert(userRecord.IsAvailable());
 
     auto characterUid = data::InvalidUid;
 
@@ -117,19 +127,45 @@ void LoginHandler::Tick()
         characterUid = user.characterUid();
       });
 
-    // If the user does not have a character send them to character creator.
-    if (characterUid == data::InvalidUid)
+    const bool hasCharacter = characterUid != data::InvalidUid;
+
+    // If the user has a character request the load.
+    if (hasCharacter)
+    {
+      if (not loginContext.userCharacterLoadRequested)
+      {
+        _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadCharacter(
+          loginContext.userName,
+          characterUid);
+
+        loginContext.userCharacterLoadRequested = true;
+        continue;
+      }
+    }
+
+    _clientLoginResponseQueue.pop();
+
+    // If the user does not have a character send them to the character creator.
+    if (not hasCharacter)
     {
       spdlog::debug("User '{}' sent to character creator", loginContext.userName);
       QueueUserCreateNickname(clientId, loginContext.userName);
+      return;
     }
-    else
-    {
-      spdlog::debug("User '{}' succeeded in authentication", loginContext.userName);
-      QueueUserLoginAccepted(clientId, loginContext.userName);
 
-      clientContext.characterUid = characterUid;
+    // If the character was not loaded reject the login.
+    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsCharacterLoaded(
+      loginContext.userName))
+    {
+      spdlog::error("User character data for '{}' not available", loginContext.userName);
+      QueueUserLoginRejected(clientId);
+      break;
     }
+
+    spdlog::debug("User '{}' succeeded in authentication", loginContext.userName);
+    QueueUserLoginAccepted(clientId, loginContext.userName);
+
+    clientContext.characterUid = characterUid;
 
     // Only one response per tick.
     break;
@@ -150,7 +186,7 @@ void LoginHandler::HandleUserLogin(
         " User name or user token empty.",
         clientId);
 
-      QueueUserLoginRejected(clientId);
+      QueueUserLoginRejected(clientId, true);
       return;
     }
   }
@@ -164,13 +200,17 @@ void LoginHandler::HandleUserLogin(
       clientId,
       login.loginId);
 
-    QueueUserLoginRejected(clientId);
+    QueueUserLoginRejected(clientId, true);
     return;
   }
 
   // Queue the login.
   const auto [iterator, inserted] =
-    _clientLogins.try_emplace(clientId, LoginContext{.userName = login.loginId, .userToken = login.authKey});
+    _clientLogins.try_emplace(
+      clientId,
+      LoginContext{
+        .userName = login.loginId,
+        .userToken = login.authKey});
   assert(inserted && "Duplicate client login request.");
 
   _clientLoginRequestQueue.emplace(clientId);
@@ -423,14 +463,14 @@ void LoginHandler::QueueUserCreateNickname(ClientId clientId, const std::string&
     });
 }
 
-void LoginHandler::QueueUserLoginRejected(ClientId clientId)
+void LoginHandler::QueueUserLoginRejected(ClientId clientId, bool invalidUser)
 {
   _server.QueueCommand<protocol::LobbyCommandLoginCancel>(
     clientId,
-    []()
+    [invalidUser]()
     {
       return protocol::LobbyCommandLoginCancel{
-        .reason = protocol::LoginCancelReason::InvalidUser};
+      .reason = invalidUser ? protocol::LobbyCommandLoginCancel::Reason::InvalidUser : protocol::LobbyCommandLoginCancel::Reason::Generic };
     });
 }
 

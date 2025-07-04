@@ -206,12 +206,12 @@ public:
     return Record(&entry.value, &entry.mutex);
   }
 
-  std::optional<Record<Data>> Get(const Key& key)
+  std::optional<Record<Data>> Get(const Key& key, bool retrieve = true)
   {
     auto [recordIter, created] = _entries.try_emplace(key);
     auto& record = recordIter->second;
 
-    if (created)
+    if (created && retrieve)
     {
       RequestRetrieve(key);
       return std::nullopt;

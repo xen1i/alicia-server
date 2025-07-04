@@ -170,11 +170,25 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandEnterRandomRanch>(
     [this](ClientId clientId, auto& command)
     {
-      auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
-      std::uniform_int_distribution<data::Uid> uidDistribution(
-        0, randomRanchUids.size() - 1);
+      // this is just for prototype, it can suck
+      auto& clientContext = _clientContext[clientId];
 
-      QueueEnterRanchOK(clientId, randomRanchUids[uidDistribution(rd)]);
+      data::Uid ranchUid = data::InvalidUid;
+      if (clientContext.visitPreference != data::InvalidUid)
+      {
+        ranchUid = clientContext.visitPreference;
+        clientContext.visitPreference = data::InvalidUid;
+      }
+      else
+      {
+        auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
+        std::uniform_int_distribution<data::Uid> uidDistribution(
+          0, randomRanchUids.size() - 1);
+
+        ranchUid = randomRanchUids[uidDistribution(rd)];
+      }
+
+      QueueEnterRanchOK(clientId, ranchUid);
     });
 }
 
@@ -228,17 +242,20 @@ Settings::LobbySettings& LobbyDirector::GetSettings()
   return GetServerInstance().GetSettings()._lobbySettings;
 }
 
-void LobbyDirector::UpdateInventory(uint32_t characterUid)
+void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid ranchUid)
 {
-  for (const auto& [clientId, clientContext] : _clientContext)
+  const auto clientContextIter = std::ranges::find_if(_clientContext, [characterUid](const auto pair)
   {
-    if (clientContext.characterUid != characterUid)
-      continue;
+    const auto& [clientId, ctx] = pair;
+    return ctx.characterUid == characterUid;
+  });
 
-    QueueShowInventory(clientId);
-    break;
-  }
+  if (clientContextIter == _clientContext.cend())
+    return;
+
+  clientContextIter->second.visitPreference = ranchUid;
 }
+
 
 void LobbyDirector::HandleEnterChannel(
   ClientId clientId,

@@ -20,37 +20,51 @@
 #ifndef SERVER_SCHEDULER_HPP
 #define SERVER_SCHEDULER_HPP
 
-#include <atomic>
-#include <condition_variable>
+#include <chrono>
 #include <functional>
-#include <queue>
-#include <thread>
+#include <list>
+#include <mutex>
 
 namespace server
 {
 
-using Task = std::function<void()>;
-
 //!
-class TaskLoop final
+class Scheduler final
 {
 public:
-  //! Begin the task loop.
-  void Begin();
-  //! End the task loop.
-  void End();
-  //! Queue a task.
-  void Queue(const Task& task);
+  //! A task to perform.
+  using Task = std::function<void()>;
+  //! An alias for the standard steady-clock.
+  using Clock = std::chrono::steady_clock;
+
+  Scheduler();
+
+  //! Tick the scheduler.
+  void Tick();
+
+  //! Queue a task to be executed in the next tick.
+  //! @param task Task to queue execution of.
+  //! @param when A time point of when to execute the task. Defaults to immediate execution.
+  void Queue(
+    const Task& task,
+    Clock::time_point when = Clock::now());
 
 protected:
-  //! Task queue mutex.
-  std::mutex _queueMutex;
-  //! Task queue notification.
-  std::condition_variable _queueNotification;
-  //! Task queue.
-  std::queue<Task> _queue;
-  //! A flag indicating whether the task loop should run.
-  std::atomic<bool> _shouldRun;
+  //! A job.
+  struct Job
+  {
+    //! A time point of when the job should execute.
+    Clock::time_point when{};
+    //! A task the job has to execute.
+    Task task{};
+  };
+
+  //! A mutex to the job list.
+  std::mutex _jobsMutex;
+  //! A job list.
+  std::list<Job> _jobs;
+  //! An iterator to the job to execute in the next tick cycle.
+  decltype(_jobs)::const_iterator _jobIterator;
 };
 
 } // namespace server

@@ -44,7 +44,7 @@ void server::FileDataSource::Initialize(const std::filesystem::path& path)
   _dataPath = path;
   _metaFilePath = _dataPath;
 
-  const auto prepareDataPath = [this](std::filesystem::path folder)
+  const auto prepareDataPath = [this](const std::filesystem::path& folder)
   {
     const auto path = _dataPath / folder;
     create_directories(path);
@@ -173,7 +173,8 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
     .headSize = appearance["headSize"].get<uint32_t>(),
     .height = appearance["height"].get<uint32_t>(),
     .thighVolume = appearance["thighVolume"].get<uint32_t>(),
-    .legVolume = appearance["legVolume"].get<uint32_t>()};
+    .legVolume = appearance["legVolume"].get<uint32_t>(),
+    .emblemId = appearance["emblemId"].get<uint32_t>()};
 
   character.petUid = json["petUid"].get<data::Uid>();
   character.guildUid = json["guildUid"].get<data::Uid>();
@@ -228,6 +229,7 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   appearance["height"] = character.appearance.height();
   appearance["thighVolume"] = character.appearance.thighVolume();
   appearance["legVolume"] = character.appearance.legVolume();
+  appearance["emblemId"] = character.appearance.emblemId();
   json["appearance"] = appearance;
 
   json["petUid"] = character.petUid();

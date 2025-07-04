@@ -1033,6 +1033,33 @@ std::vector<std::string> RanchDirector::HandleCommand(
       return {"Invalid command argument. (//visit <name>)"};
 
     const std::string userName = command[1];
+
+    const auto userRecord = GetServerInstance().GetDataDirector().GetUsers().Get(userName, false);
+    if (not userRecord)
+    {
+      return {std::format("User '{}' not online, try again later.", userName)};
+    }
+
+    auto characterUid = data::InvalidUid;
+    userRecord->Immutable([&characterUid](const data::User& user)
+    {
+      characterUid = user.characterUid();
+    });
+
+    const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(characterUid, false);
+    if (not userRecord)
+    {
+      return {std::format("Server error, try again later.", userName)};
+    }
+
+    auto ranchUid = data::InvalidUid;
+    characterRecord->Immutable([&ranchUid](const data::Character& character)
+    {
+      ranchUid = character.ranchUid();
+    });
+
+    GetServerInstance().GetLobbyDirector().UpdateVisitPreference(characterUid, ranchUid);
+
     return {std::format("Next time you enter the portal, you'll visit {}", userName)};
   }
 

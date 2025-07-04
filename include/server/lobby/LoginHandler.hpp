@@ -23,6 +23,8 @@
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
+#include <chrono>
+
 namespace server
 {
 class LobbyDirector;
@@ -49,9 +51,11 @@ public:
 
   void QueueUserLoginAccepted(ClientId clientId, const std::string& userName);
   void QueueUserCreateNickname(ClientId clientId, const std::string& userName);
-  void QueueUserLoginRejected(ClientId clientId);
+  void QueueUserLoginRejected(ClientId clientId, bool invalidUser = false);
 
 private:
+  using Clock = std::chrono::steady_clock;
+
   struct LoginContext
   {
     ClientId clientId;
@@ -60,6 +64,8 @@ private:
 
     //! Whether the load of the user was requested.
     bool userLoadRequested{false};
+    //! Whether the load of the user's character was requested.
+    bool userCharacterLoadRequested{false};
     //! Whether we're waiting for character creator.
     bool waitingForCharacterCreator{false};
   };

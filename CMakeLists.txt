@@ -41,6 +41,7 @@ add_library(alicia-libserver STATIC
         src/libserver/network/command/proto/RanchMessageDefinitions.cpp
         src/libserver/registry/HorseRegistry.cpp
         src/libserver/registry/RoomRegistry.cpp
+        src/libserver/util/Scheduler.cpp
         src/libserver/util/Stream.cpp
         src/libserver/util/Util.cpp)
 target_include_directories(alicia-libserver

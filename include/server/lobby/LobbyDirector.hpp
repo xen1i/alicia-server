@@ -61,7 +61,7 @@ public:
   ServerInstance& GetServerInstance();
   Settings::LobbySettings& GetSettings();
 
-  void UpdateInventory(uint32_t characterUid);
+  void UpdateVisitPreference(data::Uid characterUid, data::Uid ranchUid);
 
 private:
   void HandleEnterChannel(
@@ -169,6 +169,7 @@ protected:
     //! Whether the client is authorized.
     bool isAuthorized{false};
     data::Uid characterUid = data::InvalidUid;
+    data::Uid visitPreference = data::InvalidUid;
   };
   
   //!
