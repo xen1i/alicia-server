@@ -150,7 +150,12 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   const auto json = nlohmann::json::parse(dataFile);
 
   character.uid = json["uid"].get<data::Uid>();
-  character.name = json["name"].get<std::string>();
+
+  // Read the name directly as bytes
+  const auto nameBytes = json["name"].get<std::vector<uint8_t>>();
+  character.name = std::string(
+    reinterpret_cast<const char*>(nameBytes.data()),
+    nameBytes.size());
 
   character.introduction = json["introduction"].get<std::string>();
 
@@ -205,7 +210,11 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
 
   nlohmann::json json;
   json["uid"] = character.uid();
-  json["name"] = character.name();
+
+  // Store the name as bytes for now.
+  json["name"] = std::span(
+    reinterpret_cast<const uint8_t*>(character.name().data()),
+    character.name().length());
 
   json["introduction"] = character.introduction();
 
@@ -444,7 +453,12 @@ void server::FileDataSource::RetrieveHorse(data::Uid uid, data::Horse& horse)
   const auto json = nlohmann::json::parse(dataFile);
   horse.uid = json["uid"].get<data::Uid>();
   horse.tid = json["tid"].get<data::Tid>();
-  horse.name = json["name"].get<std::string>();
+
+  // Read the horse name directly as bytes for now
+  const auto nameBytes = json["name"].get<std::vector<uint8_t>>();
+  horse.name = std::string(
+    reinterpret_cast<const char*>(nameBytes.data()),
+    nameBytes.size());
 
   auto parts = json["parts"];
   horse.parts = data::Horse::Parts{
@@ -504,7 +518,11 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   nlohmann::json json;
   json["uid"] = horse.uid();
   json["tid"] = horse.tid();
-  json["name"] = horse.name();
+
+  // Store the horse name as bytes for now.
+  json["name"] = std::span(
+  reinterpret_cast<const uint8_t*>(horse.name().data()),
+    horse.name().length());
 
   nlohmann::json parts;
   parts["skinId"] = horse.parts.skinTid();
