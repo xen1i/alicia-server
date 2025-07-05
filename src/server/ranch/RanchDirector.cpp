@@ -995,6 +995,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
       "  - maneId - ID of the mane\n"
       "  - tailId - ID of the tail",
 
+      "Note: to ignore any parameter,\n"
+      "       simply specify 0 as the value.",
+
       "//horse appearance <scale>\n"
       "                   <legLength>\n"
       "                   <legVolume>\n"
@@ -1006,11 +1009,16 @@ std::vector<std::string> RanchDirector::HandleCommand(
       "  - bodyLength - Defaults to 5\n"
       "  - bodyVolume - Defaults to 5",
 
+      "Note: to ignore any parameter,\n"
+      "       simply specify 0 as the value.",
+
+
       "//horse randomize\n"
       "  Randomizes your horse appearance and parts."
 
-      "Note: to ignore any parameter,\n"
-      "       simply specify 0 as the value.",
+      "//model <modelId>\n"
+      "Sets your character's model",
+
       };
   }
 
@@ -1025,6 +1033,19 @@ std::vector<std::string> RanchDirector::HandleCommand(
       character.appearance.emblemId = emblemId;
     });
     return {std::format("Set your emblem, restart your game.")};
+  }
+
+  if (command[0] == "model")
+  {
+    if (command.size() < 2)
+      return {"Invalid command argument. (//model <ID>)"};
+
+    const uint32_t modelId = std::atoi(command[1].c_str());
+    characterRecord.Mutable([modelId](data::Character& character)
+    {
+      character.parts.modelId = modelId;
+    });
+    return {std::format("Set your model id, restart your game.")};
   }
 
   if (command[0] == "visit")
