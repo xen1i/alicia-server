@@ -178,6 +178,8 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
       {
         const auto visitingCharacterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
           clientContext.visitPreference, false);
+        clientContext.visitPreference = data::InvalidUid;
+
         if (visitingCharacterRecord)
         {
           visitingCharacterRecord->Immutable([&ranchUid](const data::Character& character)
