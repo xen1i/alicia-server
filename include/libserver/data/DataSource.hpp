@@ -99,16 +99,6 @@ public:
   //! Stores the stored storedItem on the data source.
   //! @param storedItem Item to store.
   virtual void StoreStoredItem(data::Uid uid, const data::StoredItem& storedItem) = 0;
-
-  //! Creates the ranch in the data source.
-  //! @para character Ranch to create.
-  virtual void CreateRanch(data::Ranch& ranch) = 0;
-  //! Retrieves the ranch from the data source.
-  //! @param ranch Ranch to retrieve.
-  virtual void RetrieveRanch(data::Uid uid, data::Ranch& ranch) = 0;
-  //! Stores the ranch on the data source.
-  //! @param ranch Ranch to store.
-  virtual void StoreRanch(data::Uid uid, const data::Ranch& ranch) = 0;
 };
 
 } // namespace server

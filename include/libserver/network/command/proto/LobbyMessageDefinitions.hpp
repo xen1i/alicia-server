@@ -1010,7 +1010,7 @@ struct LobbyCommandEnterRanch
 //! Clientbound enter ranch response.
 struct LobbyCommandEnterRanchOK
 {
-  uint32_t ranchUid{};
+  uint32_t rancherUid{};
   uint32_t otp{};
   uint32_t ip{};
   uint16_t port{};

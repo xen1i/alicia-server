@@ -205,14 +205,14 @@ void RanchCommandRanchEnter::Read(
 {
   stream.Read(command.characterUid)
     .Read(command.otp)
-    .Read(command.ranchUid);
+    .Read(command.rancherUid);
 }
 
 void RanchCommandEnterRanchOK::Write(
   const RanchCommandEnterRanchOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.ranchId)
+  stream.Write(command.rancherUid)
     .Write(command.unk0)
     .Write(command.ranchName);
 

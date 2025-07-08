@@ -39,7 +39,6 @@ public:
   using GuildStorage = DataStorage<data::Uid, data::Guild>;
   using StoredItemStorage = DataStorage<data::Uid, data::StoredItem>;
   using HorseStorage = DataStorage<data::Uid, data::Horse>;
-  using RanchStorage = DataStorage<data::Uid, data::Ranch>;
 
   //! Default constructor.
   explicit DataDirector();
@@ -102,10 +101,6 @@ public:
   [[nodiscard]] Record<data::Horse> CreateHorse() noexcept;
   [[nodiscard]] HorseStorage& GetHorses();
 
-  [[nodiscard]] Record<data::Ranch> GetRanch(data::Uid ranchUid) noexcept;
-  [[nodiscard]] Record<data::Ranch> CreateRanch() noexcept;
-  [[nodiscard]] RanchStorage& GetRanches();
-
 private:
   //! An underlying data source of the data director.
   std::unique_ptr<FileDataSource> _primaryDataSource;
@@ -147,8 +142,6 @@ private:
   GuildStorage _guildStorage;
   //! A horse storage.
   HorseStorage _horseStorage;
-  //! A ranch storage.
-  RanchStorage _ranchStorage;
 };
 
 } // namespace server

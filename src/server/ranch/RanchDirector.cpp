@@ -199,7 +199,7 @@ void RanchDirector::BroadcastSetIntroductionNotify(
     .characterUid = characterUid,
     .introduction = introduction};
 
-  for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
+  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid]._clients)
   {
     // Prevent broadcast to self.
     if (ranchClientId == clientContext.characterUid)
@@ -228,7 +228,7 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
     protocol::BuildProtocolHorse(notify.horse, horse);
   });
 
-  for (const ClientId& ranchClientId : _ranches[clientContext.ranchUid]._clients)
+  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid]._clients)
   {
     // Prevent broadcast to self.
     if (ranchClientId == clientContext.characterUid)
@@ -274,31 +274,29 @@ void RanchDirector::HandleRanchEnter(
   auto& clientContext = _clientContext[clientId];
 
   clientContext.characterUid = command.characterUid;
-  clientContext.ranchUid = command.ranchUid;
+  clientContext.rancherUid = command.rancherUid;
 
   protocol::RanchCommandEnterRanchOK response{
-    .ranchId = command.ranchUid,
+    .rancherUid = command.rancherUid,
     .unk0 = "unk0",
     .league = {
       .type = League::Type::Platinum,
       .rankingPercentile = 50}};
 
-  // Get the ranch the user is connecting to.
-  const auto ranchRecord = GetServerInstance().GetDataDirector().GetRanches().Get(
-    command.ranchUid);
-  if (not ranchRecord)
-  {
-    throw std::runtime_error(
-      std::format("Ranch [{}] not available",
-        command.characterUid));
-  }
+  const auto rancherRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(command.rancherUid);
+  if (not rancherRecord)
+    return;
 
-  ranchRecord->Immutable([&response](const data::Ranch& ranch)
+  rancherRecord->Immutable([&response](const data::Character& character)
   {
-    response.ranchName = ranch.name();
+    const auto& rancherName = character.name();
+    const bool endsWithPlural = rancherName.ends_with("s") || rancherName.ends_with("S");
+    const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
+
+    response.ranchName = std::format("{}{} ranch", rancherName, possessiveSuffix);
   });
 
-  auto& ranchInstance = _ranches[command.ranchUid];
+  auto& ranchInstance = _ranches[command.rancherUid];
 
   // Add the character to the ranch.
   ranchInstance._worldTracker.AddCharacter(
@@ -424,7 +422,7 @@ void RanchDirector::HandleRanchEnter(
 void RanchDirector::HandleRanchLeave(ClientId clientId)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto& ranchInstance = _ranches[clientContext.ranchUid];
+  auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandLeaveRanchNotify notify{
     .characterId = clientContext.characterUid};
@@ -448,7 +446,7 @@ void RanchDirector::HandleSnapshot(
   const protocol::RanchCommandRanchSnapshot& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto& ranchInstance = _ranches[clientContext.ranchUid];
+  auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandRanchSnapshotNotify response {
     .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(
@@ -541,7 +539,7 @@ void RanchDirector::HandleUpdateBusyState(
   const protocol::RanchCommandUpdateBusyState& command)
 {
   auto& clientContext = _clientContext[clientId];
-  auto& ranchInstance = _ranches[clientContext.ranchUid];
+  auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandUpdateBusyStateNotify response {
     .characterId = clientContext.characterUid,
@@ -951,7 +949,7 @@ void RanchDirector::HandleChat(
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
-  auto& ranchInstance = _ranches[clientContext.ranchUid];
+  auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   if (chat.message.starts_with("//"))
   {
@@ -1466,7 +1464,7 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
   });
 
   // Broadcast to all the ranch clients.
-  const auto& ranchInstance = _ranches[clientContext.ranchUid];
+  const auto& ranchInstance = _ranches[clientContext.rancherUid];
   for (ClientId ranchClientId : ranchInstance._clients)
   {
     // Prevent broadcasting to self.

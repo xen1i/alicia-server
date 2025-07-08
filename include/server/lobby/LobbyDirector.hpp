@@ -134,7 +134,7 @@ private:
 
   void QueueEnterRanchOK(
     ClientId clientId,
-    data::Uid ranchUid);
+    data::Uid rancherUid);
 
   //!
   void HandleGetMessengerInfo(
@@ -169,7 +169,7 @@ protected:
     //! Whether the client is authorized.
     bool isAuthorized{false};
     data::Uid characterUid = data::InvalidUid;
-    data::Uid visitPreference = data::InvalidUid;
+    data::Uid rancherVisitPreference = data::InvalidUid;
   };
   
   //!

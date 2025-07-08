@@ -252,21 +252,6 @@ void LoginHandler::HandleUserCreateCharacter(
   // The UID of the newly created horse.
   const data::Uid characterMountUid = horses.front();
 
-  // Create a new ranch for the character.
-  const auto ranchRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateRanch();
-  // The UID of the newly created ranch.
-  auto characterRanchUid{data::InvalidUid};
-
-  ranchRecord.Mutable(
-    [&characterRanchUid, &command](data::Ranch& ranch)
-    {
-      const bool endsWithPlural = command.nickname.ends_with("s") || command.nickname.ends_with("S");
-      const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
-
-      ranch.name = std::format("{}{} ranch", command.nickname, possessiveSuffix);
-      characterRanchUid = ranch.uid();
-    });
-
   // And finally create the character with the new horse,
   // new ranch and the appearance sent from the client.
   const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
@@ -276,7 +261,6 @@ void LoginHandler::HandleUserCreateCharacter(
     [&userCharacterUid,
      &horses,
      &characterMountUid,
-     &characterRanchUid,
      &command](data::Character& character)
     {
       userCharacterUid = character.uid();
@@ -300,7 +284,6 @@ void LoginHandler::HandleUserCreateCharacter(
 
       character.horses = horses;
       character.mountUid() = characterMountUid;
-      character.ranchUid() = characterRanchUid;
     });
 
   // Assign the character to the user.

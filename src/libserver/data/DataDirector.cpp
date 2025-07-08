@@ -203,31 +203,6 @@ DataDirector::DataDirector()
             "Exception storing horse {} on the primary data source: {}", key, x.what());
         }
       })
-  , _ranchStorage(
-      [&](const auto& key, auto& ranch)
-      {
-        try
-        {
-          _primaryDataSource->RetrieveRanch(key, ranch);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception retrieving ranch {} from the primary data source: {}", key, x.what());
-        }
-      },
-      [&](const auto& key, auto& ranch)
-      {
-        try
-        {
-          _primaryDataSource->StoreRanch(key, ranch);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception storing ranch {} on the primary data source: {}", key, x.what());
-        }
-      })
 {
   _primaryDataSource = std::make_unique<FileDataSource>();
   _primaryDataSource->Initialize("./data");
@@ -249,7 +224,6 @@ void DataDirector::Terminate()
     _characterStorage.Terminate();
     _itemStorage.Terminate();
     _horseStorage.Terminate();
-    _ranchStorage.Terminate();
   }
   catch (const std::exception& x)
   {
@@ -267,7 +241,6 @@ void DataDirector::Tick()
     _characterStorage.Tick();
     _itemStorage.Tick();
     _horseStorage.Tick();
-    _ranchStorage.Tick();
   }
   catch (const std::exception& x)
   {
@@ -501,30 +474,6 @@ DataDirector::HorseStorage& DataDirector::GetHorses()
   return _horseStorage;
 }
 
-Record<data::Ranch> DataDirector::GetRanch(data::Uid ranchUid) noexcept
-{
-  if (ranchUid == data::InvalidUid)
-    return {};
-  return _ranchStorage.Get(ranchUid).value_or(Record<data::Ranch>{});
-}
-
-Record<data::Ranch> DataDirector::CreateRanch() noexcept
-{
-  return _ranchStorage.Create(
-    [this]()
-    {
-      data::Ranch ranch;
-      _primaryDataSource->CreateRanch(ranch);
-
-      return std::make_pair(ranch.uid(), std::move(ranch));
-    });
-}
-
-DataDirector::RanchStorage& DataDirector::GetRanches()
-{
-  return _ranchStorage;
-}
-
 void DataDirector::ScheduleUserLoad(
   UserDataContext& userDataContext,
   const std::string& userName)
@@ -624,8 +573,6 @@ void DataDirector::ScheduleCharacterLoad(
         // Add the mount to the horses list,
         // so that it is loaded with all the horses.
         horses.emplace_back(character.mountUid());
-
-        ranchUid = character.ranchUid();
       });
 
     const auto guildRecord = GetGuild(guildUid);
@@ -636,8 +583,6 @@ void DataDirector::ScheduleCharacterLoad(
     const auto itemRecords = GetItems().Get(items);
 
     const auto horseRecords = GetHorses().Get(horses);
-
-    const auto ranchRecord = GetRanch(ranchUid);
 
     // Only require guild if the UID is not invalid.
     if (not guildRecord && guildUid != data::InvalidUid)
@@ -668,14 +613,6 @@ void DataDirector::ScheduleCharacterLoad(
     {
       userDataContext.debugMessage = std::format(
         "Horses or mount not available");
-      return;
-    }
-
-    // Require the ranch record.
-    if (not ranchRecord)
-    {
-      userDataContext.debugMessage = std::format(
-        "Ranch '{}' not available", ranchUid);
       return;
     }
 

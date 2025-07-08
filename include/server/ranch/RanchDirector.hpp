@@ -65,7 +65,7 @@ private:
   struct ClientContext
   {
     data::Uid characterUid{data::InvalidUid};
-    data::Uid ranchUid{data::InvalidUid};
+    data::Uid rancherUid{data::InvalidUid};
     uint8_t busyState{0};
   };
 

@@ -727,7 +727,7 @@ void LobbyCommandEnterRanchOK::Write(
   const LobbyCommandEnterRanchOK& command,
   SinkStream& stream)
 {
-  stream.Write(command.ranchUid)
+  stream.Write(command.rancherUid)
     .Write(command.otp)
     .Write(command.ip)
     .Write(command.port);

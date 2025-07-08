@@ -193,7 +193,6 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
 
   character.horses = json["horseUids"].get<std::vector<data::Uid>>();
   character.mountUid = json["mountUid"].get<data::Uid>();
-  character.ranchUid = json["ranchUid"].get<data::Uid>();
 }
 
 void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
@@ -253,7 +252,6 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
 
   json["horseUids"] = character.horses();
   json["mountUid"] = character.mountUid();
-  json["ranchUid"] = character.ranchUid();
 
   dataFile << json.dump(2);
 }
@@ -566,46 +564,5 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
   json["luckState"] = horse.luckState();
   json["emblem"] = horse.emblemUid();
 
-  dataFile << json.dump(2);
-}
-
-void server::FileDataSource::CreateRanch(data::Ranch& ranch)
-{
-  ranch.uid = ++_sequentialUid;
-}
-
-void server::FileDataSource::RetrieveRanch(data::Uid uid, data::Ranch& ranch)
-{
-  const std::filesystem::path dataFilePath = ProduceDataPath(
-    _ranchDataPath, std::format("{}", uid));
-
-  std::ifstream dataFile(dataFilePath);
-  if (not dataFile.is_open())
-  {
-    throw std::runtime_error(
-      std::format("Ranch file '{}' not accessible", dataFilePath.string()));
-  }
-
-  const auto json = nlohmann::json::parse(dataFile);
-
-  ranch.uid = json["uid"].get<data::Uid>();
-  ranch.name = json["name"].get<std::string>();
-}
-
-void server::FileDataSource::StoreRanch(data::Uid uid, const data::Ranch& ranch)
-{
-  const std::filesystem::path dataFilePath = ProduceDataPath(
-    _ranchDataPath, std::format("{}", uid));
-
-  std::ofstream dataFile(dataFilePath);
-  if (not dataFile.is_open())
-  {
-    throw std::runtime_error(
-      std::format("Ranch file '{}' not accessible", dataFilePath.string()));
-  }
-
-  nlohmann::json json;
-  json["uid"] = ranch.uid();
-  json["name"] = ranch.name();
   dataFile << json.dump(2);
 }

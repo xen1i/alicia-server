@@ -173,32 +173,26 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
       // this is just for prototype, it can suck
       auto& clientContext = _clientContext[clientId];
 
-      data::Uid ranchUid = data::InvalidUid;
-      if (clientContext.visitPreference != data::InvalidUid)
-      {
-        const auto visitingCharacterRecord = GetServerInstance().GetDataDirector().GetCharacters().Get(
-          clientContext.visitPreference, false);
-        clientContext.visitPreference = data::InvalidUid;
+      data::Uid rancherUid = data::InvalidUid;
 
-        if (visitingCharacterRecord)
-        {
-          visitingCharacterRecord->Immutable([&ranchUid](const data::Character& character)
-          {
-            ranchUid = character.ranchUid();
-          });
-        }
+      // If the user has a visit preference apply it.
+      if (clientContext.rancherVisitPreference != data::InvalidUid)
+      {
+        rancherUid = clientContext.rancherVisitPreference;
+        clientContext.rancherVisitPreference = data::InvalidUid;
       }
 
-      if (ranchUid == data::InvalidUid)
+      // If the rancher's uid is invalid randomize it.
+      if (rancherUid == data::InvalidUid)
       {
-        auto randomRanchUids = GetServerInstance().GetDataDirector().GetRanches().GetKeys();
+        auto randomCharacterUid = GetServerInstance().GetDataDirector().GetCharacters().GetKeys();
         std::uniform_int_distribution<data::Uid> uidDistribution(
-          0, randomRanchUids.size() - 1);
+          0, randomCharacterUid.size() - 1);
 
-        ranchUid = randomRanchUids[uidDistribution(rd)];
+        rancherUid = randomCharacterUid[uidDistribution(rd)];
       }
 
-      QueueEnterRanchOK(clientId, ranchUid);
+      QueueEnterRanchOK(clientId, rancherUid);
     });
 }
 
@@ -263,7 +257,7 @@ void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid visi
   if (clientContextIter == _clientContext.cend())
     return;
 
-  clientContextIter->second.visitPreference = visitingCharacterUid;
+  clientContextIter->second.rancherVisitPreference = visitingCharacterUid;
 }
 
 
@@ -574,22 +568,15 @@ void LobbyDirector::HandleEnterRanch(
       });
   }
 
-  auto ranchUid = data::InvalidUid;
-  characterRecord.Immutable(
-    [&ranchUid](const data::Character& character)
-    {
-      ranchUid = character.ranchUid();
-    });
-
-  QueueEnterRanchOK(clientId, ranchUid);
+  QueueEnterRanchOK(clientId, clientContext.characterUid);
 }
 
 void LobbyDirector::QueueEnterRanchOK(
   ClientId clientId,
-  data::Uid ranchUid)
+  data::Uid rancherUid)
 {
   protocol::LobbyCommandEnterRanchOK response{
-    .ranchUid = ranchUid,
+    .rancherUid = rancherUid,
     .otp = 0x44332211,
     .ip = static_cast<uint32_t>(htonl(
       GetSettings().ranchAdvAddress.to_uint())),

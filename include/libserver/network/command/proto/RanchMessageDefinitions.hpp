@@ -233,7 +233,7 @@ struct RanchCommandRanchEnter
 {
   uint32_t characterUid{};
   uint32_t otp{};
-  uint32_t ranchUid{};
+  uint32_t rancherUid{};
 
   static Command GetCommand()
   {
@@ -258,7 +258,7 @@ struct RanchCommandRanchEnter
 //! Clientbound get messenger info response.
 struct RanchCommandEnterRanchOK
 {
-  uint32_t ranchId{};
+  uint32_t rancherUid{};
   std::string unk0{};
   std::string ranchName{};
 

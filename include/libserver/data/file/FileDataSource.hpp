@@ -60,10 +60,6 @@ public:
   void RetrieveHorse(data::Uid uid, data::Horse& horse) override;
   void StoreHorse(data::Uid uid, const data::Horse& horse) override;
 
-  void CreateRanch(data::Ranch& ranch) override;
-  void RetrieveRanch(data::Uid uid, data::Ranch& ranch) override;
-  void StoreRanch(data::Uid uid, const data::Ranch& ranch) override;
-
 private:
   std::filesystem::path _dataPath;
 
