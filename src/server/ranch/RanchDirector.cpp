@@ -700,11 +700,30 @@ void RanchDirector::HandleUpdateMountNickname(
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
+  // Flag indicating whether the user is allowed to rename their mount which is when:
+  // - the user has a horse rename item
+  // - the mount's name is empty
   bool canRenameHorse = false;
+
   characterRecord.Mutable([this, &canRenameHorse, horseUid = command.horseUid](data::Character& character)
   {
-    const bool ownsHorse =  character.mountUid() == horseUid || std::ranges::contains(character.horses(), horseUid);
+    const bool ownsHorse =  character.mountUid() == horseUid
+      || std::ranges::contains(character.horses(), horseUid);
+
     if (not ownsHorse)
+      return;
+
+    const auto horseRecord = GetServerInstance().GetDataDirector().GetHorse(horseUid);
+    if (not horseRecord)
+      return;
+
+    // If the horse does not have a name, allow them to rename it.
+    horseRecord.Immutable([&canRenameHorse](const data::Horse& horse)
+    {
+      canRenameHorse = horse.name().empty();
+    });
+
+    if (canRenameHorse)
       return;
 
     constexpr data::Tid HorseRenameItem = 45003;
@@ -726,6 +745,11 @@ void RanchDirector::HandleUpdateMountNickname(
       // Break early if the item was found.
       if (horseRenameItemUid != data::InvalidUid)
         break;
+    }
+
+    if (horseRenameItemUid == data::InvalidUid)
+    {
+      return;
     }
 
     // Find the item in the inventory.

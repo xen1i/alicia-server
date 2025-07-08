@@ -237,8 +237,6 @@ void LoginHandler::HandleUserCreateCharacter(
     horseRecord.Mutable(
       [&horses](data::Horse& horse)
       {
-        horse.name() = "default";
-
         // The TID of the horse specifies which body mesh is used for that horse.
         // Can be found in the `MountPartInfo` table.
         horse.tid() = 20002;
