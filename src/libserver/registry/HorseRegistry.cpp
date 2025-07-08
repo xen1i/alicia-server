@@ -4,6 +4,11 @@
 
 #include "libserver/registry/HorseRegistry.hpp"
 
+#include <fstream>
+
+#include <spdlog/spdlog.h>
+#include <yaml-cpp/yaml.h>
+
 namespace server
 {
 
@@ -37,14 +42,16 @@ HorseRegistry::HorseRegistry()
     {17, Coat{.tid = 17, .faceType = 0}},
     {18, Coat{.tid = 18, .faceType = 0}},
     {19, Coat{.tid = 19, .faceType = -1}},
-    {20, Coat{.tid = 20, .faceType = 0}},};
+    {20, Coat{.tid = 20, .faceType = 0}},
+  };
 
   _faces = {
     {1, Face{.tid = 1, .type = -1}},
     {2, Face{.tid = 2, .type = -1}},
     {3, Face{.tid = 3, .type = -1}},
     {5, Face{.tid = 5, .type = -1}},
-    {7, Face{.tid = 7, .type = -1}},};
+    {7, Face{.tid = 7, .type = -1}},
+  };
 
   _manes = {
     {1, Mane{.tid = 1, .colorGroup = 1}},
@@ -86,7 +93,8 @@ HorseRegistry::HorseRegistry()
     {37, Mane{.tid = 37, .colorGroup = 2}},
     {38, Mane{.tid = 38, .colorGroup = 3}},
     {39, Mane{.tid = 39, .colorGroup = 4}},
-    {40, Mane{.tid = 40, .colorGroup = 5}},};
+    {40, Mane{.tid = 40, .colorGroup = 5}},
+  };
 
   _tails = {
     {1, Tail{.tid = 1, .colorGroup = 1}},
@@ -118,7 +126,19 @@ HorseRegistry::HorseRegistry()
     {27, Tail{.tid = 27, .colorGroup = 2}},
     {28, Tail{.tid = 28, .colorGroup = 3}},
     {29, Tail{.tid = 29, .colorGroup = 4}},
-    {30, Tail{.tid = 30, .colorGroup = 5}},};
+    {30, Tail{.tid = 30, .colorGroup = 5}},
+  };
+}
+
+void HorseRegistry::ReadConfig()
+{
+  const YAML::Node config = YAML::Load("./config/game/horses.yaml");
+  const auto root = config["horses"];
+
+  const auto facesConfig = root["faces"];
+  const auto coatsConfig = root["coats"];
+  const auto manesConfig = root["manes"];
+  const auto tailsConfig = root["tails"];
 }
 
 void HorseRegistry::BuildRandomHorse(

@@ -1,4 +1,4 @@
-breeding-market:
+breeding:
   costs:
     - grade: 1
       registrationFee: 500
