@@ -99,6 +99,16 @@ public:
   //! Stores the stored storedItem on the data source.
   //! @param storedItem Item to store.
   virtual void StoreStoredItem(data::Uid uid, const data::StoredItem& storedItem) = 0;
+
+  //! Creates the housing in the data source.
+  //! @param housing Housing to create.
+  virtual void CreateHousing(data::Housing& housing) = 0;
+  //! Retrieves the housing from the data source.
+  //! @param housing Housing to retrieve.
+  virtual void RetrieveHousing(data::Uid uid, data::Housing& housing) = 0;
+  //! Stores the housing on the data source.
+  //! @param housing Housing to store.
+  virtual void StoreHousing(data::Uid uid, const data::Housing& housing) = 0;
 };
 
 } // namespace server

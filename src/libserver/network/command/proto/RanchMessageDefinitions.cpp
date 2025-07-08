@@ -232,12 +232,12 @@ void RanchCommandEnterRanchOK::Write(
     .Write(command.scramblingConstant)
     .Write(command.unk3);
 
-  stream.Write(static_cast<uint8_t>(command.unk4.size()));
-  for (auto& unk : command.unk4)
+  stream.Write(static_cast<uint8_t>(command.housing.size()));
+  for (auto& unk : command.housing)
   {
-    stream.Write(unk.unk0)
-      .Write(unk.unk1)
-      .Write(unk.unk2);
+    stream.Write(unk.uid)
+      .Write(unk.tid)
+      .Write(unk.durability);
   }
 
   stream.Write(command.unk5)

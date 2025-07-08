@@ -273,15 +273,15 @@ struct RanchCommandEnterRanchOK
   uint32_t scramblingConstant{0};
   uint32_t unk3{0};
 
-  struct Unk4
+  struct Housing
   {
-    uint32_t unk0{};
-    uint16_t unk1{};
-    uint32_t unk2{};
+    uint32_t uid{};
+    uint16_t tid{};
+    uint32_t durability{};
   };
 
   // List size as a byte. Max length 13
-  std::vector<Unk4> unk4{};
+  std::vector<Housing> housing{};
 
   uint8_t unk5{};
   uint32_t unk6{};
@@ -810,7 +810,7 @@ struct RanchCommandSearchStallionOK
 
   static Command GetCommand()
   {
-    return Command::RanchSearchStallionCancel;
+    return Command::RanchSearchStallionOK;
   }
 
   //! Writes the command to the provided sink stream.

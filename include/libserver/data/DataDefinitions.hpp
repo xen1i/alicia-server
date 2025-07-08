@@ -225,6 +225,8 @@ struct Character
 
   dao::Field<std::vector<Uid>> horses{};
   dao::Field<Uid> mountUid{InvalidUid};
+
+  dao::Field<std::vector<Uid>> housing{};
 };
 
 struct Horse
@@ -278,6 +280,12 @@ struct Horse
 
   dao::Field<uint32_t> luckState{0u};
   dao::Field<uint32_t> emblemUid{0u};
+};
+
+struct Housing
+{
+  dao::Field<Uid> uid{InvalidUid};
+  dao::Field<uint16_t> housingId{};
 };
 
 } // namespace data

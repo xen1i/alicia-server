@@ -60,6 +60,10 @@ public:
   void RetrieveHorse(data::Uid uid, data::Horse& horse) override;
   void StoreHorse(data::Uid uid, const data::Horse& horse) override;
 
+  void CreateHousing(data::Housing& housing) override;
+  void RetrieveHousing(data::Uid uid, data::Housing& housing) override;
+  void StoreHousing(data::Uid uid, const data::Housing& housing) override;
+
 private:
   std::filesystem::path _dataPath;
 
@@ -77,8 +81,8 @@ private:
   std::filesystem::path _storedItemPath;
   //! A path to the horse data files.
   std::filesystem::path _horseDataPath;
-  //! A path to the ranch data files.
-  std::filesystem::path _ranchDataPath;
+  //! A path to the housing data files.
+  std::filesystem::path _housingDataPath;
 
   std::filesystem::path _metaFilePath;
 

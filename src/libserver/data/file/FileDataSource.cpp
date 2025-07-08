@@ -59,7 +59,7 @@ void server::FileDataSource::Initialize(const std::filesystem::path& path)
   _guildDataPath = prepareDataPath("guilds");
   _storedItemPath = prepareDataPath("storedItems");
   _horseDataPath = prepareDataPath("horses");
-  _ranchDataPath = prepareDataPath("ranches");
+  _housingDataPath = prepareDataPath("housing");
 
   const std::filesystem::path metaFilePath = ProduceDataPath(
     _metaFilePath, "meta");
@@ -191,8 +191,10 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   character.characterEquipment = json["characterEquipment"].get<std::vector<data::Uid>>();
   character.mountEquipment = json["horseEquipment"].get<std::vector<data::Uid>>();
 
-  character.horses = json["horseUids"].get<std::vector<data::Uid>>();
+  character.horses = json["horses"].get<std::vector<data::Uid>>();
   character.mountUid = json["mountUid"].get<data::Uid>();
+
+  character.housing = json["housing"].get<std::vector<data::Uid>>();
 }
 
 void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character& character)
@@ -250,8 +252,10 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   json["characterEquipment"] = character.characterEquipment();
   json["horseEquipment"] = character.mountEquipment();
 
-  json["horseUids"] = character.horses();
+  json["horses"] = character.horses();
   json["mountUid"] = character.mountUid();
+
+  json["housing"] = character.housing();
 
   dataFile << json.dump(2);
 }
@@ -519,7 +523,7 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
   // Store the horse name as bytes for now.
   json["name"] = std::span(
-  reinterpret_cast<const uint8_t*>(horse.name().data()),
+    reinterpret_cast<const uint8_t*>(horse.name().data()),
     horse.name().length());
 
   nlohmann::json parts;
@@ -563,6 +567,47 @@ void server::FileDataSource::StoreHorse(data::Uid uid, const data::Horse& horse)
 
   json["luckState"] = horse.luckState();
   json["emblem"] = horse.emblemUid();
+
+  dataFile << json.dump(2);
+}
+
+void server::FileDataSource::CreateHousing(data::Housing& housing)
+{
+  housing.uid = ++_sequentialUid;
+}
+
+void server::FileDataSource::RetrieveHousing(data::Uid uid, data::Housing& housing)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _housingDataPath, std::format("{}", uid));
+
+  std::ifstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Housing file '{}' not accessible", dataFilePath.string()));
+  }
+
+  const auto json = nlohmann::json::parse(dataFile);
+  housing.uid = json["uid"].get<data::Uid>();
+  housing.housingId = json["housingId"].get<uint16_t>();
+}
+
+void server::FileDataSource::StoreHousing(data::Uid uid, const data::Housing& housing)
+{
+  const std::filesystem::path dataFilePath = ProduceDataPath(
+    _housingDataPath, std::format("{}", uid));
+
+  std::ofstream dataFile(dataFilePath);
+  if (not dataFile.is_open())
+  {
+    throw std::runtime_error(
+      std::format("Housing file '{}' not accessible", dataFilePath.string()));
+  }
+
+  nlohmann::json json;
+  json["uid"] = housing.uid();
+  json["housingId"] = housing.housingId();
 
   dataFile << json.dump(2);
 }

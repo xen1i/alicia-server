@@ -293,13 +293,28 @@ void RanchDirector::HandleRanchEnter(
   if (not rancherRecord)
     return;
 
-  rancherRecord->Immutable([&response](const data::Character& character)
+  rancherRecord->Immutable([this, &response](const data::Character& character)
   {
     const auto& rancherName = character.name();
     const bool endsWithPlural = rancherName.ends_with("s") || rancherName.ends_with("S");
     const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
 
     response.ranchName = std::format("{}{} ranch", rancherName, possessiveSuffix);
+
+    const auto housingRecords = GetServerInstance().GetDataDirector().GetHousing().Get(character.housing());
+    if (not housingRecords)
+      return;
+
+    for (const auto& housingRecord : *housingRecords)
+    {
+      auto& protocolHousing = response.housing.emplace_back();
+      housingRecord.Immutable([&protocolHousing](const data::Housing& housing)
+      {
+        protocolHousing.uid = housing.uid();
+        protocolHousing.tid = housing.housingId();
+        protocolHousing.durability = 1;
+      });
+    }
   });
 
   auto& ranchInstance = _ranches[command.rancherUid];
@@ -1536,11 +1551,26 @@ void RanchDirector::HandleHousingBuild(
   protocol::RanchCommandHousingBuildOK response{
     .member1 = clientContext.characterUid,
     .housingTid = command.housingTid,
-    .member3 = 1};
+    .member3 = 1,};
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
     [response](){return response;});
+
+  auto housingUid = data::InvalidUid;
+
+  const auto housingRecord = GetServerInstance().GetDataDirector().CreateHousing();
+  housingRecord.Mutable([housingId = command.housingTid, &housingUid](data::Housing& housing)
+  {
+    housing.housingId = housingId;
+
+    housingUid = housing.uid();
+  });
+
+  characterRecord.Mutable([&housingUid](data::Character& character)
+  {
+    character.housing().emplace_back(housingUid);
+  });
 
   assert(clientContext.rancherUid == clientContext.characterUid);
 

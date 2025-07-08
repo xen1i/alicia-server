@@ -203,6 +203,31 @@ DataDirector::DataDirector()
             "Exception storing horse {} on the primary data source: {}", key, x.what());
         }
       })
+  , _housingStorage(
+      [&](const auto& key, auto& housing)
+      {
+        try
+        {
+          _primaryDataSource->RetrieveHousing(key, housing);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving housing {} from the primary data source: {}", key, x.what());
+        }
+      },
+      [&](const auto& key, auto& housing)
+      {
+        try
+        {
+          _primaryDataSource->StoreHousing(key, housing);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing housing {} on the primary data source: {}", key, x.what());
+        }
+      })
 {
   _primaryDataSource = std::make_unique<FileDataSource>();
   _primaryDataSource->Initialize("./data");
@@ -223,7 +248,11 @@ void DataDirector::Terminate()
     _userStorage.Terminate();
     _characterStorage.Terminate();
     _itemStorage.Terminate();
+    _storedItemStorage.Terminate();
+    _petStorage.Terminate();
+    _guildStorage.Terminate();
     _horseStorage.Terminate();
+    _housingStorage.Terminate();
   }
   catch (const std::exception& x)
   {
@@ -240,7 +269,11 @@ void DataDirector::Tick()
     _userStorage.Tick();
     _characterStorage.Tick();
     _itemStorage.Tick();
+    _storedItemStorage.Tick();
+    _petStorage.Tick();
+    _guildStorage.Tick();
     _horseStorage.Tick();
+    _housingStorage.Tick();
   }
   catch (const std::exception& x)
   {
@@ -474,6 +507,30 @@ DataDirector::HorseStorage& DataDirector::GetHorses()
   return _horseStorage;
 }
 
+Record<data::Housing> DataDirector::GetHousing(data::Uid housingUid) noexcept
+{
+  if (housingUid == data::InvalidUid)
+    return {};
+  return _housingStorage.Get(housingUid).value_or(Record<data::Housing>{});
+}
+
+Record<data::Housing> DataDirector::CreateHousing() noexcept
+{
+  return _housingStorage.Create(
+    [this]()
+    {
+      data::Housing housing;
+      _primaryDataSource->CreateHousing(housing);
+
+      return std::make_pair(housing.uid(), std::move(housing));
+    });
+}
+
+DataDirector::HousingStorage& DataDirector::GetHousing()
+{
+  return _housingStorage;
+}
+
 void DataDirector::ScheduleUserLoad(
   UserDataContext& userDataContext,
   const std::string& userName)
@@ -557,10 +614,10 @@ void DataDirector::ScheduleCharacterLoad(
 
     std::vector<data::Uid> horses;
 
-    auto ranchUid = data::InvalidUid;
+    std::vector<data::Uid> housing;
 
     characterRecord.Immutable(
-      [&guildUid, &petUid, &ranchUid, &horses, &items, &gifts, &purchases](const data::Character& character)
+      [&guildUid, &petUid, &gifts, &items, &purchases, &horses, &housing](const data::Character& character)
       {
         guildUid = character.guildUid();
         petUid = character.petUid();
@@ -568,7 +625,10 @@ void DataDirector::ScheduleCharacterLoad(
         gifts = character.gifts();
         purchases = character.purchases();
         items = character.items();
+
         horses = character.horses();
+
+        housing = character.housing();
 
         // Add the mount to the horses list,
         // so that it is loaded with all the horses.
@@ -583,6 +643,8 @@ void DataDirector::ScheduleCharacterLoad(
     const auto itemRecords = GetItems().Get(items);
 
     const auto horseRecords = GetHorses().Get(horses);
+
+    const auto housingRecords = GetHousing().Get(housing);
 
     // Only require guild if the UID is not invalid.
     if (not guildRecord && guildUid != data::InvalidUid)
@@ -613,6 +675,14 @@ void DataDirector::ScheduleCharacterLoad(
     {
       userDataContext.debugMessage = std::format(
         "Horses or mount not available");
+      return;
+    }
+
+    // Require housing records.
+    if (not housingRecords)
+    {
+      userDataContext.debugMessage = std::format(
+        "Housing not available");
       return;
     }
 
