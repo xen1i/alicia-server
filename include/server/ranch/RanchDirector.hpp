@@ -186,6 +186,10 @@ private:
     ClientId clientId,
     const protocol::RanchCommandUseItem& command);
 
+  void HandleHousingBuild(
+    ClientId clientId,
+    const protocol::RanchCommandHousingBuild& command);
+
   //!
   ServerInstance& _serverInstance;
   //!

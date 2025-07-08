@@ -148,6 +148,12 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
     {
       HandleRequestGuildInfo(clientId, command);
     });
+
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandHousingBuild>(
+    [this](ClientId clientId, auto& command)
+    {
+      HandleHousingBuild(clientId, command);
+    });
 }
 
 void RanchDirector::Initialize()
@@ -1484,12 +1490,10 @@ void RanchDirector::HandleUseItem(
   ClientId clientId,
   const protocol::RanchCommandUseItem& command)
 {
-  protocol::RanchCommandUseItemOK response
-  {
+  protocol::RanchCommandUseItemOK response{
     response.itemUid = command.itemUid,
     response.unk1 = command.always1,
-    response.type = protocol::RanchCommandUseItemOK::ActionType::Empty
-  };
+    response.type = protocol::RanchCommandUseItemOK::ActionType::Empty};
 
   // feed, Action 1 through 3
   //   success - both bytes zero
@@ -1500,16 +1504,16 @@ void RanchDirector::HandleUseItem(
   //   success - Action empty
 
   spdlog::info("Play - itemUid: {}, mem1: {}, mem2: {}, {} play",
-  command.itemUid,
-  command.always1,
-  command.always1too,
-  command.play == protocol::RanchCommandUseItem::Play::Bad
-    ? "Bad"
+    command.itemUid,
+    command.always1,
+    command.always1too,
+    command.play == protocol::RanchCommandUseItem::Play::Bad
+      ? "Bad"
     : command.play == protocol::RanchCommandUseItem::Play::Good
       ? "Good"
-      : command.play == protocol::RanchCommandUseItem::Play::CriticalGood
-        ? "Critical good"
-        : "Perfect");
+    : command.play == protocol::RanchCommandUseItem::Play::CriticalGood
+      ? "Critical good"
+      : "Perfect");
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -1517,6 +1521,48 @@ void RanchDirector::HandleUseItem(
     {
       return response;
     });
+}
+
+void RanchDirector::HandleHousingBuild(
+  ClientId clientId,
+  const protocol::RanchCommandHousingBuild& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+    clientContext.characterUid);
+
+  // todo catalogue housing uids and handle transaction
+
+  protocol::RanchCommandHousingBuildOK response{
+    .member1 = clientContext.characterUid,
+    .housingTid = command.housingTid,
+    .member3 = 1};
+
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    [response](){return response;});
+
+  assert(clientContext.rancherUid == clientContext.characterUid);
+
+  protocol::RanchCommandHousingBuildNotify notify{
+    .member1 = 1,
+    .housingTid = command.housingTid,};
+
+  // Broadcast to all the ranch clients.
+  const auto& ranchInstance = _ranches[clientContext.rancherUid];
+  for (ClientId ranchClientId : ranchInstance._clients)
+  {
+    // Prevent broadcasting to self.
+    if (ranchClientId == clientId)
+      continue;
+
+    _commandServer.QueueCommand<decltype(notify)>(
+      ranchClientId,
+      [notify]()
+      {
+        return notify;
+      });
+  }
 }
 
 } // namespace server

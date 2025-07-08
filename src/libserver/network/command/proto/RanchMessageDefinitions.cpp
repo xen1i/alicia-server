@@ -1442,19 +1442,78 @@ void RanchCommandPetBirthNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
-void RanchAchievementUpdateProperty::Write(
-  const RanchAchievementUpdateProperty& command,
+void RanchCommandAchievementUpdateProperty::Write(
+  const RanchCommandAchievementUpdateProperty& command,
   SinkStream& stream)
 {
   throw std::runtime_error("Not implemented");
 }
 
-void RanchAchievementUpdateProperty::Read(
-  RanchAchievementUpdateProperty& command,
+void RanchCommandAchievementUpdateProperty::Read(
+  RanchCommandAchievementUpdateProperty& command,
   SourceStream& stream)
 {
   stream.Read(command.achievementEvent)
     .Read(command.member2);
+}
+
+void RanchCommandHousingBuild::Write(
+  const RanchCommandHousingBuild& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandHousingBuild::Read(
+  RanchCommandHousingBuild& command,
+  SourceStream& stream)
+{
+  stream.Read(command.housingTid);
+}
+
+void RanchCommandHousingBuildOK::Write(
+  const RanchCommandHousingBuildOK& command,
+  SinkStream& stream)
+{
+  stream.Write(command.member1)
+    .Write(command.housingTid)
+    .Write(command.member3);
+}
+
+void RanchCommandHousingBuildOK::Read(
+  RanchCommandHousingBuildOK& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandHousingBuildCancel::Write(
+  const RanchCommandHousingBuildCancel& command,
+  SinkStream& stream)
+{
+  stream.Write(command.status);
+}
+
+void RanchCommandHousingBuildCancel::Read(
+  RanchCommandHousingBuildCancel& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RanchCommandHousingBuildNotify::Write(
+  const RanchCommandHousingBuildNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.member1)
+    .Write(command.housingTid);
+}
+
+void RanchCommandHousingBuildNotify::Read(
+  RanchCommandHousingBuildNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
 }
 
 } // namespace server::protocol

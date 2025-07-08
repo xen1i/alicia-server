@@ -2024,7 +2024,7 @@ struct RanchCommandPetBirthNotify
     SourceStream& stream);
 };
 
-struct RanchAchievementUpdateProperty
+struct RanchCommandAchievementUpdateProperty
 {
   //! 75 - level up
   //! Table `Achievements`
@@ -2040,16 +2040,116 @@ struct RanchAchievementUpdateProperty
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchAchievementUpdateProperty& command,
+    const RanchCommandAchievementUpdateProperty& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchAchievementUpdateProperty& command,
+    RanchCommandAchievementUpdateProperty& command,
     SourceStream& stream);
 };
+
+struct RanchCommandHousingBuild
+{
+  uint16_t housingTid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchHousingBuild;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandHousingBuild& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandHousingBuild& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandHousingBuildOK
+{
+  uint32_t member1{};
+  uint16_t housingTid{};
+  uint32_t member3{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchHousingBuildOK;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandHousingBuildOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandHousingBuildOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandHousingBuildCancel
+{
+  uint8_t status{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchHousingBuildCancel;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandHousingBuildCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandHousingBuildCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandHousingBuildNotify
+{
+  uint32_t member1{};
+  uint16_t housingTid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchHousingBuildNotify;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandHousingBuildNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandHousingBuildNotify& command,
+    SourceStream& stream);
+};
+
 
 } // namespace server::protocol
 

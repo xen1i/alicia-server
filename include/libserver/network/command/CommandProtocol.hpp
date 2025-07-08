@@ -249,6 +249,16 @@ enum class Command : uint16_t
 
   RanchAchievementUpdateProperty = 0x16b,
 
+  RanchHousingBuild = 0x25b,
+  RanchHousingBuildOK = 0x25c,
+  RanchHousingBuildCancel = 0x25d,
+  RanchHousingBuildNotify = 0x25e,
+
+  RanchHousingRepair = 0x262,
+  RanchHousingRepairOK = 0x263,
+  RanchHousingRepairCancel = 0x264,
+  RanchHousingRepairNotify = 0x265,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,
