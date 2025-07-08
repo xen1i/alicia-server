@@ -424,11 +424,12 @@ void LobbyDirector::HandleAchievementCompleteList(
       response.unk0 = character.uid();
     });
 
-  response.achievements.emplace_back().tid = 20'008;
-  response.achievements.emplace_back().tid = 20'004;
-  response.achievements.emplace_back().tid = 10'172;
-  response.achievements.emplace_back().tid = 10'186;
-  response.achievements.emplace_back().tid = 10'176;
+  // These are the level-up achievements from the `Achievement` table with the event id 75.
+  response.achievements.emplace_back().tid = 20008;
+  response.achievements.emplace_back().tid = 20009;
+  response.achievements.emplace_back().tid = 20010;
+  response.achievements.emplace_back().tid = 20011;
+  response.achievements.emplace_back().tid = 20012;
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
@@ -467,10 +468,6 @@ void LobbyDirector::HandleRequestQuestList(
     {
       response.unk0 = character.uid();
     });
-
-  response.quests.emplace_back(Quest{.tid = 11'039, .member1 = 1, .member2 = 0xA, .member4 = 3});
-  response.quests.emplace_back(Quest{.tid = 12'012, .member1 = 1, .member2 = 3, .member4 = 3});
-  response.quests.emplace_back(Quest{.tid = 13'010, .member1 = 1, .member2 = 0x14, .member4 = 3});
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

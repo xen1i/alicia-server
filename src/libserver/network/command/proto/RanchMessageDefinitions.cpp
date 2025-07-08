@@ -1453,8 +1453,8 @@ void RanchAchievementUpdateProperty::Read(
   RanchAchievementUpdateProperty& command,
   SourceStream& stream)
 {
-  stream.Read(command.member1)
-    .Read(command.userAchievementEvent);
+  stream.Read(command.achievementEvent)
+    .Read(command.member2);
 }
 
 } // namespace server::protocol

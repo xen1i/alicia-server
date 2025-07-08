@@ -2026,9 +2026,10 @@ struct RanchCommandPetBirthNotify
 
 struct RanchAchievementUpdateProperty
 {
-  uint16_t member1{};
-  //!  Table `Achievements`.
-  uint16_t userAchievementEvent{};
+  //! 75 - level up
+  //! Table `Achievements`
+  uint16_t achievementEvent{};
+  uint16_t member2{};
 
   static Command GetCommand()
   {

@@ -396,7 +396,7 @@ void LoginHandler::QueueUserLoginAccepted(
       response.ageGroup = AgeGroup::Adult;
       response.hideAge = false;
 
-      response.bitfield = 0x0e06;
+      response.bitfield = 2;
 
       // Character equipment.
       const auto characterEquipmentItems = _lobbyDirector.GetServerInstance().GetDataDirector().GetItems().Get(
