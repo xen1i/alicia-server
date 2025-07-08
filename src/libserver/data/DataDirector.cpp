@@ -284,65 +284,67 @@ void DataDirector::Tick()
   }
 }
 
-void DataDirector::RequestLoadUser(
+void DataDirector::RequestLoadUserData(
   const std::string& userName)
 {
   auto& userDataContext = _userDataContext[userName];
 
   // If the user data are being loaded or are already loaded, prevent the user load.
-  if (userDataContext.isBeingLoaded.load(std::memory_order::acquire) ||
-    userDataContext.isUserLoaded.load(std::memory_order::acquire))
+  if (userDataContext.isBeingLoaded.load(std::memory_order::relaxed) ||
+    userDataContext.isUserDataLoaded.load(std::memory_order::relaxed))
   {
     return;
   }
 
   // Indicate that the user data are being loaded and set the timeout.
-  userDataContext.isBeingLoaded.store(true, std::memory_order::release);
+  userDataContext.isBeingLoaded.store(true, std::memory_order::relaxed);
   userDataContext.timeout = Scheduler::Clock::now() + std::chrono::seconds(10);
 
   spdlog::info("Load for data of user '{}' requested", userName);
 
+  // Todo schedule load directly from the data source instead of this partial loading hell.
   ScheduleUserLoad(userDataContext, userName);
 }
 
-void DataDirector::RequestLoadCharacter(
+void DataDirector::RequestLoadCharacterData(
   const std::string& userName,
   data::Uid characterUid)
 {
   auto& userDataContext = _userDataContext[userName];
 
   // If the user data are being loaded or are already loaded, prevent the character load.
-  if (userDataContext.isBeingLoaded.load(std::memory_order::acquire) ||
-    userDataContext.isCharacterLoaded.load(std::memory_order::acquire))
+  if (userDataContext.isBeingLoaded.load(std::memory_order::relaxed) ||
+    userDataContext.isCharacterDataLoaded.load(std::memory_order::relaxed))
   {
     return;
   }
 
   // Indicate that the user data are being loaded and set the timeout.
-  userDataContext.isBeingLoaded.store(true, std::memory_order::release);
+  userDataContext.isBeingLoaded.store(true, std::memory_order::relaxed);
   userDataContext.timeout = Scheduler::Clock::now() + std::chrono::seconds(10);
 
   spdlog::info("Load for character data of user '{}' requested", userName);
 
+  // Todo schedule load directly from the data source instead of this partial loading hell.
   ScheduleCharacterLoad(userDataContext, characterUid);
 }
 
-bool DataDirector::IsDataBeingLoaded(const std::string& userName)
+bool DataDirector::AreDataBeingLoaded(const std::string& userName)
 {
   const auto& userDataContext = _userDataContext[userName];
-  return userDataContext.isBeingLoaded.load(std::memory_order::acquire);
+  return userDataContext.isBeingLoaded.load(std::memory_order::relaxed);
 }
 
-bool DataDirector::IsUserLoaded(const std::string& userName)
+bool DataDirector::AreUserDataLoaded(const std::string& userName)
 {
   const auto& userDataContext = _userDataContext[userName];
-  return userDataContext.isUserLoaded.load(std::memory_order::acquire);
+  return userDataContext.isUserDataLoaded.load(std::memory_order::relaxed);
 }
 
-bool DataDirector::IsCharacterLoaded(const std::string& userName)
+bool DataDirector::AreCharacterDataLoaded(const std::string& userName)
 {
   const auto& userDataContext = _userDataContext[userName];
-  return userDataContext.isCharacterLoaded.load(std::memory_order::acquire);
+  return userDataContext.isCharacterDataLoaded.load(std::memory_order::relaxed);
 }
 
 Record<data::User> DataDirector::GetUser(const std::string& userName)
@@ -532,17 +534,17 @@ void DataDirector::ScheduleUserLoad(
     const Deferred deferred([this, &userDataContext, userName]()
     {
       // If the user is completely loaded we can return.
-      if (userDataContext.isUserLoaded.load(std::memory_order::acquire))
+      if (userDataContext.isUserDataLoaded.load(std::memory_order::relaxed))
       {
-        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::relaxed);
         return;
       }
 
       // If the timeout is reached we should return and warn about the timeout.
       if (Scheduler::Clock::now() > userDataContext.timeout)
       {
-        spdlog::warn("Timeout reached loading data for user '{}'", userName);
-        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        spdlog::warn("Timeout reached loading data for user '{}': {}", userName, userDataContext.debugMessage);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::relaxed);
         return;
       }
 
@@ -557,7 +559,7 @@ void DataDirector::ScheduleUserLoad(
       return;
     }
 
-    userDataContext.isUserLoaded.store(true, std::memory_order::release);
+    userDataContext.isUserDataLoaded.store(true, std::memory_order::relaxed);
   });
 }
 
@@ -570,9 +572,9 @@ void DataDirector::ScheduleCharacterLoad(
     const Deferred deferred([this, &userDataContext, characterUid]()
     {
       // If the character is completely loaded we can return.
-      if (userDataContext.isCharacterLoaded.load(std::memory_order::acquire))
+      if (userDataContext.isCharacterDataLoaded.load(std::memory_order::relaxed))
       {
-        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::relaxed);
         return;
       }
 
@@ -580,7 +582,7 @@ void DataDirector::ScheduleCharacterLoad(
       if (Scheduler::Clock::now() > userDataContext.timeout)
       {
         spdlog::warn("Timeout reached loading data for character '{}'", characterUid);
-        userDataContext.isBeingLoaded.store(false, std::memory_order::release);
+        userDataContext.isBeingLoaded.store(false, std::memory_order::relaxed);
         return;
       }
 
@@ -677,7 +679,7 @@ void DataDirector::ScheduleCharacterLoad(
       return;
     }
 
-    userDataContext.isCharacterLoaded.store(true, std::memory_order::release);
+    userDataContext.isCharacterDataLoaded.store(true, std::memory_order::relaxed);
   });
 }
 

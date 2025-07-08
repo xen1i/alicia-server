@@ -179,7 +179,7 @@ public:
   }
 
   //! Whether data records are available.
-  //! @param key Keys of the data.
+  //! @param keys Keys of the data.
   //! @returns `true` if data are available, `false` otherwise.
   bool IsAvailable(KeySpan keys)
   {

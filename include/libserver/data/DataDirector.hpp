@@ -43,23 +43,34 @@ public:
 
   //! Default constructor.
   explicit DataDirector();
+  //! Default destructor.
   ~DataDirector();
 
+  //! Initializes the director.
   void Initialize();
+  //!  Terminates the director.
   void Terminate();
 
-  //! Ticks the data director.
+  //! Ticks the director.
   void Tick();
 
-  void RequestLoadUser(
-    const std::string& userName);
-  void RequestLoadCharacter(
-  const std::string& userName,
-    data::Uid characterUid);
-  bool IsDataBeingLoaded(const std::string& userName);
+  //! Requests a load of user data.
+  //! @param userName Name of the user.
+  void RequestLoadUserData(const std::string& userName);
+  //! Requests a load of character data.
+  //! @param userName Name of the user.
+  //! @param characterUid UID of the character.
+  void RequestLoadCharacterData(const std::string& userName, data::Uid characterUid);
 
-  bool IsUserLoaded(const std::string& userName);
-  bool IsCharacterLoaded(const std::string& userName);
+  //! Returns whether the data of a user (either user data or character data) are being loaded.
+  //! @param userName name of the user.
+  bool AreDataBeingLoaded(const std::string& userName);
+  //! Returns whether the data of a user are fully loaded.
+  //! @param userName name of the user.
+  bool AreUserDataLoaded(const std::string& userName);
+  //! Returns whether the data of a character are fully loaded.
+  //! @param userName name of the user.
+  bool AreCharacterDataLoaded(const std::string& userName);
 
   [[nodiscard]] Record<data::User> GetUser(const std::string& userName);
   [[nodiscard]] UserStorage& GetUsers();
@@ -103,11 +114,15 @@ private:
 
   struct UserDataContext
   {
+    //! A flag indicating whether a load is in progress.
     std::atomic_bool isBeingLoaded = false;
+    //! A flag indicating whether an unload is in progress.
     std::atomic_bool isBeingUnloaded = false;
 
-    std::atomic_bool isUserLoaded = false;
-    std::atomic_bool isCharacterLoaded = false;
+    //! A flag indicating whether the user data are loaded.
+    std::atomic_bool isUserDataLoaded = false;
+    //! A flag indicating whether the user character data are loaded.
+    std::atomic_bool isCharacterDataLoaded = false;
 
     std::string debugMessage;
     //! The time point when loading or unloading times out.

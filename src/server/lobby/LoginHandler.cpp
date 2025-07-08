@@ -49,14 +49,14 @@ void LoginHandler::Tick()
     // Request the load of the user data if not requested yet.
     if (not loginContext.userLoadRequested)
     {
-      _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUser(
+      _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadUserData(
         loginContext.userName);
 
       loginContext.userLoadRequested = true;
       continue;
     }
 
-    if (_lobbyDirector.GetServerInstance().GetDataDirector().IsDataBeingLoaded(
+    if (_lobbyDirector.GetServerInstance().GetDataDirector().AreDataBeingLoaded(
       loginContext.userName))
     {
       continue;
@@ -64,7 +64,7 @@ void LoginHandler::Tick()
 
     _clientLoginRequestQueue.pop();
 
-    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsUserLoaded(
+    if (not _lobbyDirector.GetServerInstance().GetDataDirector().AreUserDataLoaded(
       loginContext.userName))
     {
       spdlog::error("User data for '{}' not available", loginContext.userName);
@@ -108,7 +108,7 @@ void LoginHandler::Tick()
     // If the user character load was already requested wait for the load to complete.
     if (loginContext.userCharacterLoadRequested)
     {
-      if (_lobbyDirector.GetServerInstance().GetDataDirector().IsDataBeingLoaded(
+      if (_lobbyDirector.GetServerInstance().GetDataDirector().AreDataBeingLoaded(
         loginContext.userName))
       {
         continue;
@@ -134,7 +134,7 @@ void LoginHandler::Tick()
     {
       if (not loginContext.userCharacterLoadRequested)
       {
-        _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadCharacter(
+        _lobbyDirector.GetServerInstance().GetDataDirector().RequestLoadCharacterData(
           loginContext.userName,
           characterUid);
 
@@ -154,7 +154,7 @@ void LoginHandler::Tick()
     }
 
     // If the character was not loaded reject the login.
-    if (not _lobbyDirector.GetServerInstance().GetDataDirector().IsCharacterLoaded(
+    if (not _lobbyDirector.GetServerInstance().GetDataDirector().AreCharacterDataLoaded(
       loginContext.userName))
     {
       spdlog::error("User character data for '{}' not available", loginContext.userName);

@@ -41,8 +41,15 @@ struct Field
   {
   }
 
-  Field(const Field& field) = delete;
+  //! Constructs field with an initialized value.
+  Field()
+    : _value()
+  {
+  }
 
+  //! Deleted copy constructor.
+  Field(const Field& field) = delete;
+  //!  Deleted copy assignment operator.
   Field& operator=(const Field& field) = delete;
 
   Field(Field&& field) noexcept
@@ -59,16 +66,6 @@ struct Field
     return *this;
   }
 
-  //! Constructs field with an initialized value.
-  Field()
-    : _value()
-  {
-  }
-
-  //! Constructs a field with an uninitialized value.
-  explicit Field(std::nullptr_t t)
-  {
-  }
 
   [[nodiscard]] bool IsModified() const noexcept
   {
@@ -150,7 +147,7 @@ struct Pet
   //! A type identifier.
   dao::Field<Tid> tid{InvalidTid};
   //!
-  dao::Field<std::string> name;
+  dao::Field<std::string> name{};
 };
 
 //! Stored item
@@ -159,17 +156,17 @@ struct StoredItem
   //! A unique identifier.
   dao::Field<Uid> uid{InvalidUid};
   dao::Field<std::vector<Uid>> items{};
-  dao::Field<std::string> sender;
-  dao::Field<std::string> message;
-  dao::Field<bool> checked;
-  dao::Field<bool> expired;
+  dao::Field<std::string> sender{};
+  dao::Field<std::string> message{};
+  dao::Field<bool> checked{false};
+  dao::Field<bool> expired{false};
 };
 
 //! Guild
 struct Guild
 {
   dao::Field<Uid> uid{InvalidUid};
-  dao::Field<std::string> name;
+  dao::Field<std::string> name{};
 };
 
 //! User
@@ -216,17 +213,17 @@ struct Character
     dao::Field<uint32_t> emblemId{0u};
   } appearance{};
 
-  dao::Field<Uid> petUid;
-  dao::Field<Uid> guildUid;
+  dao::Field<Uid> petUid{InvalidUid};
+  dao::Field<Uid> guildUid{InvalidUid};
 
-  dao::Field<std::vector<Uid>> gifts;
-  dao::Field<std::vector<Uid>> purchases;
+  dao::Field<std::vector<Uid>> gifts{};
+  dao::Field<std::vector<Uid>> purchases{};
 
-  dao::Field<std::vector<Uid>> items;
-  dao::Field<std::vector<Uid>> characterEquipment;
-  dao::Field<std::vector<Uid>> mountEquipment;
+  dao::Field<std::vector<Uid>> items{};
+  dao::Field<std::vector<Uid>> characterEquipment{};
+  dao::Field<std::vector<Uid>> mountEquipment{};
 
-  dao::Field<std::vector<Uid>> horses;
+  dao::Field<std::vector<Uid>> horses{};
   dao::Field<Uid> mountUid{InvalidUid};
 
   dao::Field<Uid> ranchUid{InvalidUid};

@@ -44,6 +44,8 @@ class HorseRegistry
 public:
   HorseRegistry();
 
+  void ReadConfig();
+
   void BuildRandomHorse(
     data::Horse::Parts& parts,
     data::Horse::Appearance& appearance);
