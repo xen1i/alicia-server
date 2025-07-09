@@ -241,6 +241,11 @@ enum class Command : uint16_t
   RanchRequestGuildInfoOK = 0x2e3,
   RanchRequestGuildInfoCancel = 0x2e4,
 
+  RanchIncubateEgg = 0x39f,
+  RanchIncubateEggOK = 0x3a0,
+  RanchIncubateEggCancel = 0x3a1,
+  RanchIncubateEggNotify = 0x3a2,
+
   RanchUpdatePet = 0x392,
   RanchUpdatePetCancel = 0x439,
 

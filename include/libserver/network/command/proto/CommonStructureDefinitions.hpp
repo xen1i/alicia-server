@@ -346,6 +346,24 @@ struct Pet
 };
 
 //!
+struct Egg
+{
+  uint32_t uid{};
+  uint32_t tid{};
+  uint32_t petTid{};
+  uint8_t member4{};
+  uint32_t member5{};
+  uint32_t timeRemaining{};
+  uint32_t timeElapsed{};
+  uint32_t totalHatchingTime{};
+  uint32_t member9{};
+
+  static void Write(const Egg& value, SinkStream& stream);
+  static void Read(Egg& value, SourceStream& stream);
+};
+
+
+//!
 struct PetInfo
 {
   uint32_t member1{};
@@ -425,6 +443,17 @@ struct Quest
 
   static void Write(const Quest& value, SinkStream& stream);
   static void Read(Quest& value, SourceStream& stream);
+};
+
+//! Housing
+struct Housing
+{
+  uint32_t uid{};
+  uint16_t tid{};
+  uint32_t durability{};
+
+  static void Write(const Housing& value, SinkStream& stream);
+  static void Read(Housing& value, SourceStream& stream);
 };
 
 //!

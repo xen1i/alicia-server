@@ -255,7 +255,6 @@ struct RanchCommandRanchEnter
     SourceStream& stream);
 };
 
-//! Clientbound get messenger info response.
 struct RanchCommandEnterRanchOK
 {
   uint32_t rancherUid{};
@@ -273,13 +272,6 @@ struct RanchCommandEnterRanchOK
   uint32_t scramblingConstant{0};
   uint32_t unk3{0};
 
-  struct Housing
-  {
-    uint32_t uid{};
-    uint16_t tid{};
-    uint32_t durability{};
-  };
-
   // List size as a byte. Max length 13
   std::vector<Housing> housing{};
 
@@ -287,23 +279,10 @@ struct RanchCommandEnterRanchOK
   uint32_t unk6{};
   uint32_t unk7{}; // bitset
 
-  uint32_t unk8{};
-  uint32_t unk9{};
+  uint32_t incubatorSlotOne{2};
+  uint32_t incubatorSlotTwo{1};
 
-  struct Unk10
-  {
-    uint32_t horseTID{};
-    uint32_t unk0{};
-    uint32_t unk1{};
-    uint8_t unk2{};
-    uint32_t unk3{};
-    uint32_t unk4{};
-    uint32_t unk5{};
-    uint32_t unk6{};
-    uint32_t unk7{};
-  };
-
-  std::array<Unk10, 3> unk10;
+  std::array<Egg, 3> incubator;
 
   League league{};
 
@@ -329,7 +308,6 @@ struct RanchCommandEnterRanchOK
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandEnterRanchCancel
 {
   static Command GetCommand()
@@ -352,7 +330,6 @@ struct RanchCommandEnterRanchCancel
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandEnterRanchNotify
 {
   RanchCharacter character{};
@@ -377,7 +354,6 @@ struct RanchCommandEnterRanchNotify
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandRanchSnapshot
 {
   enum Type : uint8_t
@@ -441,7 +417,6 @@ struct RanchCommandRanchSnapshot
     SourceStream& stream);
 };
 
-//! Clientbound get messenger info response.
 struct RanchCommandRanchSnapshotNotify
 {
   uint16_t ranchIndex{};
@@ -470,7 +445,6 @@ struct RanchCommandRanchSnapshotNotify
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandRanchCmdAction
 {
   uint16_t unk0{};
@@ -523,7 +497,6 @@ struct RanchCommandRanchCmdActionNotify
     SourceStream& stream);
 };
 
-//! Serverbound get messenger info command.
 struct RanchCommandUpdateBusyState
 {
   uint8_t busyState{};
@@ -2021,6 +1994,57 @@ struct RanchCommandPetBirthNotify
   //! @param stream Source stream.
   static void Read(
     RanchCommandPetBirthNotify& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandIncubateEgg
+{
+  uint32_t itemUid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchIncubateEgg;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandPetBirthNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandPetBirthNotify& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandIncubateEggOK
+{
+  uint32_t itemUid{};
+  Egg egg{};
+  // optional
+  uint32_t member3{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchIncubateEggOK;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandIncubateEggOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandIncubateEggOK& command,
     SourceStream& stream);
 };
 

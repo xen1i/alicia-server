@@ -293,7 +293,9 @@ void RanchDirector::HandleRanchEnter(
   if (not rancherRecord)
     return;
 
-  rancherRecord->Immutable([this, &response](const data::Character& character)
+  auto& ranchInstance = _ranches[command.rancherUid];
+
+  rancherRecord->Immutable([this, &response, &ranchInstance](const data::Character& character)
   {
     const auto& rancherName = character.name();
     const bool endsWithPlural = rancherName.ends_with("s") || rancherName.ends_with("S");
@@ -304,6 +306,12 @@ void RanchDirector::HandleRanchEnter(
     const auto housingRecords = GetServerInstance().GetDataDirector().GetHousing().Get(character.housing());
     if (not housingRecords)
       return;
+
+    for (data::Uid horseUid : character.horses())
+    {
+      // Add the character to the ranch.
+      ranchInstance._worldTracker.AddHorse(horseUid);
+    }
 
     for (const auto& housingRecord : *housingRecords)
     {
@@ -316,8 +324,6 @@ void RanchDirector::HandleRanchEnter(
       });
     }
   });
-
-  auto& ranchInstance = _ranches[command.rancherUid];
 
   // Add the character to the ranch.
   ranchInstance._worldTracker.AddCharacter(

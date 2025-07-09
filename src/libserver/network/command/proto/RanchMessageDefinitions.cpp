@@ -37,14 +37,6 @@ void WriteMountFamilyTreeItem(
     .Write(mountFamilyTreeItem.unk3);
 }
 
-void WriteRanchHorse(
-  SinkStream& stream,
-  const RanchHorse& ranchHorse)
-{
-  stream.Write(ranchHorse.ranchIndex)
-    .Write(ranchHorse.horse);
-}
-
 } // namespace
 
 void RanchCommandUseItem::Write(
@@ -219,7 +211,7 @@ void RanchCommandEnterRanchOK::Write(
   stream.Write(static_cast<uint8_t>(command.horses.size()));
   for (auto& horse : command.horses)
   {
-    WriteRanchHorse(stream, horse);
+    stream.Write(horse);
   }
 
   stream.Write(static_cast<uint8_t>(command.characters.size()));
@@ -233,35 +225,24 @@ void RanchCommandEnterRanchOK::Write(
     .Write(command.unk3);
 
   stream.Write(static_cast<uint8_t>(command.housing.size()));
-  for (auto& unk : command.housing)
+  for (auto& housing : command.housing)
   {
-    stream.Write(unk.uid)
-      .Write(unk.tid)
-      .Write(unk.durability);
+    stream.Write(housing);
   }
 
   stream.Write(command.unk5)
     .Write(command.unk6)
     .Write(command.unk7)
-    .Write(command.unk8)
-    .Write(command.unk9);
+    .Write(command.incubatorSlotOne)
+    .Write(command.incubatorSlotTwo);
 
-  for (auto& unk : command.unk10)
+  for (const auto& egg : command.incubator)
   {
-    stream.Write(unk.horseTID)
-      .Write(unk.unk0)
-      .Write(unk.unk1)
-      .Write(unk.unk2)
-      .Write(unk.unk3)
-      .Write(unk.unk4)
-      .Write(unk.unk5)
-      .Write(unk.unk6)
-      .Write(unk.unk7);
+    stream.Write(egg);
   }
 
-  stream.Write(command.league);
-
-  stream.Write(command.unk12);
+  stream.Write(command.league)
+    .Write(command.unk12);
 }
 
 void RanchCommandEnterRanchOK::Read(

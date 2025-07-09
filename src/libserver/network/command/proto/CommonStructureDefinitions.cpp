@@ -395,6 +395,32 @@ void Pet::Read(Pet& value, SourceStream& stream)
     .Read(value.val3);
 }
 
+void Egg::Write(const Egg& value, SinkStream& stream)
+{
+  stream.Write(value.uid)
+    .Write(value.tid)
+    .Write(value.petTid)
+    .Write(value.member4)
+    .Write(value.member5)
+    .Write(value.timeRemaining)
+    .Write(value.timeElapsed)
+    .Write(value.totalHatchingTime)
+    .Write(value.member9);
+}
+
+void Egg::Read(Egg& value, SourceStream& stream)
+{
+  stream.Read(value.uid)
+    .Read(value.tid)
+    .Read(value.petTid)
+    .Read(value.member4)
+    .Read(value.member5)
+    .Read(value.timeRemaining)
+    .Read(value.timeElapsed)
+    .Read(value.totalHatchingTime)
+    .Read(value.member9);
+}
+
 void PetInfo::Write(const PetInfo& value, SinkStream& stream)
 {
   stream.Write(value.member1)
@@ -538,6 +564,20 @@ void Quest::Read(Quest& value, SourceStream& stream)
     .Read(value.member2)
     .Read(value.member3)
     .Read(value.member4);
+}
+
+void Housing::Write(const Housing& value, SinkStream& stream)
+{
+  stream.Write(value.uid)
+    .Write(value.tid)
+    .Write(value.durability);
+}
+
+void Housing::Read(Housing& value, SourceStream& stream)
+{
+  stream.Read(value.uid)
+    .Read(value.tid)
+    .Read(value.durability);
 }
 
 void League::Write(const League& value, SinkStream& stream)
