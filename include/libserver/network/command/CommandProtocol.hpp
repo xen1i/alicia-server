@@ -267,6 +267,8 @@ enum class Command : uint16_t
   RanchHousingRepairCancel = 0x264,
   RanchHousingRepairNotify = 0x265,
 
+  RanchMissionEvent = 0xe0,
+
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,
   RaceEnterRoomOK = 0x32,

@@ -1497,4 +1497,22 @@ void RanchCommandHousingBuildNotify::Read(
   throw std::runtime_error("Not implemented");
 }
 
+void RanchCommandMissionEvent::Write(
+  const RanchCommandMissionEvent& command,
+  SinkStream& stream)
+{
+  stream.Write(command.event)
+    .Write(command.callerOid)
+    .Write(command.calledOid);
+}
+
+void RanchCommandMissionEvent::Read(
+  RanchCommandMissionEvent& command,
+  SourceStream& stream)
+{
+  stream.Read(command.event)
+    .Read(command.callerOid)
+    .Read(command.calledOid);
+}
+
 } // namespace server::protocol
