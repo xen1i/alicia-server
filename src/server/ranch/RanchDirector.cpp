@@ -1328,7 +1328,7 @@ void RanchDirector::HandleWearEquipment(
   const protocol::RanchCommandWearEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   bool equipSuccessful = false;
@@ -1396,7 +1396,7 @@ void RanchDirector::HandleRemoveEquipment(
   const protocol::RanchCommandRemoveEquipment& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   characterRecord.Mutable([&command](data::Character& character)
@@ -1435,7 +1435,7 @@ void RanchDirector::HandleCreateGuild(
   const protocol::RanchCommandCreateGuild& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
   bool canCreateGuild = false;
@@ -1490,14 +1490,30 @@ void RanchDirector::HandleRequestGuildInfo(
   const protocol::RanchCommandRequestGuildInfo& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
-  protocol::RanchCommandRequestGuildInfoOK response{
-    .guildInfo = {
-      .uid = 1,
-      .name = "test",
-      .description = "desc"}};
+  auto guildUid = data::InvalidUid;
+  characterRecord.Immutable([&guildUid](const data::Character& character)
+  {
+    guildUid = character.guildUid();
+  });
+
+  protocol::RanchCommandRequestGuildInfoOK response{};
+
+  if (guildUid != data::InvalidUid)
+  {
+    const auto guildRecord = GetServerInstance().GetDataDirector().GetGuild(guildUid);
+    if (not guildRecord)
+      throw std::runtime_error("Guild unavailable");
+
+    guildRecord.Immutable([&response](const data::Guild& guild)
+    {
+      response.guildInfo = {
+        .uid = guild.uid(),
+        .name = guild.name()};
+    });
+  }
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,
