@@ -161,20 +161,22 @@ struct LobbyCommandLoginOK
   struct Struct2
   {
     uint8_t val0{};
-    uint32_t val1{};
-    uint16_t val2{};
-  } val11{};
+    //Can be found in table CareSkillLevel, max 2675
+    uint32_t progress{};
+    uint16_t points{};
+  } managmentSkills{};
 
   struct Struct3
   {
     struct Unk
     {
-      uint8_t val0{};
-      uint8_t val1{};
+      //Can be found in table CareSkillInfo
+      uint8_t skillId{};
+      uint8_t rank{};
     };
 
     std::vector<Unk> values;
-  } val12{};
+  } skillsRank{};
 
   struct Struct4
   {
