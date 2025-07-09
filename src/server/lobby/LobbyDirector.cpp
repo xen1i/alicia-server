@@ -43,132 +43,132 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
   , _loginHandler(*this, _commandServer)
 {
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandLogin>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      assert(message.constant0 == 50 && message.constant1 == 281 && "Game version mismatch");
+      assert(command.constant0 == 50 && command.constant1 == 281 && "Game version mismatch");
 
-      spdlog::info("Handling user login for '{}'", message.loginId);
+      spdlog::info("Handling user login for '{}'", command.loginId);
 
-      _loginHandler.HandleUserLogin(clientId, message);
+      _loginHandler.HandleUserLogin(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandCreateNickname>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      _loginHandler.HandleUserCreateCharacter(clientId, message);
+      _loginHandler.HandleUserCreateCharacter(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandEnterChannel>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleEnterChannel(clientId, message);
+      HandleEnterChannel(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRoomList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRoomList(clientId, message);
+      HandleRoomList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandMakeRoom>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleMakeRoom(clientId, message);
+      HandleMakeRoom(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandEnterRoom>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleEnterRoom(clientId, message);
+      HandleEnterRoom(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandHeartbeat>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleHeartbeat(clientId, message);
+      HandleHeartbeat(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandShowInventory>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleShowInventory(clientId, message);
+      HandleShowInventory(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandAchievementCompleteList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleAchievementCompleteList(clientId, message);
+      HandleAchievementCompleteList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRequestLeagueInfo>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRequestLeagueInfo(clientId, message);
+      HandleRequestLeagueInfo(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRequestQuestList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRequestQuestList(clientId, message);
+      HandleRequestQuestList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRequestDailyQuestList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRequestDailyQuestList(clientId, message);
+      HandleRequestDailyQuestList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRequestSpecialEventList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRequestSpecialEventList(clientId, message);
+      HandleRequestSpecialEventList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandRequestPersonalInfo>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleRequestPersonalInfo(clientId, message);
+      HandleRequestPersonalInfo(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandSetIntroduction>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleSetIntroduction(clientId, message);
+      HandleSetIntroduction(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandEnterRanch>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleEnterRanch(clientId, message);
+      HandleEnterRanch(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandGetMessengerInfo>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleGetMessengerInfo(clientId, message);
+      HandleGetMessengerInfo(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandGoodsShopList>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleGoodsShopList(clientId, message);
+      HandleGoodsShopList(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandInquiryTreecash>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      HandleInquiryTreecash(clientId, message);
+      HandleInquiryTreecash(clientId, command);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandClientNotify>(
-    [this](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& command)
     {
-      if (message.val0 != 1)
-        spdlog::error("Client error notification: state[{}], value[{}]", message.val0, message.val1);
+      if (command.val0 != 1)
+        spdlog::error("Client error notification: state[{}], value[{}]", command.val0, command.val1);
     });
 
   _commandServer.RegisterCommandHandler<protocol::LobbyCommandEnterRandomRanch>(
-    [this](ClientId clientId, auto& command)
+    [this](ClientId clientId, const auto& command)
     {
       // this is just for prototype, it can suck
       auto& clientContext = _clientContext[clientId];
@@ -193,6 +193,12 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
       }
 
       QueueEnterRanchOK(clientId, rancherUid);
+    });
+
+  _commandServer.RegisterCommandHandler<protocol::LobbyCommandUpdateSystemContent>(
+    [this](ClientId clientId, const auto& command)
+    {
+      HandleUpdateSystemContent(clientId, command);
     });
 }
 
@@ -658,6 +664,39 @@ void LobbyDirector::HandleGuildPartyList(
     {
       return response;
     });
+}
+
+void LobbyDirector::HandleUpdateSystemContent(
+  ClientId clientId,
+  const protocol::LobbyCommandUpdateSystemContent& command)
+{
+  const auto& clientContext = _clientContext[clientId];
+  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+    clientContext.characterUid);
+
+  bool hasPermission = false;
+  characterRecord.Immutable([&hasPermission](const data::Character& character)
+  {
+    hasPermission = character.role() == data::Character::Role::GameMaster;
+  });
+
+  if (not hasPermission)
+    return;
+
+  _systemContent.values[command.key] = command.value;
+
+  protocol::LobbyCommandUpdateSystemContentNotify notify{
+    .systemContent = _systemContent};
+
+  for (const auto& connectedClientId : _clientContext | std::views::keys)
+  {
+    _commandServer.QueueCommand<decltype(notify)>(
+      connectedClientId,
+      [notify]()
+      {
+        return notify;
+      });
+  }
 }
 
 } // namespace server

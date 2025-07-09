@@ -132,15 +132,18 @@ struct LobbyCommandLoginOK
   Character character{};
   Horse horse{};
 
-  struct Struct0
+  struct SystemContent
   {
-    struct Unk2
-    {
-      uint32_t val0{};
-      uint32_t val1{};
-    };
-    std::vector<Unk2> values;
-  } val7{};
+    std::unordered_map<uint32_t, uint32_t> values;
+
+    static void Write(
+      const SystemContent& command,
+      SinkStream& stream);
+
+    static void Read(
+      SystemContent& command,
+      SourceStream& stream);
+  } systemContent{};
 
   // std::bitset
   //! Bit 2: Has played before
@@ -1616,6 +1619,56 @@ struct LobbyCommandSetIntroduction
   //! @param stream Source stream.
   static void Read(
     LobbyCommandSetIntroduction& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandUpdateSystemContent
+{
+  uint8_t member1{};
+  uint32_t key{};
+  uint32_t value{};
+
+  static Command GetCommand()
+  {
+    return Command::LobbyUpdateSystemContent;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandUpdateSystemContent& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandUpdateSystemContent& command,
+    SourceStream& stream);
+};
+
+struct LobbyCommandUpdateSystemContentNotify
+{
+  LobbyCommandLoginOK::SystemContent systemContent;
+
+  static Command GetCommand()
+  {
+    return Command::LobbyUpdateSystemContentNotify;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const LobbyCommandUpdateSystemContentNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    LobbyCommandUpdateSystemContentNotify& command,
     SourceStream& stream);
 };
 

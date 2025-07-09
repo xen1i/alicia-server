@@ -41,6 +41,21 @@ void LobbyCommandLogin::Read(
     .Read(command.val0);
 }
 
+void LobbyCommandLoginOK::SystemContent::Write(const SystemContent& command, SinkStream& stream)
+{
+  stream.Write(static_cast<uint8_t>(command.values.size()));
+  for (const auto& [key, value] : command.values)
+  {
+    stream.Write(key)
+      .Write(value);
+  }
+}
+
+void LobbyCommandLoginOK::SystemContent::Read(SystemContent& command, SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented.");
+}
+
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command,
   SinkStream& stream)
@@ -133,10 +148,8 @@ void LobbyCommandLoginOK::Write(
     }
   }
 
-  //
   stream.Write(command.val6);
 
-  // Write server info.
   stream.Write(command.address)
     .Write(command.port)
     .Write(command.scramblingConstant);
@@ -144,17 +157,8 @@ void LobbyCommandLoginOK::Write(
   stream.Write(command.character)
     .Write(command.horse);
 
-  // Struct1
-  const auto& struct0 = command.val7;
-  stream.Write(
-    static_cast<uint8_t>(struct0.values.size()));
-  for (const auto& value : struct0.values)
-  {
-    stream.Write(value.val0)
-      .Write(value.val1);
-  }
-
-  stream.Write(command.bitfield);
+  stream.Write(command.systemContent)
+    .Write(command.bitfield);
 
   // Struct2
   const auto& struct1 = command.val9;
@@ -1138,6 +1142,36 @@ void LobbyCommandSetIntroduction::Read(
   SourceStream& stream)
 {
   stream.Read(command.introduction);
+}
+
+void LobbyCommandUpdateSystemContent::Write(
+  const LobbyCommandUpdateSystemContent& command,
+  SinkStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void LobbyCommandUpdateSystemContent::Read(
+  LobbyCommandUpdateSystemContent& command,
+  SourceStream& stream)
+{
+  stream.Read(command.member1)
+    .Read(command.key)
+    .Read(command.value);
+}
+
+void LobbyCommandUpdateSystemContentNotify::Write(
+  const LobbyCommandUpdateSystemContentNotify& command,
+  SinkStream& stream)
+{
+  stream.Write(command.systemContent);
+}
+
+void LobbyCommandUpdateSystemContentNotify::Read(
+  LobbyCommandUpdateSystemContentNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
 }
 
 } // namespace server::protocol

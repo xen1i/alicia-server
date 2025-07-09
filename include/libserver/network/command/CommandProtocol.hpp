@@ -153,6 +153,9 @@ enum class Command : uint16_t
 
   LobbySetIntroduction = 0x171,
 
+  LobbyUpdateSystemContent = 0x1bd,
+  LobbyUpdateSystemContentNotify = 0x1c1,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchOK = 0x12c,
   RanchEnterRanchCancel = 0x12d,

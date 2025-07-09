@@ -156,6 +156,10 @@ private:
     ClientId clientId,
     const protocol::LobbyCommandGuildPartyList& command);
 
+  void HandleUpdateSystemContent(
+    ClientId clientId,
+    const protocol::LobbyCommandUpdateSystemContent& command);
+
   //!
   ServerInstance& _serverInstance;
   //!
@@ -171,6 +175,9 @@ protected:
     data::Uid characterUid = data::InvalidUid;
     data::Uid rancherVisitPreference = data::InvalidUid;
   };
+
+  protocol::LobbyCommandLoginOK::SystemContent _systemContent{
+    .values = {{4, 0}, {16, 1}}};
   
   //!
   std::unordered_map<ClientId, ClientContext> _clientContext;
