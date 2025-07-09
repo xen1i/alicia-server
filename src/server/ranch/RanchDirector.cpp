@@ -1438,9 +1438,44 @@ void RanchDirector::HandleCreateGuild(
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
+  bool canCreateGuild = false;
+  characterRecord.Mutable([&command, &canCreateGuild](data::Character& character)
+  {
+    // todo money check
+    // todo name check
+    canCreateGuild = true;
+  });
+
+  if (not canCreateGuild)
+  {
+    protocol::RanchCommandCreateGuildCancel response{
+      .status = 0,
+      .member2 = 0};
+
+    _commandServer.QueueCommand<decltype(response)>(
+      clientId,
+      [response]()
+      {
+        return response;
+      });
+  }
+
   protocol::RanchCommandCreateGuildOK response{
     .uid = 0,
     .member2 = 0};
+
+  const auto guildRecord = GetServerInstance().GetDataDirector().CreateGuild();
+  guildRecord.Mutable([&response, &command](data::Guild& guild)
+  {
+    guild.name = command.name;
+
+    response.uid = guild.uid();
+  });
+
+  characterRecord.Mutable([&response](data::Character& character)
+  {
+    character.guildUid = response.uid;
+  });
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

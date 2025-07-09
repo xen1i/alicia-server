@@ -8,6 +8,7 @@
 #include "libserver/data/DataDefinitions.hpp"
 #include "libserver/data/DataStorage.hpp"
 #include "libserver/network/command/proto/CommonStructureDefinitions.hpp"
+#include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
 
 namespace server
 {
@@ -58,6 +59,10 @@ void BuildProtocolStoredItem(
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
   const std::span<const Record<data::StorageItem>>& storedItems);
+
+void BuildProtocolGuild(
+  Guild& protocolGuild,
+  const data::Guild& guildRecord);
 
 } // namespace protocol
 

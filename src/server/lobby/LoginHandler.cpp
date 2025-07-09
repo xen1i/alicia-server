@@ -406,6 +406,19 @@ void LoginHandler::QueueUserLoginAccepted(
         response.character,
         character);
 
+      if (character.guildUid() != data::InvalidUid)
+      {
+        const auto guildRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetGuild(
+          character.guildUid());
+        if (not guildRecord)
+          throw std::runtime_error("Character guild not available");
+
+        guildRecord.Immutable([&response](const data::Guild& guild)
+        {
+          protocol::BuildProtocolGuild(response.guild, guild);
+        });
+      }
+
       characterMountUid = character.mountUid();
     });
 

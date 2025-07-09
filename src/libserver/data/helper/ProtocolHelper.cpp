@@ -181,10 +181,16 @@ void BuildProtocolStoredItems(
   {
     auto& protocolStoredItem = protocolStoredItems.emplace_back();
     storedItem.Immutable([&protocolStoredItem](const auto& storedItem)
-    {
-      BuildProtocolStoredItem(protocolStoredItem, storedItem);
-    });
+      {
+        BuildProtocolStoredItem(protocolStoredItem, storedItem);
+      });
   }
+}
+
+void BuildProtocolGuild(Guild& protocolGuild, const data::Guild& guildRecord)
+{
+  protocolGuild.name = guildRecord.name();
+  protocolGuild.uid = guildRecord.uid();
 }
 
 } // namespace protocol
