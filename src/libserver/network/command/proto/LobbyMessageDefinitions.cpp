@@ -168,19 +168,19 @@ void LobbyCommandLoginOK::Write(
 
   stream.Write(command.val10);
 
-  const auto& struct2 = command.val11;
+  const auto& struct2 = command.managmentSkills;
   stream.Write(struct2.val0)
-    .Write(struct2.val1)
-    .Write(struct2.val2);
+    .Write(struct2.progress)
+    .Write(struct2.points);
 
   // Struct3
-  const auto& struct3 = command.val12;
+  const auto& struct3 = command.skillsRank;
   stream.Write(
     static_cast<uint8_t>(struct3.values.size()));
   for (const auto& value : struct3.values)
   {
-    stream.Write(value.val0)
-      .Write(value.val1);
+    stream.Write(value.skillId)
+      .Write(value.rank);
   }
 
   // Struct4
