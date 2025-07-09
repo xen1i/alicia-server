@@ -53,11 +53,11 @@ void BuildProtocolItems(
 
 void BuildProtocolStoredItem(
   StoredItem& protocolStoredItem,
-  const data::StoredItem& storedItem);
+  const data::StorageItem& storedItem);
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::span<const Record<data::StoredItem>>& storedItems);
+  const std::span<const Record<data::StorageItem>>& storedItems);
 
 } // namespace protocol
 

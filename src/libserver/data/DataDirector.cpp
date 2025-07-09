@@ -25,6 +25,11 @@
 namespace server
 {
 
+namespace
+{
+
+} // anon namespace
+
 DataDirector::DataDirector()
   : _userStorage(
       [&](const auto& key, auto& user)
@@ -78,6 +83,31 @@ DataDirector::DataDirector()
             "Exception storing character {} on the primary data source: {}", key, x.what());
         }
       })
+  , _horseStorage(
+      [&](const auto& key, auto& horse)
+      {
+        try
+        {
+          _primaryDataSource->RetrieveHorse(key, horse);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving horse {} from the primary data source: {}", key, x.what());
+        }
+      },
+      [&](const auto& key, auto& horse)
+      {
+        try
+        {
+          _primaryDataSource->StoreHorse(key, horse);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing horse {} on the primary data source: {}", key, x.what());
+        }
+      })
   , _itemStorage(
       [&](const auto& key, auto& item)
       {
@@ -103,29 +133,54 @@ DataDirector::DataDirector()
             "Exception storing item {} on the primary data source: {}", key, x.what());
         }
       })
-  , _storedItemStorage(
+  , _storageItemStorage(
       [&](const auto& key, auto& storedItem)
       {
         try
         {
-          _primaryDataSource->RetrieveStoredItem(key, storedItem);
+          _primaryDataSource->RetrieveStorageItem(key, storedItem);
         }
         catch (const std::exception& x)
         {
           spdlog::error(
-            "Exception retrieving stored item {} from the primary data source: {}", key, x.what());
+            "Exception retrieving storage item {} from the primary data source: {}", key, x.what());
         }
       },
       [&](const auto& key, auto& storedItem)
       {
         try
         {
-          _primaryDataSource->StoreStoredItem(key, storedItem);
+          _primaryDataSource->StoreStorageItem(key, storedItem);
         }
         catch (const std::exception& x)
         {
           spdlog::error(
-            "Exception storing stored item {} on the primary data source: {}", key, x.what());
+            "Exception storing storage item {} on the primary data source: {}", key, x.what());
+        }
+      })
+  , _eggStorage(
+      [&](const auto& key, auto& egg)
+      {
+        try
+        {
+          _primaryDataSource->RetrieveEgg(key, egg);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception retrieving egg {} from the primary data source: {}", key, x.what());
+        }
+      },
+      [&](const auto& key, auto& egg)
+      {
+        try
+        {
+          _primaryDataSource->StoreEgg(key, egg);
+        }
+        catch (const std::exception& x)
+        {
+          spdlog::error(
+            "Exception storing egg {} on the primary data source: {}", key, x.what());
         }
       })
   , _petStorage(
@@ -153,56 +208,6 @@ DataDirector::DataDirector()
             "Exception storing pet {} on the primary data source: {}", key, x.what());
         }
       })
-  , _guildStorage(
-      [&](const auto& key, auto& guild)
-      {
-        try
-        {
-          _primaryDataSource->RetrieveGuild(key, guild);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception retrieving guild {} from the primary data source: {}", key, x.what());
-        }
-      },
-      [&](const auto& key, auto& guild)
-      {
-        try
-        {
-          _primaryDataSource->StoreGuild(key, guild);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception storing guild {} on the primary data source: {}", key, x.what());
-        }
-      })
-  , _horseStorage(
-      [&](const auto& key, auto& horse)
-      {
-        try
-        {
-          _primaryDataSource->RetrieveHorse(key, horse);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception retrieving horse {} from the primary data source: {}", key, x.what());
-        }
-      },
-      [&](const auto& key, auto& horse)
-      {
-        try
-        {
-          _primaryDataSource->StoreHorse(key, horse);
-        }
-        catch (const std::exception& x)
-        {
-          spdlog::error(
-            "Exception storing horse {} on the primary data source: {}", key, x.what());
-        }
-      })
   , _housingStorage(
       [&](const auto& key, auto& housing)
       {
@@ -228,6 +233,31 @@ DataDirector::DataDirector()
             "Exception storing housing {} on the primary data source: {}", key, x.what());
         }
       })
+  , _guildStorage(
+     [&](const auto& key, auto& guild)
+     {
+       try
+       {
+         _primaryDataSource->RetrieveGuild(key, guild);
+       }
+       catch (const std::exception& x)
+       {
+         spdlog::error(
+           "Exception retrieving guild {} from the primary data source: {}", key, x.what());
+       }
+     },
+     [&](const auto& key, auto& guild)
+     {
+       try
+       {
+         _primaryDataSource->StoreGuild(key, guild);
+       }
+       catch (const std::exception& x)
+       {
+         spdlog::error(
+           "Exception storing guild {} on the primary data source: {}", key, x.what());
+       }
+     })
 {
   _primaryDataSource = std::make_unique<FileDataSource>();
   _primaryDataSource->Initialize("./data");
@@ -247,11 +277,12 @@ void DataDirector::Terminate()
   {
     _userStorage.Terminate();
     _characterStorage.Terminate();
+    _horseStorage.Terminate();
     _itemStorage.Terminate();
-    _storedItemStorage.Terminate();
+    _storageItemStorage.Terminate();
+    _eggStorage.Terminate();
     _petStorage.Terminate();
     _guildStorage.Terminate();
-    _horseStorage.Terminate();
     _housingStorage.Terminate();
   }
   catch (const std::exception& x)
@@ -268,11 +299,12 @@ void DataDirector::Tick()
   {
     _userStorage.Tick();
     _characterStorage.Tick();
+    _horseStorage.Tick();
     _itemStorage.Tick();
-    _storedItemStorage.Tick();
+    _storageItemStorage.Tick();
+    _eggStorage.Tick();
     _petStorage.Tick();
     _guildStorage.Tick();
-    _horseStorage.Tick();
     _housingStorage.Tick();
   }
   catch (const std::exception& x)
@@ -387,76 +419,28 @@ DataDirector::CharacterStorage& DataDirector::GetCharacters()
   return _characterStorage;
 }
 
-Record<data::Pet> DataDirector::GetPet(data::Uid petUid) noexcept
+Record<data::Horse> DataDirector::GetHorse(data::Uid horseUid) noexcept
 {
-  if (petUid == data::InvalidUid)
+  if (horseUid == data::InvalidUid)
     return {};
-  return _petStorage.Get(petUid).value_or(Record<data::Pet>{});
+  return _horseStorage.Get(horseUid).value_or(Record<data::Horse>{});
 }
 
-Record<data::Pet> DataDirector::CreatePet() noexcept
+Record<data::Horse> DataDirector::CreateHorse() noexcept
 {
-  return _petStorage.Create(
+  return _horseStorage.Create(
     [this]()
     {
-      data::Pet pet;
-      _primaryDataSource->CreatePet(pet);
+      data::Horse horse;
+      _primaryDataSource->CreateHorse(horse);
 
-      return std::make_pair(pet.uid(), std::move(pet));
+      return std::make_pair(horse.uid(), std::move(horse));
     });
 }
 
-DataDirector::PetStorage& DataDirector::GetPets()
+DataDirector::HorseStorage& DataDirector::GetHorses()
 {
-  return _petStorage;
-}
-
-Record<data::Guild> DataDirector::GetGuild(data::Uid guildUid) noexcept
-{
-  if (guildUid == data::InvalidUid)
-    return {};
-  return _guildStorage.Get(guildUid).value_or(Record<data::Guild>{});
-}
-
-Record<data::Guild> DataDirector::CreateGuild() noexcept
-{
-  return _guildStorage.Create(
-    [this]()
-    {
-      data::Guild guild;
-      _primaryDataSource->CreateGuild(guild);
-
-      return std::make_pair(guild.uid(), std::move(guild));
-    });
-}
-
-DataDirector::GuildStorage& DataDirector::GetGuilds()
-{
-  return _guildStorage;
-}
-
-Record<data::StoredItem> DataDirector::GetStoredItem(data::Uid storedItemUid) noexcept
-{
-  if (storedItemUid == data::InvalidUid)
-    return {};
-  return _storedItemStorage.Get(storedItemUid).value_or(Record<data::StoredItem>{});
-}
-
-Record<data::StoredItem> DataDirector::CreateStoredItem() noexcept
-{
-  return _storedItemStorage.Create(
-    [this]()
-    {
-      data::StoredItem item;
-      _primaryDataSource->CreateStoredItem(item);
-
-      return std::make_pair(item.uid(), std::move(item));
-    });
-}
-
-DataDirector::StoredItemStorage& DataDirector::GetStoredItems()
-{
-  return _storedItemStorage;
+  return _horseStorage;
 }
 
 Record<data::Item> DataDirector::GetItem(data::Uid itemUid) noexcept
@@ -483,28 +467,76 @@ DataDirector::ItemStorage& DataDirector::GetItems()
   return _itemStorage;
 }
 
-Record<data::Horse> DataDirector::GetHorse(data::Uid horseUid) noexcept
+Record<data::StorageItem> DataDirector::GetStorageItem(data::Uid storedItemUid) noexcept
 {
-  if (horseUid == data::InvalidUid)
+  if (storedItemUid == data::InvalidUid)
     return {};
-  return _horseStorage.Get(horseUid).value_or(Record<data::Horse>{});
+  return _storageItemStorage.Get(storedItemUid).value_or(Record<data::StorageItem>{});
 }
 
-Record<data::Horse> DataDirector::CreateHorse() noexcept
+Record<data::StorageItem> DataDirector::CreateStorageItem() noexcept
 {
-  return _horseStorage.Create(
+  return _storageItemStorage.Create(
     [this]()
     {
-      data::Horse horse;
-      _primaryDataSource->CreateHorse(horse);
+      data::StorageItem item;
+      _primaryDataSource->CreateStorageItem(item);
 
-      return std::make_pair(horse.uid(), std::move(horse));
+      return std::make_pair(item.uid(), std::move(item));
     });
 }
 
-DataDirector::HorseStorage& DataDirector::GetHorses()
+DataDirector::StorageItemStorage& DataDirector::GetStorageItem()
 {
-  return _horseStorage;
+  return _storageItemStorage;
+}
+
+Record<data::Egg> DataDirector::GetEgg(data::Uid eggUid) noexcept
+{
+  if (eggUid == data::InvalidUid)
+    return {};
+  return _eggStorage.Get(eggUid).value_or(Record<data::Egg>{});
+}
+
+Record<data::Egg> DataDirector::CreateEgg() noexcept
+{
+  return _eggStorage.Create(
+    [this]()
+    {
+      data::Egg egg;
+      _primaryDataSource->CreateEgg(egg);
+
+      return std::make_pair(egg.uid(), std::move(egg));
+    });
+}
+
+DataDirector::EggStorage& DataDirector::GetEggs()
+{
+  return _eggStorage;
+}
+
+Record<data::Pet> DataDirector::GetPet(data::Uid petUid) noexcept
+{
+  if (petUid == data::InvalidUid)
+    return {};
+  return _petStorage.Get(petUid).value_or(Record<data::Pet>{});
+}
+
+Record<data::Pet> DataDirector::CreatePet() noexcept
+{
+  return _petStorage.Create(
+    [this]()
+    {
+      data::Pet pet;
+      _primaryDataSource->CreatePet(pet);
+
+      return std::make_pair(pet.uid(), std::move(pet));
+    });
+}
+
+DataDirector::PetStorage& DataDirector::GetPets()
+{
+  return _petStorage;
 }
 
 Record<data::Housing> DataDirector::GetHousing(data::Uid housingUid) noexcept
@@ -569,6 +601,30 @@ void DataDirector::ScheduleUserLoad(
   });
 }
 
+Record<data::Guild> DataDirector::GetGuild(data::Uid guildUid) noexcept
+{
+  if (guildUid == data::InvalidUid)
+    return {};
+  return _guildStorage.Get(guildUid).value_or(Record<data::Guild>{});
+}
+
+Record<data::Guild> DataDirector::CreateGuild() noexcept
+{
+  return _guildStorage.Create(
+    [this]()
+    {
+      data::Guild guild;
+      _primaryDataSource->CreateGuild(guild);
+
+      return std::make_pair(guild.uid(), std::move(guild));
+    });
+}
+
+DataDirector::GuildStorage& DataDirector::GetGuilds()
+{
+  return _guildStorage;
+}
+
 void DataDirector::ScheduleCharacterLoad(
   UserDataContext& userDataContext,
   data::Uid characterUid)
@@ -614,10 +670,13 @@ void DataDirector::ScheduleCharacterLoad(
 
     std::vector<data::Uid> horses;
 
+    std::vector<data::Uid> eggs;
+
     std::vector<data::Uid> housing;
 
     characterRecord.Immutable(
-      [&guildUid, &petUid, &gifts, &items, &purchases, &horses, &housing](const data::Character& character)
+      [&guildUid, &petUid, &gifts, &items, &purchases, &horses, &eggs, &housing](
+        const data::Character& character)
       {
         guildUid = character.guildUid();
         petUid = character.petUid();
@@ -627,6 +686,8 @@ void DataDirector::ScheduleCharacterLoad(
         items = character.items();
 
         horses = character.horses();
+
+        eggs = character.eggs();
 
         housing = character.housing();
 
@@ -638,11 +699,12 @@ void DataDirector::ScheduleCharacterLoad(
     const auto guildRecord = GetGuild(guildUid);
     const auto petRecord = GetPet(petUid);
 
-    const auto giftRecords = GetStoredItems().Get(gifts);
-    const auto purchaseRecords = GetStoredItems().Get(purchases);
-    const auto itemRecords = GetItems().Get(items);
+    const auto giftRecords = GetStorageItem().Get(gifts);
+    const auto purchaseRecords = GetStorageItem().Get(purchases);
 
     const auto horseRecords = GetHorses().Get(horses);
+
+    const auto eggRecords = GetEggs().Get(eggs);
 
     const auto housingRecords = GetHousing().Get(housing);
 
@@ -663,10 +725,42 @@ void DataDirector::ScheduleCharacterLoad(
     }
 
     // Require gifts and purchases for the storage and items for the inventory.
-    if (not giftRecords || not purchaseRecords || not itemRecords)
+    if (not giftRecords || not purchaseRecords)
     {
       userDataContext.debugMessage = std::format(
-        "Gifts, purchases or items not available");
+        "Gifts or purchases not available");
+      return;
+    }
+
+    // Add items referenced by the purchase records to the item list.
+    for (const auto& purchaseRecord : *purchaseRecords)
+    {
+      purchaseRecord.Immutable([&items](const data::StorageItem& storageItem)
+      {
+        for (const auto& itemUid : storageItem.items())
+        {
+          items.emplace_back(itemUid);
+        }
+      });
+    }
+
+    // Add items referenced by the gift records to the item list.
+    for (const auto& giftRecord : *giftRecords)
+    {
+      giftRecord.Immutable([&items](const data::StorageItem& storageItem)
+      {
+        for (const auto& itemUid : storageItem.items())
+        {
+          items.emplace_back(itemUid);
+        }
+      });
+    }
+
+    const auto itemRecords = GetItems().Get(items);
+    if (not itemRecords)
+    {
+      userDataContext.debugMessage = std::format(
+        "Items not available");
       return;
     }
 
@@ -677,6 +771,7 @@ void DataDirector::ScheduleCharacterLoad(
         "Horses or mount not available");
       return;
     }
+
 
     // Require housing records.
     if (not housingRecords)

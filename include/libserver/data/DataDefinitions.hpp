@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -115,6 +116,8 @@ constexpr Uid InvalidUid = 0;
 //! Value of an invalid type identifier.
 constexpr Tid InvalidTid = 0;
 
+using Clock = std::chrono::steady_clock;
+
 //! User
 struct User
 {
@@ -151,7 +154,7 @@ struct Pet
 };
 
 //! Stored item
-struct StoredItem
+struct StorageItem
 {
   //! A unique identifier.
   dao::Field<Uid> uid{InvalidUid};
@@ -226,6 +229,8 @@ struct Character
   dao::Field<std::vector<Uid>> horses{};
   dao::Field<Uid> mountUid{InvalidUid};
 
+  dao::Field<std::vector<Uid>> eggs{};
+
   dao::Field<std::vector<Uid>> housing{};
 };
 
@@ -286,6 +291,15 @@ struct Housing
 {
   dao::Field<Uid> uid{InvalidUid};
   dao::Field<uint16_t> housingId{};
+};
+
+struct Egg
+{
+  dao::Field<Uid> uid{InvalidUid};
+  dao::Field<Tid> tid{InvalidTid};
+  dao::Field<Tid> petTid{InvalidTid};
+
+  dao::Field<Clock::time_point> hatchTimestamp{};
 };
 
 } // namespace data

@@ -855,7 +855,7 @@ void RanchDirector::HandleRequestStorage(
     [this, showPurchases, page = static_cast<size_t>(command.page), &response](
       const data::Character& character) mutable
     {
-      const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStoredItems().Get(
+      const auto storedItemRecords = GetServerInstance().GetDataDirector().GetStorageItem().Get(
         showPurchases ? character.purchases() : character.gifts());
       if (not storedItemRecords || storedItemRecords->empty())
         return;
@@ -934,13 +934,13 @@ void RanchDirector::HandleGetItemFromStorage(
   characterRecord.Mutable([this, &response](
     data::Character& character)
     {
-      const auto storedItemRecord = GetServerInstance().GetDataDirector().GetStoredItems().Get(
+      const auto storedItemRecord = GetServerInstance().GetDataDirector().GetStorageItem().Get(
         response.storedItemUid);
 
       // Collection of the items received from the stored item.
       std::vector<data::Uid> items;
 
-      storedItemRecord->Immutable([this, &items, &response](const data::StoredItem& storedItem)
+      storedItemRecord->Immutable([this, &items, &response](const data::StorageItem& storedItem)
       {
         items = storedItem.items();
         const auto itemRecords = GetServerInstance().GetDataDirector().GetItems().Get(
@@ -1279,8 +1279,8 @@ std::vector<std::string> RanchDirector::HandleCommand(
 
       // Create the stored item.
       auto giftUid = data::InvalidUid;
-      const auto storedItem = GetServerInstance().GetDataDirector().CreateStoredItem();
-      storedItem.Mutable([this, &giftUid, createdItemUid, createdItemTid](data::StoredItem& storedItem)
+      const auto storedItem = GetServerInstance().GetDataDirector().CreateStorageItem();
+      storedItem.Mutable([this, &giftUid, createdItemUid, createdItemTid](data::StorageItem& storedItem)
       {
         storedItem.items().emplace_back(createdItemUid);
         storedItem.sender() = "System";

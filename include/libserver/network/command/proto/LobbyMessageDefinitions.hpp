@@ -176,7 +176,7 @@ struct LobbyCommandLoginOK
     };
 
     std::vector<Skill> values;
-  } skillsRank{};
+  } skillRanks{};
 
   struct Struct4
   {

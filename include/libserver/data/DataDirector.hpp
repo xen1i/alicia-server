@@ -34,12 +34,13 @@ class DataDirector
 public:
   using UserStorage = DataStorage<std::string, data::User>;
   using CharacterStorage = DataStorage<data::Uid, data::Character>;
-  using ItemStorage = DataStorage<data::Uid, data::Item>;
-  using PetStorage = DataStorage<data::Uid, data::Pet>;
-  using GuildStorage = DataStorage<data::Uid, data::Guild>;
-  using StoredItemStorage = DataStorage<data::Uid, data::StoredItem>;
   using HorseStorage = DataStorage<data::Uid, data::Horse>;
+  using ItemStorage = DataStorage<data::Uid, data::Item>;
+  using EggStorage = DataStorage<data::Uid, data::Egg>;
+  using PetStorage = DataStorage<data::Uid, data::Pet>;
+  using StorageItemStorage = DataStorage<data::Uid, data::StorageItem>;
   using HousingStorage = DataStorage<data::Uid, data::Housing>;
+  using GuildStorage = DataStorage<data::Uid, data::Guild>;
 
   //! Default constructor.
   explicit DataDirector();
@@ -82,6 +83,23 @@ public:
   [[nodiscard]] Record<data::Character> CreateCharacter() noexcept;
   [[nodiscard]] CharacterStorage& GetCharacters();
 
+  [[nodiscard]] Record<data::Horse> GetHorse(data::Uid horseUid) noexcept;
+  [[nodiscard]] Record<data::Horse> CreateHorse() noexcept;
+  [[nodiscard]] HorseStorage& GetHorses();
+
+  [[nodiscard]] Record<data::Item> GetItem(data::Uid itemUid) noexcept;
+  [[nodiscard]] Record<data::Item> CreateItem() noexcept;
+  [[nodiscard]] ItemStorage& GetItems();
+
+
+  [[nodiscard]] Record<data::StorageItem> GetStorageItem(data::Uid storedItemUid) noexcept;
+  [[nodiscard]] Record<data::StorageItem> CreateStorageItem() noexcept;
+  [[nodiscard]] StorageItemStorage& GetStorageItem();
+
+  [[nodiscard]] Record<data::Egg> GetEgg(data::Uid eggUid) noexcept;
+  [[nodiscard]] Record<data::Egg> CreateEgg() noexcept;
+  [[nodiscard]] EggStorage& GetEggs();
+
   [[nodiscard]] Record<data::Pet> GetPet(data::Uid petUid) noexcept;
   [[nodiscard]] Record<data::Pet> CreatePet() noexcept;
   [[nodiscard]] PetStorage& GetPets();
@@ -89,18 +107,6 @@ public:
   [[nodiscard]] Record<data::Guild> GetGuild(data::Uid guildUid) noexcept;
   [[nodiscard]] Record<data::Guild> CreateGuild() noexcept;
   [[nodiscard]] GuildStorage& GetGuilds();
-
-  [[nodiscard]] Record<data::StoredItem> GetStoredItem(data::Uid storedItemUid) noexcept;
-  [[nodiscard]] Record<data::StoredItem> CreateStoredItem() noexcept;
-  [[nodiscard]] StoredItemStorage& GetStoredItems();
-
-  [[nodiscard]] Record<data::Item> GetItem(data::Uid itemUid) noexcept;
-  [[nodiscard]] Record<data::Item> CreateItem() noexcept;
-  [[nodiscard]] ItemStorage& GetItems();
-
-  [[nodiscard]] Record<data::Horse> GetHorse(data::Uid horseUid) noexcept;
-  [[nodiscard]] Record<data::Horse> CreateHorse() noexcept;
-  [[nodiscard]] HorseStorage& GetHorses();
 
   [[nodiscard]] Record<data::Housing> GetHousing(data::Uid housingUid) noexcept;
   [[nodiscard]] Record<data::Housing> CreateHousing() noexcept;
@@ -137,18 +143,20 @@ private:
   UserStorage _userStorage;
   //! A character storage.
   CharacterStorage _characterStorage;
-  //! An item storage.
-  ItemStorage _itemStorage;
-  //! A stored item storage.
-  StoredItemStorage _storedItemStorage;
-  //! A pet storage.
-  PetStorage _petStorage;
-  //! A guild storage.
-  GuildStorage _guildStorage;
   //! A horse storage.
   HorseStorage _horseStorage;
+  //! An item storage.
+  ItemStorage _itemStorage;
+  //! A storage item storage.
+  StorageItemStorage _storageItemStorage;
+  //! An egg storage.
+  EggStorage _eggStorage;
+  //! A pet storage.
+  PetStorage _petStorage;
   //! A housing storage.
   HousingStorage _housingStorage;
+  //! A guild storage.
+  GuildStorage _guildStorage;
 };
 
 } // namespace server

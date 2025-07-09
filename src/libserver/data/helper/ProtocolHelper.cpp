@@ -166,7 +166,7 @@ void BuildProtocolItems(
   }
 }
 
-void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const data::StoredItem& storedItem)
+void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const data::StorageItem& storedItem)
 {
   protocolStoredItem.uid = storedItem.uid();
   protocolStoredItem.sender = storedItem.sender();
@@ -175,7 +175,7 @@ void BuildProtocolStoredItem(StoredItem& protocolStoredItem, const data::StoredI
 
 void BuildProtocolStoredItems(
   std::vector<StoredItem>& protocolStoredItems,
-  const std::span<const Record<data::StoredItem>>& storedItems)
+  const std::span<const Record<data::StorageItem>>& storedItems)
 {
   for (const auto& storedItem : storedItems)
   {
