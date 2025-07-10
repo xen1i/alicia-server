@@ -293,6 +293,8 @@ enum class Command : uint16_t
   RaceReadyRace = 0x58,
   RaceReadyRaceNotify = 0x59,
 
+  RaceCountdown = 0x102d,
+
   Count = 0xFFFF
 };
 

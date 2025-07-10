@@ -85,15 +85,18 @@ struct Racer
 struct RoomDescription
 {
   std::string name{};
-  uint8_t val_between_name_and_desc{}; // room id?
+  uint8_t playerCount{};
   std::string description{};
   uint8_t unk1{};
   GameMode gameMode{};
-  uint16_t unk3{};      // map?
-  TeamMode teamMode{};       // 0 waiting room, 1 race started?
-  uint16_t missionId{}; // idk but probably important, first value checked in RaceCommandEnterRoomOK handler
+  //! From the table `MapBlockInfo`.
+  uint16_t mapBlockId{};
+  // 0 waiting room, 1 race started?
+  TeamMode teamMode{};
+  uint16_t missionId{};
   uint8_t unk6{};
-  uint8_t unk7{}; // 0: 3lv, 1: 12lv, 2 and beyond: nothing?
+  // 0: 3lv, 1: 12lv, 2 and beyond: nothing?
+  uint8_t skillBracket{};
 };
 
 struct RaceCommandEnterRoom
@@ -124,7 +127,7 @@ struct RaceCommandEnterRoomOK
   std::vector<Racer> racers{};
 
   uint8_t nowPlaying{};
-  uint32_t unk1{};
+  uint32_t uid{};
   RoomDescription roomDescription{};
 
   uint32_t unk2{};
@@ -216,11 +219,11 @@ struct RaceCommandChangeRoomOptions
   //  if  & 32 != 0: byte
   RoomOptionType optionsBitfield{};
   std::string name{};
-  uint8_t val_between_name_and_desc{};
+  uint8_t playerCount{};
   std::string description{};
   uint8_t option3{};
-  uint16_t map{};
-  uint8_t raceStarted{};
+  uint16_t mapBlockId{};
+  uint8_t hasRaceStarted{};
 
   static Command GetCommand()
   {
@@ -252,12 +255,12 @@ struct RaceCommandChangeRoomOptionsNotify
   //  if  & 16 != 0: short
   //  if  & 32 != 0: byte
   RoomOptionType optionsBitfield{};
-  std::string option0{};
-  uint8_t option1{};
-  std::string option2{};
+  std::string name{};
+  uint8_t playerCount{};
+  std::string description{};
   uint8_t option3{};
-  uint16_t option4{};
-  uint8_t option5{};
+  uint16_t mapBlockId{};
+  uint8_t hasRaceStarted{};
 
   static Command GetCommand()
   {
@@ -306,11 +309,12 @@ struct RaceCommandStartRace
 
 struct RaceCommandStartRaceNotify
 {
-  uint8_t gamemode{};
-  uint8_t unk1{}; // Weird bonus UI
-  uint16_t unk2{};
-  uint32_t unk3{}; // Room ID?
-  uint16_t map{};
+  GameMode gameMode{};
+  bool skills{};
+  // this is an oid of a special player
+  uint16_t someonesOid{};
+  uint32_t member4{}; // Room ID?
+  uint16_t mapBlockId{};
 
   // List size specified with a uint8_t. Max size 10
   struct Racer
@@ -430,6 +434,7 @@ struct RaceCommandStartRaceCancel
 
 struct RaceCommandUserRaceTimer
 {
+  // count of 100ns intervals since the system start
   uint64_t timestamp{}; // potentially
 
   static Command GetCommand()
@@ -660,6 +665,30 @@ struct RaceCommandReadyRaceNotify
   //! @param stream Source stream.
   static void Read(
     RaceCommandReadyRaceNotify& command,
+    SourceStream& stream);
+};
+
+struct RaceCommandCountdown
+{
+  int64_t timestamp{}; // potentially
+
+  static Command GetCommand()
+  {
+    return Command::RaceCountdown;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RaceCommandCountdown& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RaceCommandCountdown& command,
     SourceStream& stream);
 };
 

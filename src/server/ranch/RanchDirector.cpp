@@ -1594,11 +1594,11 @@ void RanchDirector::HandleUseItem(
     command.always1too,
     command.play == protocol::RanchCommandUseItem::Play::Bad
       ? "Bad"
-    : command.play == protocol::RanchCommandUseItem::Play::Good
-      ? "Good"
-    : command.play == protocol::RanchCommandUseItem::Play::CriticalGood
-      ? "Critical good"
-      : "Perfect");
+      : command.play == protocol::RanchCommandUseItem::Play::Good
+        ? "Good"
+        : command.play == protocol::RanchCommandUseItem::Play::CriticalGood
+          ? "Critical good"
+          : "Perfect");
 
   _commandServer.QueueCommand<decltype(response)>(
     clientId,

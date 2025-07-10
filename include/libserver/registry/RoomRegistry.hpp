@@ -26,9 +26,9 @@ struct Room
   std::string name;
   std::string description;
   uint16_t missionId{};
+  uint16_t mapBlockId{};
   uint32_t otp{};
-
-  uint8_t unk0;
+  uint8_t playerCount;
   GameMode gameMode;
   TeamMode teamMode;
   uint8_t unk3;

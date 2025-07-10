@@ -67,6 +67,15 @@ RaceDirector::RaceDirector(ServerInstance& serverInstance)
           return protocol::RaceCommandLoadingCompleteNotify{
             .oid = 1};
         });
+
+      _commandServer.QueueCommand<protocol::RaceCommandCountdown>(
+        clientId,
+        []()
+        {
+          return protocol::RaceCommandCountdown{
+            .timestamp = std::chrono::duration_cast<std::chrono::seconds>(
+              (std::chrono::steady_clock::now() + std::chrono::seconds(10)).time_since_epoch()).count()};
+        });
     });
 
   _commandServer.RegisterCommandHandler<protocol::RaceCommandReadyRace>(
@@ -128,8 +137,7 @@ void RaceDirector::HandleEnterRoom(
   auto& room = roomRegistry.GetRoom(command.roomUid);
 
   auto& roomInstance = _roomInstances[command.roomUid];
-  roomInstance.worldTracker.AddCharacter(
-    clientContext.characterUid);
+  roomInstance.worldTracker.AddCharacter(command.characterUid);
 
   // Todo: Roll the code for the connecting client.
   // Todo: The response contains the code, somewhere.
@@ -137,18 +145,18 @@ void RaceDirector::HandleEnterRoom(
 
   protocol::RaceCommandEnterRoomOK response{
     .nowPlaying = 1,
-    .unk1 = 1, // Room code
+    .uid = room.uid,
     .roomDescription = {
       .name = room.name,
-      .val_between_name_and_desc = static_cast<uint8_t>(room.uid), // ?
+      .playerCount = room.playerCount,
       .description = room.description,
-      .unk1 = room.unk0,
+      .unk1 = 0,
       .gameMode = room.gameMode,
-      .unk3 = 8, // Currently selected map, can be both ADV or normal map
+      .mapBlockId = room.mapBlockId,
       .teamMode = room.teamMode,
       .missionId = room.missionId,
       .unk6 = room.unk3,
-      .unk7 = room.unk4}}; // 0 = Shows room above your skill bracket warning, 1 and above = hides the warning
+      .skillBracket = room.unk4}};
 
   protocol::Racer joiningRacer;
 
@@ -162,7 +170,7 @@ void RaceDirector::HandleEnterRoom(
       [this, characterOid, &protocolRacer](const data::Character& character)
       {
         protocolRacer.level = character.level();
-        protocolRacer.oid = character.uid();
+        protocolRacer.oid = characterOid;
         protocolRacer.uid = character.uid();
         protocolRacer.name = character.name();
         protocolRacer.isHidden = false;
@@ -174,10 +182,11 @@ void RaceDirector::HandleEnterRoom(
 
         const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
           character.mountUid());
-        mountRecord->Immutable([&protocolRacer](const data::Horse& mount)
-                               {
-                                 protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
-                               });
+        mountRecord->Immutable(
+          [&protocolRacer](const data::Horse& mount)
+          {
+            protocol::BuildProtocolHorse(protocolRacer.avatar->mount, mount);
+          });
       });
 
     if (characterUid == clientContext.characterUid)
@@ -215,15 +224,20 @@ void RaceDirector::HandleChangeRoomOptions(
   const protocol::RaceCommandChangeRoomOptions& command)
 {
   // TODO: Actually do something
+  const auto& clientContext = _clientContexts[clientId];
+
+  auto& room = RoomRegistry::Get().GetRoom(clientContext.roomUid);
+
+  room.mapBlockId = command.mapBlockId;
 
   protocol::RaceCommandChangeRoomOptionsNotify response{
     .optionsBitfield = command.optionsBitfield,
-    .option0 = command.name,
-    .option1 = command.val_between_name_and_desc,
-    .option2 = command.description,
+    .name = command.name,
+    .playerCount = command.playerCount,
+    .description = command.description,
     .option3 = command.option3,
-    .option4 = command.map,
-    .option5 = command.raceStarted};
+    .mapBlockId = command.mapBlockId,
+    .hasRaceStarted = command.hasRaceStarted};
 
   // TODO: Send to all clients in the room
   _commandServer.QueueCommand<decltype(response)>(
@@ -238,15 +252,20 @@ void RaceDirector::HandleStartRace(
   ClientId clientId,
   const protocol::RaceCommandStartRace& command)
 {
+  const auto& clientContext = _clientContexts[clientId];
+
+  const auto& room = RoomRegistry::Get().GetRoom(clientContext.roomUid);
+
   // Start the race or AcCmdRCRoomCountdown
   const protocol::RaceCommandStartRaceNotify response{
-    .gamemode = 6,
-    .unk3 = 1,
-    .map = 8,
+    .gameMode = room.gameMode,
+    .skills = true,
+    .someonesOid = 20,
+    .mapBlockId = room.mapBlockId,
     .racers = {
       {
         .oid = 1,
-        .name = "regent",
+        .name = "r",
         .unk2 = 1,
         .unk3 = 1,
         .unk4 = 1,

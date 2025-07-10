@@ -319,7 +319,7 @@ void LobbyDirector::HandleMakeRoom(
   room.name = command.name;
   room.description = command.password;
   room.missionId = command.missionId;
-  room.unk0 = command.playerCount;
+  room.playerCount = command.playerCount;
   room.gameMode = command.gameMode;
   room.teamMode = command.teamMode;
   room.unk3 = command.unk3;

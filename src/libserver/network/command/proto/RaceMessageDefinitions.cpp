@@ -83,15 +83,15 @@ void WriteRacer(SinkStream& stream, const Racer& racer)
 void WriteRoomDescription(SinkStream& stream, const RoomDescription& roomDescription)
 {
   stream.Write(roomDescription.name)
-    .Write(roomDescription.val_between_name_and_desc)
+    .Write(roomDescription.playerCount)
     .Write(roomDescription.description)
     .Write(roomDescription.unk1)
     .Write(roomDescription.gameMode)
-    .Write(roomDescription.unk3)
+    .Write(roomDescription.mapBlockId)
     .Write(roomDescription.teamMode)
     .Write(roomDescription.missionId)
     .Write(roomDescription.unk6)
-    .Write(roomDescription.unk7);
+    .Write(roomDescription.skillBracket);
 }
 
 void RaceCommandEnterRoom::Write(
@@ -126,7 +126,7 @@ void RaceCommandEnterRoomOK::Write(
   }
 
   stream.Write(command.nowPlaying)
-    .Write(command.unk1);
+    .Write(command.uid);
 
   WriteRoomDescription(stream, command.roomDescription);
 
@@ -205,7 +205,7 @@ void RaceCommandChangeRoomOptions::Read(
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk1)
   {
-    stream.Read(command.val_between_name_and_desc);
+    stream.Read(command.playerCount);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk2)
   {
@@ -217,11 +217,11 @@ void RaceCommandChangeRoomOptions::Read(
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk4)
   {
-    stream.Read(command.map);
+    stream.Read(command.mapBlockId);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk5)
   {
-    stream.Read(command.raceStarted);
+    stream.Read(command.hasRaceStarted);
   }
 }
 
@@ -232,15 +232,15 @@ void RaceCommandChangeRoomOptionsNotify::Write(
   stream.Write(command.optionsBitfield);
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk0)
   {
-    stream.Write(command.option0);
+    stream.Write(command.name);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk1)
   {
-    stream.Write(command.option1);
+    stream.Write(command.playerCount);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk2)
   {
-    stream.Write(command.option2);
+    stream.Write(command.description);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk3)
   {
@@ -248,11 +248,11 @@ void RaceCommandChangeRoomOptionsNotify::Write(
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk4)
   {
-    stream.Write(command.option4);
+    stream.Write(command.mapBlockId);
   }
   if ((uint16_t)command.optionsBitfield & (uint16_t)RoomOptionType::Unk5)
   {
-    stream.Write(command.option5);
+    stream.Write(command.hasRaceStarted);
   }
 }
 
@@ -287,11 +287,11 @@ void RaceCommandStartRaceNotify::Write(
   const RaceCommandStartRaceNotify& command,
   SinkStream& stream)
 {
-  stream.Write(command.gamemode)
-    .Write(command.unk1)
-    .Write(command.unk2)
-    .Write(command.unk3)
-    .Write(command.map);
+  stream.Write(command.gameMode)
+    .Write(command.skills)
+    .Write(command.someonesOid)
+    .Write(command.member4)
+    .Write(command.mapBlockId);
 
   stream.Write(static_cast<uint8_t>(command.racers.size()));
   for (const auto& element : command.racers)
@@ -527,6 +527,20 @@ void RaceCommandReadyRaceNotify::Write(
 
 void RaceCommandReadyRaceNotify::Read(
   RaceCommandReadyRaceNotify& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
+}
+
+void RaceCommandCountdown::Write(
+  const RaceCommandCountdown& command,
+  SinkStream& stream)
+{
+  stream.Write(command.timestamp);
+}
+
+void RaceCommandCountdown::Read(
+  RaceCommandCountdown& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented");

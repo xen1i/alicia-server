@@ -229,6 +229,7 @@ void LoginHandler::HandleUserCreateCharacter(
 
   std::vector<data::Uid> horses;
 
+  // Create the character's horses.
   for (uint32_t i = 0; i < 3; ++i)
   {
     // Create a new horse for the character.
@@ -249,11 +250,10 @@ void LoginHandler::HandleUserCreateCharacter(
       });
   }
 
-  // The UID of the newly created horse.
+  // Pick the first horse to be a mount.
   const data::Uid characterMountUid = horses.front();
 
-  // And finally create the character with the new horse,
-  // new ranch and the appearance sent from the client.
+  // Create the character.
   const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().CreateCharacter();
   auto userCharacterUid{data::InvalidUid};
 
@@ -357,7 +357,8 @@ void LoginHandler::QueueUserLoginAccepted(
 
   // Get the character record and fill the protocol data.
   // Also get the UID of the horse mounted by the character.
-  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacter(userCharacterUid);
+  const auto characterRecord = _lobbyDirector.GetServerInstance().GetDataDirector().GetCharacter(
+    userCharacterUid);
   if (not characterRecord)
     throw std::runtime_error("Character record unavailable");
 

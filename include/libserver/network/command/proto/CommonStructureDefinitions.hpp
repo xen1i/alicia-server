@@ -480,7 +480,8 @@ enum class GameMode : uint8_t
 {
   Speed = 1,
   Magic = 2,
-  Guild = 3
+  Guild = 3,
+  Tutorial = 6
 };
 
 enum class TeamMode : uint8_t
