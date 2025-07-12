@@ -1436,6 +1436,7 @@ void RanchCommandIncubateEgg::Read(
 {
   stream.Read(command.petBirthInfo);
 }
+
 void RanchCommandIncubateEggOK::Write(
   const RanchCommandIncubateEggOK& command,
   SinkStream& stream)

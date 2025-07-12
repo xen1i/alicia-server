@@ -393,7 +393,12 @@ struct RanchCharacter
 {
   uint32_t uid{};
   std::string name{};
-  Gender gender{};
+  enum class ProfileIcon : uint8_t
+  {
+    Boy = 0x0,
+    Girl = 0x1,
+    GameMaster = 0x2
+  } profileIcon{ProfileIcon::Boy};
   uint8_t age{};
   uint8_t hideGenderAndAge{};
   std::string introduction{};

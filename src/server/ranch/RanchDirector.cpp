@@ -409,7 +409,11 @@ void RanchDirector::HandleRanchEnter(
     {
       protocolCharacter.uid = character.uid();
       protocolCharacter.name = character.name();
-      protocolCharacter.gender = character.parts.modelId() == 10 ? Gender::Boy : Gender::Girl;
+      protocolCharacter.profileIcon = character.role() == data::Character::Role::Gm
+        ? RanchCharacter::ProfileIcon::GameMaster
+        : character.parts.modelId() == 10
+          ? RanchCharacter::ProfileIcon::Boy
+          : RanchCharacter::ProfileIcon::Girl;
       protocolCharacter.age = 19;
       protocolCharacter.hideGenderAndAge = 0;
 
