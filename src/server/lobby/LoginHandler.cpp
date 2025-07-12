@@ -372,13 +372,13 @@ void LoginHandler::QueueUserLoginAccepted(
       response.name = character.name();
 
       response.introduction = character.introduction();
-      response.gender = Gender::Unspecified;
+      response.gender = character.parts.modelId() == 10 ? Gender::Boy : Gender::Girl;
 
       response.level = character.level();
       response.carrots = character.carrots();
       response.role = std::bit_cast<protocol::LobbyCommandLoginOK::Role>(
         character.role());
-      response.ageGroup = AgeGroup::Adult;
+      response.age = 18;
       response.hideAge = false;
 
       response.bitfield = 2;

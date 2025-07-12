@@ -217,6 +217,11 @@ enum class Command : uint16_t
   RanchChat = 0x137,
   RanchChatNotify = 0x138,
 
+  RanchKickRanch = 0x45a,
+  RanchKickRanchOK = 0x45b,
+  RanchKickRanchCancel = 0x45c,
+  RanchKickRanchNotify = 0x45d,
+
   RanchWearEquipment = 0x81,
   RanchWearEquipmentOK = 0x82,
   RanchWearEquipmentCancel = 0x83,
@@ -268,6 +273,9 @@ enum class Command : uint16_t
   RanchHousingRepairNotify = 0x265,
 
   RanchMissionEvent = 0xe0,
+
+  RanchOpCmd = 0x28e,
+  RanchOpCmdOK = 0x28f,
 
   RaceEnterRoom = 0x30,
   RaceEnterRoomNotify = 0x31,

@@ -9,6 +9,7 @@
 #include "libserver/data/DataStorage.hpp"
 #include "libserver/network/command/proto/CommonStructureDefinitions.hpp"
 #include "libserver/network/command/proto/LobbyMessageDefinitions.hpp"
+#include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
 
 namespace server
 {
@@ -63,6 +64,10 @@ void BuildProtocolStoredItems(
 void BuildProtocolGuild(
   Guild& protocolGuild,
   const data::Guild& guildRecord);
+
+void BuildProtocolPet(
+  Pet& protocolPet,
+  const data::Pet& petRecord);
 
 } // namespace protocol
 

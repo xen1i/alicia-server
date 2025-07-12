@@ -105,7 +105,7 @@ struct LobbyCommandLoginOK
   uint32_t valueOptions{};
   // GamepadOptions gamepadOptions{};
 
-  AgeGroup ageGroup{AgeGroup::Adult};
+  uint8_t age{};
   uint8_t hideAge{};
 
   struct Unk1

@@ -171,12 +171,17 @@ const std::unordered_map<Command, std::string_view> commands = {
   {Command::RanchGetItemFromStorageOK, "RanchGetItemFromStorageOK"},
   {Command::RanchGetItemFromStorageCancel, "RanchGetItemFromStorageCancel"},
 
-  {Command::RanchRequestNpcDressList, "RaceRequestNpcDressList"},
-  {Command::RanchRequestNpcDressListCancel, "RaceRequestNpcDressListCancel"},
-  {Command::RanchRequestNpcDressListOK, "RaceRequestNpcDressListOK"},
+  {Command::RanchRequestNpcDressList, "RanchRequestNpcDressList"},
+  {Command::RanchRequestNpcDressListCancel, "RanchRequestNpcDressListCancel"},
+  {Command::RanchRequestNpcDressListOK, "RanchRequestNpcDressListOK"},
 
   {Command::RanchChat, "RanchChat"},
   {Command::RanchChatNotify, "RanchChatNotify"},
+
+  {Command::RanchKickRanch, "RanchChat"},
+  {Command::RanchKickRanchOK, "RanchChatNotify"},
+  {Command::RanchKickRanchCancel, "RanchChat"},
+  {Command::RanchKickRanchNotify, "RanchChatNotify"},
 
   {Command::RanchWearEquipment, "RanchWearEquipment"},
   {Command::RanchWearEquipmentOK, "RanchWearEquipmentOK"},
@@ -227,6 +232,9 @@ const std::unordered_map<Command, std::string_view> commands = {
   {Command::RanchHousingRepairCancel, "RanchHousingRepairCancel"},
 
   {Command::RanchMissionEvent, "RanchMissionEvent"},
+
+  {Command::RanchOpCmd, "RanchOpCmd"},
+  {Command::RanchOpCmdOK, "RanchOpCmdOK"},
 
   {Command::RaceEnterRoom, "RaceEnterRoom"},
   {Command::RaceEnterRoomNotify, "RaceEnterRoomNotify"},

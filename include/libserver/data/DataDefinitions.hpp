@@ -189,8 +189,8 @@ struct Character
   enum class Role
   {
     User,
-    PowerUser,
-    GameMaster
+    Op,
+    Gm
   };
   dao::Field<Role> role{};
 

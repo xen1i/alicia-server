@@ -190,6 +190,9 @@ private:
     ClientId clientId,
     const protocol::RanchCommandHousingBuild& command);
 
+  void HandleOpCmd(ClientId clientId,
+    const protocol::RanchCommandOpCmd& command);
+
   //!
   ServerInstance& _serverInstance;
   //!

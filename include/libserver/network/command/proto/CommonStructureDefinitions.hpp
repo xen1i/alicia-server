@@ -38,19 +38,6 @@ enum class Gender : uint8_t
   Girl = 0x2
 };
 
-//!
-enum class AgeGroup : uint8_t
-{
-  //! Age <12
-  Kid = 0x0C,
-  //! Age 13-15
-  Teenager = 0x0D,
-  //! Age 16-18
-  Highschooler = 0x10,
-  //! Age 19+
-  Adult = 0x13,
-};
-
 //! Item
 struct Item
 {
@@ -407,8 +394,8 @@ struct RanchCharacter
   uint32_t uid{};
   std::string name{};
   Gender gender{};
-  uint8_t unk0{};
-  uint8_t unk1{};
+  uint8_t age{};
+  uint8_t hideGenderAndAge{};
   std::string introduction{};
 
   Character character{};

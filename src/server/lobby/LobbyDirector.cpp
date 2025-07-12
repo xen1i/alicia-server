@@ -677,7 +677,7 @@ void LobbyDirector::HandleUpdateSystemContent(
   bool hasPermission = false;
   characterRecord.Immutable([&hasPermission](const data::Character& character)
   {
-    hasPermission = character.role() == data::Character::Role::GameMaster;
+    hasPermission = character.role() != data::Character::Role::User;
   });
 
   if (not hasPermission)

@@ -9,7 +9,6 @@ namespace server
 
 namespace protocol
 {
-
 void BuildProtocolCharacter(
   Character& protocolCharacter,
   const data::Character& character)
@@ -191,6 +190,12 @@ void BuildProtocolGuild(Guild& protocolGuild, const data::Guild& guildRecord)
 {
   protocolGuild.name = guildRecord.name();
   protocolGuild.uid = guildRecord.uid();
+}
+
+void BuildProtocolPet(Pet& protocolPet, const data::Pet& petRecord)
+{
+  protocolPet.name = petRecord.name();
+  protocolPet.uid = petRecord.uid();
 }
 
 } // namespace protocol

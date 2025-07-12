@@ -2217,7 +2217,7 @@ struct RanchCommandMissionEvent
     EVENT_WAVE_END=37
   };
 
-  Event event;
+  Event event{};
   uint32_t callerOid{};
   uint32_t calledOid{};
 
@@ -2238,6 +2238,152 @@ struct RanchCommandMissionEvent
   //! @param stream Source stream.
   static void Read(
     RanchCommandMissionEvent& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandKickRanch
+{
+  uint32_t characterUid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchKickRanch;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandKickRanch& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandKickRanch& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandKickRanchOK
+{
+  static Command GetCommand()
+  {
+    return Command::RanchKickRanchOK;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandKickRanchOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandKickRanchOK& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandKickRanchCancel
+{
+  static Command GetCommand()
+  {
+    return Command::RanchKickRanchCancel;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandKickRanchCancel& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandKickRanchCancel& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandKickRanchNotify
+{
+  uint32_t characterUid{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchKickRanchNotify;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandKickRanchNotify& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandKickRanchNotify& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandOpCmd
+{
+  std::string command{};
+
+  static Command GetCommand()
+  {
+    return Command::RanchOpCmd;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandOpCmd& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandOpCmd& command,
+    SourceStream& stream);
+};
+
+struct RanchCommandOpCmdOK
+{
+  std::string feedback{};
+
+  enum class Observer : uint32_t
+  {
+    Enabled = 1,
+    Disabled = 2,
+  } observerState;
+
+  static Command GetCommand()
+  {
+    return Command::RanchOpCmdOK;
+  }
+
+  //! Writes the command to a provided sink stream.
+  //! @param command Command.
+  //! @param stream Sink stream.
+  static void Write(
+    const RanchCommandOpCmdOK& command,
+    SinkStream& stream);
+
+  //! Reader a command from a provided source stream.
+  //! @param command Command.
+  //! @param stream Source stream.
+  static void Read(
+    RanchCommandOpCmdOK& command,
     SourceStream& stream);
 };
 

@@ -307,8 +307,19 @@ size_t CommandServer::NetworkEventHandler::OnClientData(
       // Handler validity is checked when registering.
       assert(handler);
 
-      // Call the handler.
-      handler(clientId, commandDataStream);
+      try
+      {
+        // Call the handler.
+        handler(clientId, commandDataStream);
+      }
+      catch (const std::exception& x)
+      {
+        spdlog::error(
+          "Unhandled exception handling command '{}' (0x{:x}): {}",
+          protocol::GetCommandName(commandId),
+          magic.id,
+          x.what());
+      }
 
       // There shouldn't be any left-over data in the stream.
       assert(commandDataStream.GetCursor() == commandDataStream.Size());
