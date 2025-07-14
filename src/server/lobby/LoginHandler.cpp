@@ -337,7 +337,7 @@ void LoginHandler::QueueUserLoginAccepted(
 
     .systemContent = _lobbyDirector._systemContent,
 
-    .managmentSkills = {4, 0x2B, 4},
+    .managementSkills = {4, 0x2B, 4},
     .skillRanks = {.values = {{1,1}}},
     .val14 = 0xca1b87db,
     .guild = {.val1 = 1},

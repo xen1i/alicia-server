@@ -168,7 +168,7 @@ void LobbyCommandLoginOK::Write(
 
   stream.Write(command.val10);
 
-  const auto& managementSkills = command.managmentSkills;
+  const auto& managementSkills = command.managementSkills;
   stream.Write(managementSkills.val0)
     .Write(managementSkills.progress)
     .Write(managementSkills.points);

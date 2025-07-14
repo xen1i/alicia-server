@@ -158,13 +158,13 @@ struct LobbyCommandLoginOK
 
   uint32_t val10{};
 
-  struct ManagmentSkills
+  struct ManagementSkills
   {
     uint8_t val0{};
     //Can be found in table CareSkillLevel, max 2675
     uint32_t progress{};
     uint16_t points{};
-  } managmentSkills{};
+  } managementSkills{};
 
   struct SkillRanks
   {
