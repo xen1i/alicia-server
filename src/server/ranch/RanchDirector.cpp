@@ -956,8 +956,9 @@ void RanchDirector::HandleGetItemFromStorage(
   bool storedItemIsValid = true;
 
   // Try to remove the stored item from the character.
-  characterRecord.Mutable([this, &storedItemIsValid, storedItemUid = command.storedItemUid](
-    data::Character& character)
+  characterRecord.Mutable(
+    [this, &storedItemIsValid, storedItemUid = command.storedItemUid](
+      data::Character& character)
     {
       // The stored item is either a gift or a purchase.
       // Try to remove from both gift and purchase vectors.

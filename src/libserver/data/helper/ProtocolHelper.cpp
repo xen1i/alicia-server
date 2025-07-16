@@ -148,6 +148,7 @@ void BuildProtocolItem(
 {
   protocolItem.uid = item.uid();
   protocolItem.tid = item.tid();
+  protocolItem.val = 0xFF;
   protocolItem.count = item.count();
 }
 
