@@ -34,6 +34,10 @@ namespace server
 namespace
 {
 
+constexpr size_t MaxRanchHorseCount = 10;
+constexpr size_t MaxRanchCharacterCount = 20;
+constexpr size_t MaxRanchHousingCount = 13;
+
 }
 
 RanchDirector::RanchDirector(ServerInstance& serverInstance)
@@ -320,16 +324,49 @@ void RanchDirector::HandleRanchEnter(
   ClientId clientId,
   const protocol::RanchCommandRanchEnter& command)
 {
-  // TODO: verify the OTP against the character UID
+  const auto [iter, created] = _clientContext.try_emplace(clientId);
 
-  auto& clientContext = _clientContext[clientId];
+  auto& clientContext = iter->second;
+  auto& ranchInstance = _ranches[command.rancherUid];
 
-  clientContext.characterUid = command.characterUid;
-  clientContext.rancherUid = command.rancherUid;
+  bool canEnterRanch = true;
+
+  // This is the first message received by the server when user is connecting to the ranch server,
+  // handle a scenario where they are just connecting from the lobby and authorize their one-time-password.
+  if (created)
+  {
+    if (GetServerInstance().GetOtpRegistry().AuthorizeCode(
+      command.characterUid, command.otp))
+    {
+      clientContext.characterUid = command.characterUid;
+      clientContext.rancherUid = command.rancherUid;
+    }
+    else
+    {
+      canEnterRanch = false;
+    }
+  }
+
+  if (ranchInstance._clients.size() > MaxRanchCharacterCount)
+  {
+    canEnterRanch = false;
+  }
+
+  if (not canEnterRanch)
+  {
+    protocol::RanchCommandEnterRanchCancel response{};
+    _commandServer.QueueCommand<decltype(response)>(
+      clientId,
+      [response]()
+      {
+        return response;
+      });
+    return;
+  }
 
   protocol::RanchCommandEnterRanchOK response{
     .rancherUid = command.rancherUid,
-    .unk0 = "unk0",
+    .rancherName = "unk0",
     .league = {
       .type = League::Type::Platinum,
       .rankingPercentile = 50}};
@@ -365,8 +402,6 @@ void RanchDirector::HandleRanchEnter(
     }
   });
 
-  auto& ranchInstance = _ranches[command.rancherUid];
-
   // Add the character to the ranch.
   ranchInstance._worldTracker.AddCharacter(
     command.characterUid);
@@ -374,10 +409,10 @@ void RanchDirector::HandleRanchEnter(
   RanchCharacter enteringRanchPlayer;
 
   // Add the ranch horses.
-  for (auto [horseUid, horseEntityId] : ranchInstance._worldTracker.GetHorseEntities())
+  for (auto [horseUid, horseOid] : ranchInstance._worldTracker.GetHorses())
   {
     auto& ranchHorse = response.horses.emplace_back();
-    ranchHorse.ranchIndex = horseEntityId;
+    ranchHorse.horseOid = horseOid;
 
     auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(horseUid);
     if (not horseRecord)
@@ -393,10 +428,10 @@ void RanchDirector::HandleRanchEnter(
   }
 
   // Add the ranch characters.
-  for (auto [characterUid, characterEntityId] : ranchInstance._worldTracker.GetCharacterEntities())
+  for (auto [characterUid, characterOid] : ranchInstance._worldTracker.GetCharacters())
   {
     auto& protocolCharacter = response.characters.emplace_back();
-    protocolCharacter.ranchIndex = characterEntityId;
+    protocolCharacter.oid = characterOid;
 
     auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(characterUid);
     if (not characterRecord)
@@ -558,7 +593,7 @@ void RanchDirector::HandleSnapshot(
   auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandRanchSnapshotNotify response {
-    .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(
+    .ranchIndex = ranchInstance._worldTracker.GetCharacterOid(
       clientContext.characterUid),
     .type = command.type,
   };

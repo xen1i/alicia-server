@@ -54,6 +54,7 @@ add_library(alicia-libserver STATIC
         src/libserver/network/command/proto/RaceMessageDefinitions.cpp
         src/libserver/network/command/proto/RanchMessageDefinitions.cpp
         src/libserver/registry/HorseRegistry.cpp
+        src/libserver/registry/OtpRegistry.cpp
         src/libserver/registry/RoomRegistry.cpp
         src/libserver/util/Locale.cpp
         src/libserver/util/Scheduler.cpp

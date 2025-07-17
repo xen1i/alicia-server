@@ -107,4 +107,9 @@ Settings& ServerInstance::GetSettings()
   return _settings;
 }
 
+OtpRegistry& ServerInstance::GetOtpRegistry()
+{
+  return _otpRegistry;
+}
+
 } // namespace server

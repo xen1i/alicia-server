@@ -19,6 +19,8 @@
 
 #include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
 
+#include <cassert>
+#include <algorithm>
 #include <format>
 
 namespace server::protocol
@@ -204,35 +206,51 @@ void RanchCommandEnterRanchOK::Write(
   const RanchCommandEnterRanchOK& command,
   SinkStream& stream)
 {
+  assert(command.rancherUid != 0
+    && command.rancherName.length() <= 16
+    && command.ranchName.size() <= 60);
+
   stream.Write(command.rancherUid)
-    .Write(command.unk0)
+    .Write(command.rancherName)
     .Write(command.ranchName);
 
-  stream.Write(static_cast<uint8_t>(command.horses.size()));
-  for (auto& horse : command.horses)
+  // Write the ranch horses
+  assert(command.horses.size() <= 10);
+  const auto ranchHorseCount = std::min(command.horses.size(), size_t{10});
+
+  stream.Write(static_cast<uint8_t>(ranchHorseCount));
+  for (std::size_t idx = 0; idx < ranchHorseCount; ++idx)
   {
-    stream.Write(horse);
+    stream.Write(command.horses[idx]);
   }
 
-  stream.Write(static_cast<uint8_t>(command.characters.size()));
-  for (auto& character : command.characters)
+  // Write the ranch characters
+  assert(command.characters.size() <= 20);
+  const auto ranchCharacterCount = std::min(command.characters.size(), size_t{20});
+
+  stream.Write(static_cast<uint8_t>(ranchCharacterCount));
+  for (std::size_t idx = 0; idx < ranchCharacterCount; ++idx)
   {
-    stream.Write(character);
+    stream.Write(command.characters[idx]);
   }
 
-  stream.Write(command.unk1)
+  stream.Write(command.member6)
     .Write(command.scramblingConstant)
     .Write(command.ranchProgress);
 
-  stream.Write(static_cast<uint8_t>(command.housing.size()));
-  for (auto& housing : command.housing)
+  // Write the ranch housing
+  assert(command.housing.size() <= 13);
+  const auto housingCount = std::min(command.housing.size(), size_t{13});
+
+  stream.Write(static_cast<uint8_t>(housingCount));
+  for (std::size_t idx = 0; idx < housingCount; ++idx)
   {
-    stream.Write(housing);
+    stream.Write(command.housing[idx]);
   }
 
   stream.Write(command.horseSlots)
-    .Write(command.unk6)
-    .Write(command.isLocked)
+    .Write(command.member11)
+    .Write(command.bitset)
     .Write(command.incubatorSlotOne)
     .Write(command.incubatorSlotTwo);
 
@@ -242,7 +260,7 @@ void RanchCommandEnterRanchOK::Write(
   }
 
   stream.Write(command.league)
-    .Write(command.unk12);
+    .Write(command.member17);
 }
 
 void RanchCommandEnterRanchOK::Read(

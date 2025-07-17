@@ -160,7 +160,7 @@ void RaceDirector::HandleEnterRoom(
 
   protocol::Racer joiningRacer;
 
-  for (const auto& [characterUid, characterOid] : roomInstance.worldTracker.GetCharacterEntities())
+  for (const auto& [characterUid, characterOid] : roomInstance.worldTracker.GetCharacters())
   {
     auto& protocolRacer = response.racers.emplace_back();
 

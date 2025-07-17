@@ -10,7 +10,9 @@
 #include "server/ranch/RanchDirector.hpp"
 #include "server/Settings.hpp"
 
-#include "libserver/data/DataDirector.hpp"
+#include <libserver/data/DataDirector.hpp>
+#include <libserver/registry/HorseRegistry.hpp>
+#include <libserver/registry/OtpRegistry.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -47,6 +49,10 @@ public:
   //! Returns reference to the settings.
   //! @returns Reference to the settings.
   Settings& GetSettings();
+
+  //! Returns reference to the OTP registry.
+  //! @returns Reference to the OTP registry.
+  OtpRegistry& GetOtpRegistry();
 
 private:
 
@@ -110,6 +116,9 @@ private:
   std::thread _raceDirectorThread;
   //! A race director.
   RaceDirector _raceDirector;
+
+  //! Registry of OTP codes.
+  OtpRegistry _otpRegistry;
 
   //! Settings.
   Settings _settings;

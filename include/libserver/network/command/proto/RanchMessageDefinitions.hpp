@@ -258,17 +258,15 @@ struct RanchCommandRanchEnter
 struct RanchCommandEnterRanchOK
 {
   uint32_t rancherUid{};
-  std::string unk0{};
+  std::string rancherName{};
   std::string ranchName{};
 
-  // Both lists' lengths are specified as bytes in the packet
-  // Indexes across both lists cant be shared.
-  // If the horse list takes indexes 0, 1 and 2
-  // the player list must use indexes 3, 4 and 5.
+  //! Horses on the ranch.
   std::vector<RanchHorse> horses{};
+  //! Characters on the ranch.
   std::vector<RanchCharacter> characters{};
 
-  uint64_t unk1{0};
+  uint64_t member6{0};
   uint32_t scramblingConstant{0};
   uint32_t ranchProgress{100000};
 
@@ -276,8 +274,12 @@ struct RanchCommandEnterRanchOK
   std::vector<Housing> housing{};
 
   uint8_t horseSlots{5};
-  uint32_t unk6{};
-  uint32_t isLocked{0}; // bitset
+  uint32_t member11{};
+
+  enum class Bitset : uint32_t
+  {
+    IsLocked = 1,
+  } bitset{0};
 
   uint32_t incubatorSlotOne{2};
   uint32_t incubatorSlotTwo{1};
@@ -285,8 +287,7 @@ struct RanchCommandEnterRanchOK
   std::array<Egg, 3> incubator;
 
   League league{};
-
-  uint32_t unk12{};
+  uint32_t member17{};
 
   static Command GetCommand()
   {
