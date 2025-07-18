@@ -26,21 +26,6 @@
 namespace server::protocol
 {
 
-namespace
-{
-
-void WriteMountFamilyTreeItem(
-  SinkStream& stream,
-  const MountFamilyTreeItem& mountFamilyTreeItem)
-{
-  stream.Write(mountFamilyTreeItem.unk0)
-    .Write(mountFamilyTreeItem.unk1)
-    .Write(mountFamilyTreeItem.unk2)
-    .Write(mountFamilyTreeItem.unk3);
-}
-
-} // namespace
-
 void RanchCommandUseItem::Write(
   const RanchCommandUseItem& command,
   SinkStream& stream)
@@ -163,7 +148,10 @@ void RanchCommandMountFamilyTreeOK::Write(
   stream.Write(static_cast<uint8_t>(command.items.size()));
   for (auto& item : command.items)
   {
-    WriteMountFamilyTreeItem(stream, item);
+    stream.Write(item.unk0)
+      .Write(item.unk1)
+      .Write(item.unk2)
+      .Write(item.unk3);
   }
 }
 
@@ -505,7 +493,7 @@ void RanchCommandUpdateBusyStateNotify::Write(
   const RanchCommandUpdateBusyStateNotify& command,
   SinkStream& stream)
 {
-  stream.Write(command.characterId)
+  stream.Write(command.characterUid)
     .Write(command.busyState);
 }
 
@@ -1652,13 +1640,14 @@ void RanchCommandRequestLeagueTeamList::Write(
   const RanchCommandRequestLeagueTeamList& command,
   SinkStream& stream)
 {
+  throw std::runtime_error("Not implemented");
 }
 
 void RanchCommandRequestLeagueTeamList::Read(
   RanchCommandRequestLeagueTeamList& command,
   SourceStream& stream)
 {
-  // Empty
+  // Empty.
 }
 
 void RanchCommandRequestLeagueTeamListOK::Write(
@@ -1688,7 +1677,13 @@ void RanchCommandRequestLeagueTeamListOK::Write(
       .Write(member.points)
       .Write(member.name);
   }
+}
 
+void RanchCommandRequestLeagueTeamListOK::Read(
+  RanchCommandRequestLeagueTeamListOK& command,
+  SourceStream& stream)
+{
+  throw std::runtime_error("Not implemented");
 }
 
 } // namespace server::protocol

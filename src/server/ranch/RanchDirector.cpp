@@ -186,8 +186,8 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       protocol::RanchCommandKickRanchNotify notify{
         .characterUid = command.characterUid};
 
-      const auto& clientContext = _clientContext[clientId];
-      for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid]._clients)
+      const auto& clientContext = _clients[clientId];
+      for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid].clients)
       {
         _commandServer.QueueCommand<decltype(notify)>(
           ranchClientId,
@@ -248,7 +248,7 @@ void RanchDirector::HandleClientDisconnected(ClientId clientId)
   spdlog::info("Client {} disconnected from the ranch", clientId);
 
   HandleRanchLeave(clientId);
-  _clientContext.erase(clientId);
+  _clients.erase(clientId);
 }
 
 void RanchDirector::BroadcastSetIntroductionNotify(
@@ -261,7 +261,7 @@ void RanchDirector::BroadcastSetIntroductionNotify(
     .characterUid = characterUid,
     .introduction = introduction};
 
-  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid]._clients)
+  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid].clients)
   {
     // Prevent broadcast to self.
     if (ranchClientId == clientContext.characterUid)
@@ -290,7 +290,7 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
     protocol::BuildProtocolHorse(notify.horse, horse);
   });
 
-  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid]._clients)
+  for (const ClientId& ranchClientId : _ranches[clientContext.rancherUid].clients)
   {
     // Prevent broadcast to self.
     if (ranchClientId == clientContext.characterUid)
@@ -318,7 +318,7 @@ Settings::RanchSettings& RanchDirector::GetSettings()
 RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(
   data::Uid characterUid)
 {
-  for (auto& [clientId, clientContext] : _clientContext)
+  for (auto& clientContext : _clients | std::views::values)
   {
     if (clientContext.characterUid == characterUid)
       return clientContext;
@@ -331,7 +331,7 @@ void RanchDirector::HandleRanchEnter(
   ClientId clientId,
   const protocol::RanchCommandRanchEnter& command)
 {
-  const auto [iter, created] = _clientContext.try_emplace(clientId);
+  const auto [iter, created] = _clients.try_emplace(clientId);
 
   auto& clientContext = iter->second;
   auto& ranchInstance = _ranches[command.rancherUid];
@@ -354,7 +354,7 @@ void RanchDirector::HandleRanchEnter(
     }
   }
 
-  if (ranchInstance._clients.size() > MaxRanchCharacterCount)
+  if (ranchInstance.clients.size() > MaxRanchCharacterCount)
   {
     canEnterRanch = false;
   }
@@ -410,13 +410,13 @@ void RanchDirector::HandleRanchEnter(
   });
 
   // Add the character to the ranch.
-  ranchInstance._worldTracker.AddCharacter(
+  ranchInstance.worldTracker.AddCharacter(
     command.characterUid);
 
   RanchCharacter enteringRanchPlayer;
 
   // Add the ranch horses.
-  for (auto [horseUid, horseOid] : ranchInstance._worldTracker.GetHorses())
+  for (auto [horseUid, horseOid] : ranchInstance.worldTracker.GetHorses())
   {
     auto& ranchHorse = response.horses.emplace_back();
     ranchHorse.horseOid = horseOid;
@@ -435,7 +435,7 @@ void RanchDirector::HandleRanchEnter(
   }
 
   // Add the ranch characters.
-  for (auto [characterUid, characterOid] : ranchInstance._worldTracker.GetCharacters())
+  for (auto [characterUid, characterOid] : ranchInstance.worldTracker.GetCharacters())
   {
     auto& protocolCharacter = response.characters.emplace_back();
     protocolCharacter.oid = characterOid;
@@ -558,7 +558,7 @@ void RanchDirector::HandleRanchEnter(
 
   // Iterate over all the clients connected
   // to the ranch and broadcast join notification.
-  for (ClientId ranchClient : ranchInstance._clients)
+  for (ClientId ranchClient : ranchInstance.clients)
   {
     _commandServer.QueueCommand<decltype(ranchJoinNotification)>(
       ranchClient,
@@ -567,21 +567,21 @@ void RanchDirector::HandleRanchEnter(
       });
   }
 
-  ranchInstance._clients.emplace(clientId);
+  ranchInstance.clients.emplace(clientId);
 }
 
 void RanchDirector::HandleRanchLeave(ClientId clientId)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandLeaveRanchNotify notify{
     .characterId = clientContext.characterUid};
 
-  ranchInstance._worldTracker.RemoveCharacter(notify.characterId);
-  ranchInstance._clients.erase(clientId);
+  ranchInstance.worldTracker.RemoveCharacter(notify.characterId);
+  ranchInstance.clients.erase(clientId);
 
-  for (const ClientId& ranchClientId : ranchInstance._clients)
+  for (const ClientId& ranchClientId : ranchInstance.clients)
   {
     _commandServer.QueueCommand<decltype(notify)>(
       ranchClientId,
@@ -596,11 +596,11 @@ void RanchDirector::HandleSnapshot(
   ClientId clientId,
   const protocol::RanchCommandRanchSnapshot& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandRanchSnapshotNotify response {
-    .ranchIndex = ranchInstance._worldTracker.GetCharacterOid(
+    .ranchIndex = ranchInstance.worldTracker.GetCharacterOid(
       clientContext.characterUid),
     .type = command.type,
   };
@@ -619,7 +619,7 @@ void RanchDirector::HandleSnapshot(
     }
   }
 
-  for (const auto& ranchClient : ranchInstance._clients)
+  for (const auto& ranchClient : ranchInstance.clients)
   {
     // Do not broadcast to the client that sent the snapshot.
     if (ranchClient == clientId)
@@ -656,7 +656,7 @@ void RanchDirector::HandleRanchStuff(
   ClientId clientId,
   const protocol::RanchCommandRanchStuff& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -689,16 +689,16 @@ void RanchDirector::HandleUpdateBusyState(
   ClientId clientId,
   const protocol::RanchCommandUpdateBusyState& command)
 {
-  auto& clientContext = _clientContext[clientId];
+  auto& clientContext = _clients[clientId];
   auto& ranchInstance = _ranches[clientContext.rancherUid];
 
   protocol::RanchCommandUpdateBusyStateNotify response {
-    .characterId = clientContext.characterUid,
+    .characterUid = clientContext.characterUid,
     .busyState = command.busyState};
 
   clientContext.busyState = command.busyState;
 
-  for (auto ranchClientId : ranchInstance._clients)
+  for (auto ranchClientId : ranchInstance.clients)
   {
     _commandServer.QueueCommand<decltype(response)>(
       ranchClientId,
@@ -756,7 +756,7 @@ void RanchDirector::HandleEnterBreedingMarket(
   ClientId clientId,
   const protocol::RanchCommandEnterBreedingMarket& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -845,7 +845,7 @@ void RanchDirector::HandleUpdateMountNickname(
   ClientId clientId,
   const protocol::RanchCommandUpdateMountNickname& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -950,7 +950,7 @@ void RanchDirector::HandleRequestStorage(
   ClientId clientId,
   const protocol::RanchCommandRequestStorage& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -991,7 +991,7 @@ void RanchDirector::HandleGetItemFromStorage(
   ClientId clientId,
   const protocol::RanchCommandGetItemFromStorage& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1097,7 +1097,7 @@ void RanchDirector::HandleChat(
   ClientId clientId,
   const protocol::RanchCommandChat& chat)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1125,7 +1125,7 @@ void RanchDirector::HandleChat(
     response.author = character.name();
   });
 
-  for (const auto ranchClientId : ranchInstance._clients)
+  for (const auto ranchClientId : ranchInstance.clients)
   {
     SendChat(ranchClientId, response);
   }
@@ -1135,7 +1135,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
   ClientId clientId,
   const std::string& message)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1265,9 +1265,9 @@ std::vector<std::string> RanchDirector::HandleCommand(
     std::vector<std::string> response;
     response.emplace_back() = std::format(
       "Players online ({}):",
-      _clientContext.size());
+      _clients.size());
 
-    for (const auto& clientContext : _clientContext)
+    for (const auto& clientContext : _clients)
     {
       const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
         clientContext.second.characterUid);
@@ -1439,7 +1439,7 @@ void RanchDirector::HandleWearEquipment(
   ClientId clientId,
   const protocol::RanchCommandWearEquipment& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1507,7 +1507,7 @@ void RanchDirector::HandleRemoveEquipment(
   ClientId clientId,
   const protocol::RanchCommandRemoveEquipment& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1546,7 +1546,7 @@ void RanchDirector::HandleCreateGuild(
   ClientId clientId,
   const protocol::RanchCommandCreateGuild& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1601,7 +1601,7 @@ void RanchDirector::HandleRequestGuildInfo(
   ClientId clientId,
   const protocol::RanchCommandRequestGuildInfo& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1649,7 +1649,7 @@ void RanchDirector::HandleRequestPetBirth(
 
 void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1680,7 +1680,7 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 
   // Broadcast to all the ranch clients.
   const auto& ranchInstance = _ranches[clientContext.rancherUid];
-  for (ClientId ranchClientId : ranchInstance._clients)
+  for (ClientId ranchClientId : ranchInstance.clients)
   {
     // Prevent broadcasting to self.
     if (ranchClientId == clientId)
@@ -1736,7 +1736,7 @@ void RanchDirector::HandleHousingBuild(
   ClientId clientId,
   const protocol::RanchCommandHousingBuild& command)
 {
-  const auto& clientContext = _clientContext[clientId];
+  const auto& clientContext = _clients[clientId];
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
@@ -1779,7 +1779,7 @@ void RanchDirector::HandleHousingBuild(
 
   // Broadcast to all the ranch clients.
   const auto& ranchInstance = _ranches[clientContext.rancherUid];
-  for (ClientId ranchClientId : ranchInstance._clients)
+  for (ClientId ranchClientId : ranchInstance.clients)
   {
     // Prevent broadcasting to self.
     if (ranchClientId == clientId)
