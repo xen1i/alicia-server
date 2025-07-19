@@ -89,11 +89,10 @@ void RaceDirector::Initialize()
 {
   spdlog::debug(
     "Race server listening on {}:{}",
-    GetSettings().address.to_string(),
-    GetSettings().port);
+    GetConfig().listen.address.to_string(),
+    GetConfig().listen.port);
 
-  // Host the server
-  _commandServer.BeginHost(GetSettings().address, GetSettings().port);
+  _commandServer.BeginHost(GetConfig().listen.address, GetConfig().listen.port);
 }
 
 void RaceDirector::Terminate()
@@ -118,9 +117,9 @@ ServerInstance& RaceDirector::GetServerInstance()
   return _serverInstance;
 }
 
-Settings::RaceSettings& RaceDirector::GetSettings()
+Config::Race& RaceDirector::GetConfig()
 {
-  return GetServerInstance().GetSettings()._raceSettings;
+  return GetServerInstance().GetSettings().race;
 }
 
 void RaceDirector::HandleEnterRoom(
@@ -273,8 +272,8 @@ void RaceDirector::HandleStartRace(
         .unk6 = 1,
         .unk7 = 3,
       }},
-    .ip = GetSettings().address.to_uint(),
-    .port = htons(GetSettings().port),
+    .ip = GetConfig().listen.address.to_uint(),
+    .port = htons( GetConfig().listen.port),
   };
 
   // TODO: Send to all clients in the room

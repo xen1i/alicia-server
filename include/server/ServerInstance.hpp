@@ -5,10 +5,10 @@
 #ifndef INSTANCE_HPP
 #define INSTANCE_HPP
 
+#include "server/Config.hpp"
 #include "server/lobby/LobbyDirector.hpp"
 #include "server/race/RaceDirector.hpp"
 #include "server/ranch/RanchDirector.hpp"
-#include "server/Settings.hpp"
 
 #include <libserver/data/DataDirector.hpp>
 #include <libserver/registry/HorseRegistry.hpp>
@@ -48,7 +48,7 @@ public:
 
   //! Returns reference to the settings.
   //! @returns Reference to the settings.
-  Settings& GetSettings();
+  Config& GetSettings();
 
   //! Returns reference to the OTP registry.
   //! @returns Reference to the OTP registry.
@@ -121,7 +121,7 @@ private:
   OtpRegistry _otpRegistry;
 
   //! Settings.
-  Settings _settings;
+  Config _config;
 };
 
 } // namespace server

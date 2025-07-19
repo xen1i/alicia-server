@@ -158,6 +158,12 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       HandleRequestGuildInfo(clientId, command);
     });
 
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestNpcDressList>(
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleRequestNpcDressList(clientId, message);
+    });
+
   _commandServer.RegisterCommandHandler<protocol::RanchCommandHousingBuild>(
     [this](ClientId clientId, auto& command)
     {
@@ -216,17 +222,10 @@ void RanchDirector::Initialize()
 {
   spdlog::debug(
     "Ranch server listening on {}:{}",
-    GetSettings().address.to_string(),
-    GetSettings().port);
+    GetConfig().listen.address.to_string(),
+    GetConfig().listen.port);
 
-  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestNpcDressList>(
-    [this](ClientId clientId, const auto& message)
-    {
-      HandleRequestNpcDressList(clientId, message);
-    });
-
-  // Host the server.
-  _commandServer.BeginHost(GetSettings().address, GetSettings().port);
+  _commandServer.BeginHost(GetConfig().listen.address, GetConfig().listen.port);
 }
 
 void RanchDirector::Terminate()
@@ -310,9 +309,9 @@ ServerInstance& RanchDirector::GetServerInstance()
   return _serverInstance;
 }
 
-Settings::RanchSettings& RanchDirector::GetSettings()
+Config::Ranch& RanchDirector::GetConfig()
 {
-  return GetServerInstance().GetSettings()._ranchSettings;
+  return GetServerInstance().GetSettings().ranch;
 }
 
 RanchDirector::ClientContext& RanchDirector::GetClientContextByCharacterUid(
@@ -423,10 +422,8 @@ void RanchDirector::HandleRanchEnter(
 
     auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(horseUid);
     if (not horseRecord)
-    {
       throw std::runtime_error(
         std::format("Ranch horse [{}] not available", horseUid));
-    }
 
     horseRecord->Immutable([&ranchHorse](const data::Horse& horse)
     {
@@ -442,10 +439,8 @@ void RanchDirector::HandleRanchEnter(
 
     auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(characterUid);
     if (not characterRecord)
-    {
       throw std::runtime_error(
         std::format("Ranch character [{}] not available", characterUid));
-    }
 
     characterRecord.Immutable([this, &protocolCharacter](const data::Character& character)
     {

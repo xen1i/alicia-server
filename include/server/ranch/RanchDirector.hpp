@@ -20,7 +20,7 @@
 #ifndef RANCHDIRECTOR_HPP
 #define RANCHDIRECTOR_HPP
 
-#include "server/Settings.hpp"
+#include "server/Config.hpp"
 #include "server/tracker/WorldTracker.hpp"
 
 #include "libserver/network/command/CommandServer.hpp"
@@ -59,7 +59,7 @@ public:
     data::Uid horseUid);
 
   ServerInstance& GetServerInstance();
-  Settings::RanchSettings& GetSettings();
+  Config::Ranch& GetConfig();
 
 private:
   struct ClientContext

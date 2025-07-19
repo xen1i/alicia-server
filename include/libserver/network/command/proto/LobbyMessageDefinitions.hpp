@@ -32,7 +32,6 @@
 namespace server::protocol
 {
 
-//! Serverbound login command.
 struct LobbyCommandLogin
 {
   uint16_t constant0{0x00};
@@ -62,7 +61,6 @@ struct LobbyCommandLogin
     SourceStream& stream);
 };
 
-//! Clientbound login OK command.
 struct LobbyCommandLoginOK
 {
   // filetime
@@ -125,8 +123,8 @@ struct LobbyCommandLoginOK
   // 256 characters max
   std::string val6{};
 
-  uint32_t address{};
-  uint16_t port{};
+  uint32_t ranchAddress{};
+  uint16_t ranchport{};
   uint32_t scramblingConstant{};
 
   Character character{};
@@ -145,9 +143,13 @@ struct LobbyCommandLoginOK
       SourceStream& stream);
   } systemContent{};
 
+  enum AvatarBitset : uint32_t
+  {
+    HasPlayerBefore = 2,
+  };
   // std::bitset
   //! Bit 2: Has played before
-  uint32_t bitfield{};
+  AvatarBitset bitfield{};
 
   struct Struct1
   {
@@ -1020,8 +1022,8 @@ struct LobbyCommandEnterRanchOK
 {
   uint32_t rancherUid{};
   uint32_t otp{};
-  uint32_t ip{};
-  uint16_t port{};
+  uint32_t ranchAddress{};
+  uint16_t ranchPort{};
 
   static Command GetCommand()
   {

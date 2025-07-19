@@ -162,8 +162,8 @@ void LobbyCommandLoginOK::Write(
 
   stream.Write(command.val6);
 
-  stream.Write(command.address)
-    .Write(command.port)
+  stream.Write(command.ranchAddress)
+    .Write(command.ranchport)
     .Write(command.scramblingConstant);
 
   stream.Write(command.character)
@@ -743,8 +743,8 @@ void LobbyCommandEnterRanchOK::Write(
 {
   stream.Write(command.rancherUid)
     .Write(command.otp)
-    .Write(command.ip)
-    .Write(command.port);
+    .Write(command.ranchAddress)
+    .Write(command.ranchPort);
 }
 
 void LobbyCommandEnterRanchOK::Read(

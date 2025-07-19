@@ -74,7 +74,7 @@ target_link_libraries(alicia-libserver PUBLIC
 add_executable(alicia-server
         src/server/main.cpp
         src/server/ServerInstance.cpp
-        src/server/Settings.cpp
+        src/server/Config.cpp
         src/server/lobby/LobbyDirector.cpp
         src/server/lobby/LoginHandler.cpp
         src/server/race/RaceDirector.cpp
