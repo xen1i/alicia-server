@@ -743,7 +743,7 @@ void LobbyCommandEnterRanchOK::Write(
 {
   stream.Write(command.rancherUid)
     .Write(command.otp)
-    .Write(command.ranchAddress)
+    .Write(htonl(command.ranchAddress))
     .Write(command.ranchPort);
 }
 

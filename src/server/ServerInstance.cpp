@@ -7,8 +7,10 @@
 namespace server
 {
 
-ServerInstance::ServerInstance()
-  : _dataDirector("./data")
+ServerInstance::ServerInstance(
+  const std::filesystem::path& resourceDirectory)
+  : _resourceDirectory(resourceDirectory)
+  , _dataDirector(resourceDirectory / "data")
   , _lobbyDirector(*this)
   , _ranchDirector(*this)
   , _raceDirector(*this)
@@ -37,7 +39,7 @@ void ServerInstance::Initialize()
 {
   _shouldRun.store(true, std::memory_order::release);
 
-  _config.LoadFromFile("config/server/config.yaml");
+  _config.LoadFromFile(_resourceDirectory / "config/server/config.yaml");
   _config.LoadFromEnvironment();
 
   // Initialize the directors and tick them on their own threads.

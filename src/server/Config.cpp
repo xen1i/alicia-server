@@ -211,7 +211,7 @@ void Config::LoadFromFile(const std::filesystem::path& filePath)
     {
       const auto dataYaml = serverYaml["data"];
 
-      const std::string dataSourceName = dataYaml["source"].as<std::string>();
+      const auto dataSourceName = dataYaml["source"].as<std::string>();
       if (dataSourceName == "file")
       {
         const auto fileYaml = dataYaml["file"];

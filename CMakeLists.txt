@@ -36,7 +36,8 @@ if (${MSVC})
     target_compile_options(platform-properties INTERFACE
             /utf-8)
 else()
-
+    target_link_libraries(platform-properties INTERFACE
+            iconv)
 endif()
 
 # alicia-libserver target
@@ -106,6 +107,4 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/resources
         ${CMAKE_CURRENT_BINARY_DIR})
-
-install(TARGETS alicia-server DESTINATION dist)
-install(DIRECTORY resources DESTINATION dist)  
+install(TARGETS alicia-server)

@@ -1,30 +1,55 @@
 # syntax=docker/dockerfile:1
-ARG BUILDER_REPO_PATH=/builder/alicia-server
+FROM alpine:3 AS build
 
-FROM alpine:3 AS builder
-RUN apk add --no-cache boost-dev build-base cmake git gnu-libiconv
-RUN ls -a /usr/lib
+# Setup the build environment
+RUN apk add --no-cache cmake make git build-base boost-dev
 
-ARG BUILDER_REPO_PATH
-ARG BUILD_TYPE=RelWithDebInfo
+ARG SERVER_BUILD_TYPE=RelWithDebInfo
+ARG LIBICONV_VERSION=1.18
 
-WORKDIR ${BUILDER_REPO_PATH}
+WORKDIR /build/libiconv
+# Build GNU libiconv
+
+# Download and extract the source
+RUN wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-${LIBICONV_VERSION}.tar.gz && \
+    tar -xzf libiconv-${LIBICONV_VERSION}.tar.gz
+
+# Build the binary and install it
+RUN cd libiconv-${LIBICONV_VERSION} && \
+    ./configure --prefix=/usr/local && \
+    make && make install
+
+# Build the server
+WORKDIR /build/alicia-server
+
+# Add linker search path to /usr/local as that is where iconv is installed at.
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# Prepare the source
 COPY . .
 RUN git submodule update --init --recursive
-
-RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_TESTS=True . -B ./build
+RUN cmake -DCMAKE_BUILD_TYPE=${SERVER_BUILD_TYPE} -DBUILD_TESTS=False . -B ./build
 RUN cmake --build ./build --parallel
-RUN cmake --install ./build --prefix .
+
+# Install the binary
+RUN cmake --install ./build --prefix /usr/local
+
+# Copy the resources
+RUN mkdir /var/lib/alicia-server/
+RUN cp -r ./resources/* /var/lib/alicia-server/
 
 FROM alpine:3
-ARG BUILDER_REPO_PATH
 
 LABEL author="Serkan Sahin" maintainer="dev@storyofalicia.com"
 LABEL org.opencontainers.image.source=https://github.com/Story-Of-Alicia/alicia-server
 LABEL org.opencontainers.image.description="Dedicated server implementation for the Alicia game series"
 
-RUN apk add --no-cache libstdc++ gnu-libiconv
-WORKDIR /opt/alicia-server
-COPY --from=builder ${BUILDER_REPO_PATH}/dist .
+# Setup the runtime environent
+RUN apk add --no-cache libstdc++
 
-ENTRYPOINT ["/opt/alicia-server/alicia-server"]
+WORKDIR /opt/alicia-server
+
+COPY --from=build /usr/local /usr/local
+COPY --from=build /var/lib/alicia-server/ /var/lib/alicia-server/
+
+ENTRYPOINT ["/usr/local/bin/alicia-server", "/var/lib/alicia-server"]

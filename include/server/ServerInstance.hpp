@@ -22,7 +22,9 @@ namespace server
 class ServerInstance final
 {
 public:
-  ServerInstance();
+  //! Constructor.
+  //! @param resourceDirectory Directory for server resources.
+  explicit ServerInstance(const std::filesystem::path& resourceDirectory);
   ~ServerInstance();
 
   //! Initializes the server instance.
@@ -97,6 +99,11 @@ private:
   //! Atomic flag indicating whether the server should run.
   std::atomic_bool _shouldRun{false};
 
+  //! A path to the resource directory.
+  std::filesystem::path _resourceDirectory;
+  //! A config.
+  Config _config;
+
   //! A thread of the data director.
   std::thread _dataDirectorThread;
   //! A data director.
@@ -119,9 +126,6 @@ private:
 
   //! Registry of OTP codes.
   OtpRegistry _otpRegistry;
-
-  //! Settings.
-  Config _config;
 };
 
 } // namespace server

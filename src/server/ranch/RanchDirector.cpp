@@ -330,16 +330,17 @@ void RanchDirector::HandleRanchEnter(
   ClientId clientId,
   const protocol::RanchCommandRanchEnter& command)
 {
-  const auto [iter, created] = _clients.try_emplace(clientId);
+  const auto [clientIter, clientCreated] = _clients.try_emplace(clientId);
+  auto& clientContext = clientIter->second;
 
-  auto& clientContext = iter->second;
-  auto& ranchInstance = _ranches[command.rancherUid];
+  const auto [ranchIter, ranchCreated] = _ranches.try_emplace(command.rancherUid);
+  auto& ranchInstance = ranchIter->second;
 
   bool canEnterRanch = true;
 
   // This is the first message received by the server when user is connecting to the ranch server,
   // handle a scenario where they are just connecting from the lobby and authorize their one-time-password.
-  if (created)
+  if (clientCreated)
   {
     if (GetServerInstance().GetOtpRegistry().AuthorizeCode(
       command.characterUid, command.otp))
@@ -372,7 +373,6 @@ void RanchDirector::HandleRanchEnter(
 
   protocol::RanchCommandEnterRanchOK response{
     .rancherUid = command.rancherUid,
-    .rancherName = "unk0",
     .league = {
       .type = League::Type::Platinum,
       .rankingPercentile = 50}};
@@ -383,28 +383,36 @@ void RanchDirector::HandleRanchEnter(
     throw std::runtime_error(
       std::format("Rancher's character [{}] not available", command.rancherUid));
 
-  // Fill the ranch name and add ranch's housing to the response.
-  rancherRecord->Immutable([this, &response](const data::Character& character)
+  rancherRecord->Immutable(
+    [this, &response, ranchInstance, ranchCreated](
+      const data::Character& character) mutable
   {
     const auto& rancherName = character.name();
     const bool endsWithPlural = rancherName.ends_with("s") || rancherName.ends_with("S");
     const std::string possessiveSuffix = endsWithPlural ? "'" : "'s";
 
+    response.rancherName = rancherName;
     response.ranchName = std::format("{}{} ranch", rancherName, possessiveSuffix);
 
-    const auto housingRecords = GetServerInstance().GetDataDirector().GetHousing().Get(character.housing());
-    if (not housingRecords)
-      return;
-
-    for (const auto& housingRecord : *housingRecords)
+    // If the ranch was just created add the horses to the world tracker.
+    if (ranchCreated)
     {
-      auto& protocolHousing = response.housing.emplace_back();
-      housingRecord.Immutable([&protocolHousing](const data::Housing& housing)
+      for (const auto& horseUid : character.horses())
       {
-        protocolHousing.uid = housing.uid();
-        protocolHousing.tid = housing.housingId();
-        protocolHousing.durability = 1;
-      });
+        ranchInstance.worldTracker.AddHorse(horseUid);
+      }
+    }
+
+    // Fill the housing info.
+    const auto housingRecords = GetServerInstance().GetDataDirector().GetHousing().Get(
+      character.housing());
+    if (housingRecords)
+    {
+      protocol::BuildProtocolHousing(response.housing, *housingRecords);
+    }
+    else
+    {
+      spdlog::warn("Housing records not available for rancher {} ({})", rancherName, character.uid());
     }
   });
 
@@ -412,7 +420,8 @@ void RanchDirector::HandleRanchEnter(
   ranchInstance.worldTracker.AddCharacter(
     command.characterUid);
 
-  RanchCharacter enteringRanchPlayer;
+  // The character that is currently entering the ranch.
+  RanchCharacter characterEnteringRanch;
 
   // Add the ranch horses.
   for (auto [horseUid, horseOid] : ranchInstance.worldTracker.GetHorses())
@@ -465,7 +474,8 @@ void RanchDirector::HandleRanchEnter(
       {
         throw std::runtime_error(
           std::format(
-            "Ranch character's [{}] equipment is not available",
+            "Ranch character's [{} ({})] equipment is not available",
+            character.name(),
             character.uid()));
       }
 
@@ -478,7 +488,8 @@ void RanchDirector::HandleRanchEnter(
       {
         throw std::runtime_error(
           std::format(
-            "Ranch character's [{}] mount [{}] is not available",
+            "Ranch character's [{} ({})] mount [{}] is not available",
+            character.name(),
             character.uid(),
             character.mountUid()));
       }
@@ -500,7 +511,8 @@ void RanchDirector::HandleRanchEnter(
         {
           throw std::runtime_error(
             std::format(
-              "Ranch character's [{}] guild [{}] is not available",
+              "Ranch character's [{} ({})] guild [{}] is not available",
+              character.name(),
               character.uid(),
               character.guildUid()));
         }
@@ -520,7 +532,8 @@ void RanchDirector::HandleRanchEnter(
         {
           throw std::runtime_error(
             std::format(
-              "Ranch character's [{}] pet [{}] is not available",
+              "Ranch character's [{} ({})] pet [{}] is not available",
+              character.name(),
               character.uid(),
               character.petUid()));
         }
@@ -534,7 +547,7 @@ void RanchDirector::HandleRanchEnter(
 
     if (command.characterUid == characterUid)
     {
-      enteringRanchPlayer = protocolCharacter;
+      characterEnteringRanch = protocolCharacter;
     }
   }
 
@@ -549,7 +562,7 @@ void RanchDirector::HandleRanchEnter(
 
   // Notify to all other players of the entering player.
   const protocol::RanchCommandEnterRanchNotify ranchJoinNotification{
-    .character = enteringRanchPlayer};
+    .character = characterEnteringRanch};
 
   // Iterate over all the clients connected
   // to the ranch and broadcast join notification.

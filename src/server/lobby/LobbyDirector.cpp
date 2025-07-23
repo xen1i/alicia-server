@@ -588,8 +588,7 @@ void LobbyDirector::QueueEnterRanchOK(
   protocol::LobbyCommandEnterRanchOK response{
     .rancherUid = rancherUid,
     .otp = GetServerInstance().GetOtpRegistry().GrantCode(clientContext.characterUid),
-    .ranchAddress = static_cast<uint32_t>(htonl(
-      GetConfig().advertisement.ranch.address.to_uint())),
+    .ranchAddress = GetConfig().advertisement.ranch.address.to_uint(),
     .ranchPort = GetConfig().advertisement.ranch.port};
 
   _commandServer.QueueCommand<decltype(response)>(

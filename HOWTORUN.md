@@ -11,13 +11,11 @@ services:
    ports:
      - "10030-10033:10030-10033"
    volumes:
-     - "./config:/opt/alicia-server/config"
-     - "./data:/opt/alicia-server/data"
-     - "./logs:/opt/alicia-server/logs"
+     - "./server:/var/lib/alicia-server"
 ```
 
 #### Server configuration
-By default the game uses ports `10030`-`10033`. The default configuration of the server should be sufficient for development purposes. If not, contact us. Todo tutorial.
+By default, the game uses ports `10030`-`10033`. The default configuration of the server should be sufficient for development purposes. If not, contact us. Todo tutorial.
 
 ### Registering users (DATASOURCE FOR PROTOTYPE ONLY)
 To add users to your server, open the data directory and create a **JSON** file for each user you want to register. Name of the file should be the username they'll use to log in. 
