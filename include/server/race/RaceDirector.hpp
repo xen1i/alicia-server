@@ -65,6 +65,8 @@ private:
     ClientId clientId,
     const protocol::RaceCommandChangeRoomOptions& command);
 
+  void HandleLeaveRoom(
+    ClientId clientId);
   //!
   void HandleStartRace(
     ClientId clientId,

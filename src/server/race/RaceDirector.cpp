@@ -45,6 +45,12 @@ RaceDirector::RaceDirector(ServerInstance& serverInstance)
       HandleChangeRoomOptions(clientId, message);
     });
 
+  _commandServer.RegisterCommandHandler<protocol::RaceCommandLeaveRoom>(
+    [this](ClientId clientId, const auto& message)
+    {
+      HandleLeaveRoom(clientId);
+    });
+
   _commandServer.RegisterCommandHandler<protocol::RaceCommandStartRace>(
     [this](ClientId clientId, const auto& message)
     {
@@ -110,6 +116,8 @@ void RaceDirector::HandleClientConnected(ClientId clientId)
 void RaceDirector::HandleClientDisconnected(ClientId clientId)
 {
   spdlog::info("Client {} disconnected from the race", clientId);
+  HandleLeaveRoom(clientId);
+  _clientContexts.erase(clientId);
 }
 
 ServerInstance& RaceDirector::GetServerInstance()
@@ -247,6 +255,31 @@ void RaceDirector::HandleChangeRoomOptions(
     });
 }
 
+void RaceDirector::HandleLeaveRoom(ClientId clientId)
+{
+  const auto& clientContext = _clientContexts[clientId];
+  if (clientContext.roomUid == data::InvalidUid)
+  {
+    spdlog::warn("Client {} is not in a room", clientId);
+    return;
+  }
+  
+  auto& roomInstance = _roomInstances[clientContext.roomUid];
+  roomInstance.clients.erase(
+    std::remove(roomInstance.clients.begin(), roomInstance.clients.end(), clientId),
+    roomInstance.clients.end());
+    
+  protocol::RaceCommandLeaveRoomOK response{};
+  
+  // todo: implement the deletion of rooms
+  
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    [response]()
+    {
+      return response;
+    });
+}
 void RaceDirector::HandleStartRace(
   ClientId clientId,
   const protocol::RaceCommandStartRace& command)
