@@ -170,6 +170,12 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       HandleHousingBuild(clientId, command);
     });
 
+  _commandServer.RegisterCommandHandler<protocol::RanchCommandHousingRepair>(
+    [this](ClientId clientId, auto& command)
+    {
+      HandleHousingRepair(clientId, command);
+    });
+
   _commandServer.RegisterCommandHandler<protocol::RanchCommandMissionEvent>(
     [this](ClientId clientId, auto& command)
     {
@@ -1801,6 +1807,26 @@ void RanchDirector::HandleHousingBuild(
       });
   }
 }
+
+void RanchDirector::HandleHousingRepair(
+  ClientId clientId,
+  const protocol::RanchCommandHousingRepair& command)
+{
+  const auto& clientContext = _clients[clientId];
+  auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
+    clientContext.characterUid);
+  // todo catalogue housing uids and handle transaction
+  protocol::RanchCommandHousingRepairOK response{
+    .housingUid = command.housingUid,
+    .member2 = 1,
+  };
+  _commandServer.QueueCommand<decltype(response)>(
+    clientId,
+    [response]()
+    {
+      return response;
+    });
+};
 
 void RanchDirector::HandleOpCmd(
   ClientId clientId,
