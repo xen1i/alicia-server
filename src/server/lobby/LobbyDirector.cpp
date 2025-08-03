@@ -300,7 +300,6 @@ void LobbyDirector::UpdateVisitPreference(data::Uid characterUid, data::Uid visi
   clientContextIter->second.rancherVisitPreference = visitingCharacterUid;
 }
 
-
 void LobbyDirector::HandleEnterChannel(
   ClientId clientId,
   const protocol::LobbyCommandEnterChannel& command)
@@ -593,10 +592,21 @@ void LobbyDirector::HandleEnterRanch(
   const protocol::LobbyCommandEnterRanch& command)
 {
   const auto& clientContext = _clientContext[clientId];
-  const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
-    command.characterUid);
+  const auto rancherRecord = GetServerInstance().GetDataDirector().GetCharacter(
+    command.rancherUid);
 
-  if (not characterRecord)
+  bool isRanchLocked = true;
+  if (rancherRecord)
+  {
+    rancherRecord.Immutable([&isRanchLocked](const data::Character& rancher)
+    {
+      isRanchLocked = rancher.isRanchLocked();
+    });
+  }
+
+  const bool isEnteringOwnRanch = command.rancherUid == clientContext.characterUid;
+
+  if (isRanchLocked && not isEnteringOwnRanch)
   {
     protocol::LobbyCommandEnterRanchCancel response{};
 
@@ -607,7 +617,7 @@ void LobbyDirector::HandleEnterRanch(
       });
   }
 
-  QueueEnterRanchOK(clientId, command.characterUid);
+  QueueEnterRanchOK(clientId, command.rancherUid);
 }
 
 void LobbyDirector::QueueEnterRanchOK(

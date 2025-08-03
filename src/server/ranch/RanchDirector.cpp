@@ -370,16 +370,8 @@ void RanchDirector::HandleEnterRanch(
     throw std::runtime_error(
       std::format("Rancher's character [{}] not available", command.rancherUid));
 
-  if (not clientContext.isAuthorized)
-  {
-    clientContext.isAuthorized = GetServerInstance().GetOtpRegistry().AuthorizeCode(
-      command.characterUid, command.otp);
-
-    if (clientContext.isAuthorized)
-    {
-      clientContext.characterUid = command.characterUid;
-    }
-  }
+  clientContext.isAuthorized = GetServerInstance().GetOtpRegistry().AuthorizeCode(
+    command.characterUid, command.otp);
 
   bool isRanchLocked = false;
   if (command.rancherUid != command.characterUid)
@@ -410,6 +402,8 @@ void RanchDirector::HandleEnterRanch(
     return;
   }
 
+  if (clientCreated)
+    clientContext.characterUid = command.characterUid;
   clientContext.visitingRancherUid = command.rancherUid;
 
   protocol::AcCmdCREnterRanchOK response{
