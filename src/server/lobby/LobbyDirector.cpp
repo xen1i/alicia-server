@@ -172,6 +172,7 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
     {
       // this is just for prototype, it can suck
       auto& clientContext = _clientContext[clientId];
+      const auto requestingCharacterUid = clientContext.characterUid;
 
       data::Uid rancherUid = data::InvalidUid;
 
@@ -189,22 +190,26 @@ LobbyDirector::LobbyDirector(ServerInstance& serverInstance)
 
         auto& characters = GetServerInstance().GetDataDirector().GetCharacters();
         const auto& characterKeys = characters.GetKeys();
-        for (const auto& uid : characterKeys)
+
+        for (const auto& randomRancherUid : characterKeys)
         {
-          const auto character = characters.Get(uid);
-          character->Immutable([&availableRanches, uid](const data::Character& character)
+          const auto character = characters.Get(randomRancherUid);
+          character->Immutable([&availableRanches, requestingCharacterUid](const data::Character& character)
           {
-            // Only consider ranches that are unlocked,
-            // or the ranch the requesting character is the owner of.
-            if (character.isRanchLocked() && character.uid() != uid)
+            // Only consider ranches that are unlocked and that
+            // do not belong to the character that requested the random ranch.
+            if (character.isRanchLocked() || character.uid() == requestingCharacterUid)
               return;
 
             availableRanches.emplace_back(character.uid());
           });
         }
 
-        // There is at least the ranch the requesting character is the owner of.
-        assert(!availableRanches.empty());
+        // There must be at least the ranch the requesting character is the owner of.
+        if (availableRanches.empty())
+        {
+          availableRanches.emplace_back(clientContext.characterUid);
+        }
 
         // Pick a random character from the available list to join the ranch of.
         std::uniform_int_distribution<size_t> uidDistribution(0, availableRanches.size() - 1);
@@ -602,7 +607,7 @@ void LobbyDirector::HandleEnterRanch(
       });
   }
 
-  QueueEnterRanchOK(clientId, clientContext.characterUid);
+  QueueEnterRanchOK(clientId, command.characterUid);
 }
 
 void LobbyDirector::QueueEnterRanchOK(
