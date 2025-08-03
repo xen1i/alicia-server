@@ -158,7 +158,7 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       HandleRequestGuildInfo(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<protocol::RanchCommandUpdatePet>(
+  _commandServer.RegisterCommandHandler<protocol::AcCmdCRUpdatePet>(
     [this](ClientId clientId, auto& command)
     {
       HandleUpdatePet(clientId, command);
@@ -295,9 +295,9 @@ void RanchDirector::BroadcastSetIntroductionNotify(
 
 void RanchDirector::BroadcastUpdateMountInfoNotify(
   const data::Uid characterUid,
+  const data::Uid rancherUid,
   const data::Uid horseUid)
 {
-  const auto& clientContext = GetClientContextByCharacterUid(characterUid);
   const auto horseRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
     horseUid);
 
@@ -307,10 +307,12 @@ void RanchDirector::BroadcastUpdateMountInfoNotify(
     protocol::BuildProtocolHorse(notify.horse, horse);
   });
 
-  for (const ClientId& ranchClientId : _ranches[clientContext.visitingRancherUid].clients)
+  for (const ClientId& ranchClientId : _ranches[rancherUid].clients)
   {
+    const auto& ranchClientContext = GetAuthorizedClientContext(ranchClientId);
+
     // Prevent broadcast to self.
-    if (ranchClientId == clientContext.characterUid)
+    if (ranchClientContext.characterUid == characterUid)
       continue;
 
     _commandServer.QueueCommand<decltype(notify)>(
@@ -1369,7 +1371,7 @@ void RanchDirector::HandleUpdateMountNickname(
       return response;
     });
 
-  BroadcastUpdateMountInfoNotify(clientContext.characterUid, response.horseUid);
+  BroadcastUpdateMountInfoNotify(clientContext.characterUid, clientContext.visitingRancherUid, response.horseUid);
 }
 
 void RanchDirector::HandleRequestStorage(
@@ -1721,29 +1723,32 @@ void RanchDirector::HandleRequestGuildInfo(
 
 void RanchDirector::HandleUpdatePet(
   ClientId clientId,
-  const protocol::RanchCommandUpdatePet& command)
+  const protocol::AcCmdCRUpdatePet& command)
 {
   const auto& clientContext = GetAuthorizedClientContext(clientId);
   const auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
+
   auto petUid = data::InvalidUid;
+
   characterRecord.Mutable(
     [this, &command, &petUid](data::Character& character)
     {
+      // The pets of the character.
       const auto storedPetRecords = GetServerInstance().GetDataDirector().GetPets().Get(
         character.pets());
-      
 
       if (not storedPetRecords || storedPetRecords->empty())
       {
         // No pets found for the character.
-        spdlog::warn("No pets found for character {}", command.petInfo.characterUid);
+        spdlog::warn("No pets found for character {}", character.uid());
         // TODO: When Handle Pet Birth exists, this should have a return
       }
 
-      for (const auto& record : *storedPetRecords)
+      // Find the pet record based on the item used.
+      for (const auto& petRecord : *storedPetRecords)
       {
-        record.Immutable(
+        petRecord.Immutable(
           [&command, &petUid](const data::Pet& pet)
           {
             if (pet.itemUid() == command.petInfo.itemUid)
@@ -1752,8 +1757,11 @@ void RanchDirector::HandleUpdatePet(
             }
           });
       }
-      // Only for Prototype purposes, later will be handled by HandlePetBirth
-      if (petUid == data::InvalidUid && command.petInfo.pet.petId != 0)
+
+      // If pet record does not exist, create it.
+      // For prototype purposes only.
+      if (petUid == data::InvalidUid
+        && command.petInfo.pet.petId != 0)
       {
         const auto petRecord = GetServerInstance().GetDataDirector().CreatePet();
         petRecord.Mutable(
@@ -1768,6 +1776,7 @@ void RanchDirector::HandleUpdatePet(
 
         character.pets().emplace_back(petUid);
       }
+
       const auto petRecord = GetServerInstance().GetDataDirector().GetPet(petUid);
       petRecord.Mutable(
         [&command](data::Pet& pet)
@@ -1775,16 +1784,14 @@ void RanchDirector::HandleUpdatePet(
           pet.name() = command.petInfo.pet.name;
         });
 
-      if (command.actionBitset == 7)
+      if (command.actionBitset == protocol::AcCmdCRUpdatePet::Action::Rename)
       {
-        const auto petRecord = GetServerInstance().GetDataDirector().GetPet(petUid);
         petRecord.Mutable(
           [&command](data::Pet& pet)
           {
             pet.name() = command.petInfo.pet.name;
           });
       }
-
       else
       {
         character.petUid = petUid;
@@ -1793,15 +1800,17 @@ void RanchDirector::HandleUpdatePet(
 
   const auto& ranchInstance = _ranches[clientContext.visitingRancherUid];
 
-  protocol::RaceCommandUpdatePet response;
+  protocol::AcCmdRCUpdatePet response;
   response.petInfo = command.petInfo;
+
   const auto petRecord = GetServerInstance().GetDataDirector().GetPet(petUid);
   petRecord.Immutable(
     [&response](const data::Pet& pet)
     {
       response.petInfo.pet.name = pet.name();
     });
-  response.petInfo.characterUid = GetAuthorizedClientContext(clientId).characterUid;
+
+  response.petInfo.characterUid = clientContext.characterUid;
 
   for (const ClientId ranchClientId : ranchInstance.clients)
   {
