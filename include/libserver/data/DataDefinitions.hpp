@@ -192,7 +192,7 @@ struct Character
   {
     User,
     Op,
-    Gm
+    GameMaster
   };
   dao::Field<Role> role{};
 
