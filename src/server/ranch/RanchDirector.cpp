@@ -1758,10 +1758,9 @@ void RanchDirector::HandleUpdatePet(
             }
           }); 
       }
-
-      if (petUid == data::InvalidUid)
+      // Only for Prototype purposes, later will be handled by HandlePetBirth
+      if (petUid == data::InvalidUid && command.petInfo.pet.petId != 0)
       {
-        // Only for Prototype purposes, later will be handled by HandlePetBirth.
         const auto petRecord = GetServerInstance().GetDataDirector().CreatePet();
         petRecord.Mutable(
           [&command, &petUid](data::Pet& pet)
@@ -1775,6 +1774,12 @@ void RanchDirector::HandleUpdatePet(
 
           character.pets().emplace_back(petUid);
       }
+      const auto petRecord = GetServerInstance().GetDataDirector().GetPet(petUid);
+      petRecord.Mutable(
+        [&command](data::Pet& pet)
+        {
+          pet.name() = command.petInfo.pet.name;
+        });
 
       character.petUid = petUid;
     });
