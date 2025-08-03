@@ -1771,15 +1771,19 @@ void RanchDirector::HandleUpdatePet(
       character.petUid = petUid;
     });
 
-  const auto ranchInstance = _ranches[clientContext.visitingRancherUid];
+  const auto& ranchInstance = _ranches[clientContext.visitingRancherUid];
+
   protocol::RaceCommandUpdatePet response;
   response.petInfo = command.petInfo;
   response.petInfo.characterUid = GetAuthorizedClientContext(clientId).characterUid;
 
-  _commandServer.QueueCommand<decltype(response)>(clientId, [response]()
+  for (const ClientId ranchClientId : ranchInstance.clients)
+  {
+    _commandServer.QueueCommand<decltype(response)>(ranchClientId, [response]()
     {
       return response;
     });
+  }
 }
 
 void RanchDirector::HandleUserPetInfos(
