@@ -26,6 +26,7 @@
 #include "libserver/network/command/CommandServer.hpp"
 #include "libserver/network/command/proto/RanchMessageDefinitions.hpp"
 
+#include <random>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -63,6 +64,8 @@ public:
   Config::Ranch& GetConfig();
 
 private:
+  std::random_device _randomDevice;
+
   struct ClientContext
   {
     bool isAuthorized{false};
@@ -217,6 +220,22 @@ private:
   //! @param clientId ID of the client.
   void BroadcastEquipmentUpdate(
     ClientId clientId);
+
+  void HandleUseFeedItem(
+    const protocol::RanchCommandUseItem& command,
+    protocol::RanchCommandUseItemOK& response);
+
+  void HandleUseCleanItem(
+    const protocol::RanchCommandUseItem& command,
+    protocol::RanchCommandUseItemOK& response);
+  
+  void HandleUsePlayItem(
+    const protocol::RanchCommandUseItem& command,
+    protocol::RanchCommandUseItemOK& response);
+
+  void HandleUseCureItem(
+    const protocol::RanchCommandUseItem& command,
+    protocol::RanchCommandUseItemOK& response);
 
   void HandleUseItem(
     ClientId clientId,
