@@ -1240,7 +1240,7 @@ void RanchDirector::HandleTryBreeding(
       .tailId = 4,
       .faceId = 5},
     .appearance = {.scale = 4, .legLength = 4, .legVolume = 5, .bodyLength = 3, .bodyVolume = 4},
-    .stats = {.agility = 9, .control = 9, .speed = 9, .strength = 9, .spirit = 9},
+    .stats = {.agility = 9, .ambition = 9, .rush = 9, .endurance = 9, .courage = 9},
     .unk1 = 0,
     .unk2 = 0,
     .unk3 = 0,
