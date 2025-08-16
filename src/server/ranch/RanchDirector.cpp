@@ -144,13 +144,13 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       HandleUpdateMountNickname(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<protocol::RanchCommandRequestStorage>(
+  _commandServer.RegisterCommandHandler<protocol::AcCmdCRRequestStorage>(
     [this](ClientId clientId, auto& command)
     {
       HandleRequestStorage(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<protocol::RanchCommandGetItemFromStorage>(
+  _commandServer.RegisterCommandHandler<protocol::AcCmdCRGetItemFromStorage>(
     [this](ClientId clientId, auto& command)
     {
       HandleGetItemFromStorage(clientId, command);
@@ -1015,6 +1015,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
         storedItem.items().emplace_back(createdItemUid);
         storedItem.sender() = "System";
         storedItem.message() = std::format("Item '{}'", createdItemTid);
+        storedItem.created() = data::Clock::now();
 
         giftUid = storedItem.uid();
       });
@@ -1150,18 +1151,23 @@ void RanchDirector::HandleSearchStallion(
 
     auto& protocolStallion = response.stallions.emplace_back();
     stallionRecord->Immutable([&protocolStallion](const data::Horse& stallion)
-      {
-        protocolStallion.member1 = "unknown";
-        protocolStallion.uid = stallion.uid();
-        protocolStallion.tid = stallion.tid();
+    {
+      protocolStallion.member1 = "unknown";
+      protocolStallion.uid = stallion.uid();
+      protocolStallion.tid = stallion.tid();
 
-        protocolStallion.name = stallion.name();
-        protocolStallion.grade = stallion.grade();
+      protocolStallion.name = stallion.name();
+      protocolStallion.grade = stallion.grade();
 
-        protocol::BuildProtocolHorseStats(protocolStallion.stats, stallion.stats);
-        protocol::BuildProtocolHorseParts(protocolStallion.parts, stallion.parts);
-        protocol::BuildProtocolHorseAppearance(protocolStallion.appearance, stallion.appearance);
-      });
+      static uint32_t test = 1;
+      test <<= 1;
+      spdlog::warn("Test: {}", test);
+      protocolStallion.time = test;
+
+      protocol::BuildProtocolHorseStats(protocolStallion.stats, stallion.stats);
+      protocol::BuildProtocolHorseParts(protocolStallion.parts, stallion.parts);
+      protocol::BuildProtocolHorseAppearance(protocolStallion.appearance, stallion.appearance);
+    });
   }
 
   _commandServer.QueueCommand<decltype(response)>(
@@ -1469,17 +1475,17 @@ void RanchDirector::HandleUpdateMountNickname(
 
 void RanchDirector::HandleRequestStorage(
   ClientId clientId,
-  const protocol::RanchCommandRequestStorage& command)
+  const protocol::AcCmdCRRequestStorage& command)
 {
   const auto& clientContext = GetClientContext(clientId);
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
     clientContext.characterUid);
 
-  protocol::RanchCommandRequestStorageOK response{
+  protocol::AcCmdCRRequestStorageOK response{
     .category = command.category,
     .page = command.page};
 
-  const bool showPurchases = command.category == protocol::RanchCommandRequestStorage::Category::Purchases;
+  const bool showPurchases = command.category == protocol::AcCmdCRRequestStorage::Category::Purchases;
 
   // Fill the stored items, either from the purchase category or the gift category.
 
@@ -1510,7 +1516,7 @@ void RanchDirector::HandleRequestStorage(
 
 void RanchDirector::HandleGetItemFromStorage(
   ClientId clientId,
-  const protocol::RanchCommandGetItemFromStorage& command)
+  const protocol::AcCmdCRGetItemFromStorage& command)
 {
   const auto& clientContext = GetClientContext(clientId);
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
@@ -1546,7 +1552,7 @@ void RanchDirector::HandleGetItemFromStorage(
   // If the stored item is invalid cancel the takeout.
   if (not storedItemIsValid)
   {
-    protocol::RanchCommandGetItemFromStorageCancel response{
+    protocol::AcCmdCRGetItemFromStorageCancel response{
       .storedItemUid = command.storedItemUid,
       .status = 0};
 
@@ -1559,7 +1565,7 @@ void RanchDirector::HandleGetItemFromStorage(
     return;
   }
 
-  protocol::RanchCommandGetItemFromStorageOK response{
+  protocol::AcCmdCRGetItemFromStorageOK response{
     .storedItemUid = command.storedItemUid,
     .member0 = 0};
 
@@ -1803,11 +1809,11 @@ void RanchDirector::HandleRequestGuildInfo(
       throw std::runtime_error("Guild unavailable");
 
     guildRecord.Immutable([&response](const data::Guild& guild)
-      {
-        response.guildInfo = {
-          .uid = guild.uid(),
-          .name = guild.name()};
-      });
+    {
+      response.guildInfo = {
+        .uid = guild.uid(),
+        .name = guild.name()};
+    });
   }
 
   _commandServer.QueueCommand<decltype(response)>(
@@ -1972,7 +1978,7 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
       character.mountEquipment());
     protocol::BuildProtocolItems(notify.mountEquipment, *mountEquipment);
 
-    // Mount
+    // Mount record
     const auto mountRecord = GetServerInstance().GetDataDirector().GetHorses().Get(
       character.mountUid());
 
@@ -2193,16 +2199,16 @@ void RanchDirector::HandleHousingBuild(
 
   const auto housingRecord = GetServerInstance().GetDataDirector().CreateHousing();
   housingRecord.Mutable([housingId = command.housingTid, &housingUid](data::Housing& housing)
-    {
-      housing.housingId = housingId;
+  {
+    housing.housingId = housingId;
 
-      housingUid = housing.uid();
-    });
+    housingUid = housing.uid();
+  });
 
   characterRecord.Mutable([&housingUid](data::Character& character)
-    {
-      character.housing().emplace_back(housingUid);
-    });
+  {
+    character.housing().emplace_back(housingUid);
+  });
 
   assert(clientContext.visitingRancherUid == clientContext.characterUid);
 

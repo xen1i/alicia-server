@@ -1469,7 +1469,7 @@ struct RanchCommandUpdateMountInfoNotify
     SourceStream& stream);
 };
 
-struct RanchCommandRequestStorage
+struct AcCmdCRRequestStorage
 {
   enum class Category : uint8_t
   {
@@ -1489,20 +1489,20 @@ struct RanchCommandRequestStorage
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandRequestStorage& command,
+    const AcCmdCRRequestStorage& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandRequestStorage& command,
+    AcCmdCRRequestStorage& command,
     SourceStream& stream);
 };
 
-struct RanchCommandRequestStorageOK
+struct AcCmdCRRequestStorageOK
 {
-  RanchCommandRequestStorage::Category category{};
+  AcCmdCRRequestStorage::Category category{};
   uint16_t page{};
   // First bit indicates whether there's new items
   // in the storage. Other bits somehow indicate the page count.
@@ -1520,20 +1520,20 @@ struct RanchCommandRequestStorageOK
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandRequestStorageOK& command,
+    const AcCmdCRRequestStorageOK& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandRequestStorageOK& command,
+    AcCmdCRRequestStorageOK& command,
     SourceStream& stream);
 };
 
-struct RanchCommandRequestStorageCancel
+struct AcCmdCRRequestStorageCancel
 {
-  RanchCommandRequestStorage category{};
+  AcCmdCRRequestStorage category{};
   uint8_t val1{};
 
   static Command GetCommand()
@@ -1545,18 +1545,18 @@ struct RanchCommandRequestStorageCancel
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandRequestStorageCancel& command,
+    const AcCmdCRRequestStorageCancel& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandRequestStorageCancel& command,
+    AcCmdCRRequestStorageCancel& command,
     SourceStream& stream);
 };
 
-struct RanchCommandGetItemFromStorage
+struct AcCmdCRGetItemFromStorage
 {
   uint32_t storedItemUid{};
 
@@ -1569,18 +1569,18 @@ struct RanchCommandGetItemFromStorage
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandGetItemFromStorage& command,
+    const AcCmdCRGetItemFromStorage& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandGetItemFromStorage& command,
+    AcCmdCRGetItemFromStorage& command,
     SourceStream& stream);
 };
 
-struct RanchCommandGetItemFromStorageOK
+struct AcCmdCRGetItemFromStorageOK
 {
   uint32_t storedItemUid{};
   std::vector<Item> items{};
@@ -1595,18 +1595,18 @@ struct RanchCommandGetItemFromStorageOK
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandGetItemFromStorageOK& command,
+    const AcCmdCRGetItemFromStorageOK& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandGetItemFromStorageOK& command,
+    AcCmdCRGetItemFromStorageOK& command,
     SourceStream& stream);
 };
 
-struct RanchCommandGetItemFromStorageCancel
+struct AcCmdCRGetItemFromStorageCancel
 {
   uint32_t storedItemUid{};
   uint8_t status{};
@@ -1620,14 +1620,14 @@ struct RanchCommandGetItemFromStorageCancel
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandGetItemFromStorageCancel& command,
+    const AcCmdCRGetItemFromStorageCancel& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandGetItemFromStorageCancel& command,
+    AcCmdCRGetItemFromStorageCancel& command,
     SourceStream& stream);
 };
 
@@ -1639,14 +1639,14 @@ struct RanchCommandCheckStorageItem
   //! @param command Command.
   //! @param stream Sink stream.
   static void Write(
-    const RanchCommandGetItemFromStorage& command,
+    const AcCmdCRGetItemFromStorage& command,
     SinkStream& stream);
 
   //! Reader a command from a provided source stream.
   //! @param command Command.
   //! @param stream Source stream.
   static void Read(
-    RanchCommandGetItemFromStorage& command,
+    AcCmdCRGetItemFromStorage& command,
     SourceStream& stream);
 };
 

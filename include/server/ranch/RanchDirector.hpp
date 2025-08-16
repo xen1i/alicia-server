@@ -179,12 +179,12 @@ private:
   //!
   void HandleRequestStorage(
     ClientId clientId,
-    const protocol::RanchCommandRequestStorage& command);
+    const protocol::AcCmdCRRequestStorage& command);
 
   //!
   void HandleGetItemFromStorage(
     ClientId clientId,
-    const protocol::RanchCommandGetItemFromStorage& command);
+    const protocol::AcCmdCRGetItemFromStorage& command);
 
   //!
   void HandleRequestNpcDressList(

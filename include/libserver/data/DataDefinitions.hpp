@@ -116,7 +116,7 @@ constexpr Uid InvalidUid = 0;
 //! Value of an invalid type identifier.
 constexpr Tid InvalidTid = 0;
 
-using Clock = std::chrono::steady_clock;
+using Clock = std::chrono::system_clock;
 
 //! User
 struct User
@@ -163,6 +163,7 @@ struct StorageItem
   dao::Field<std::vector<Uid>> items{};
   dao::Field<std::string> sender{};
   dao::Field<std::string> message{};
+  dao::Field<Clock::time_point> created{};
   dao::Field<bool> checked{false};
   dao::Field<bool> expired{false};
 };
@@ -277,7 +278,7 @@ struct Horse
     dao::Field<uint32_t> jumpCount{0u};
     dao::Field<uint32_t> slidingTime{0u};
     dao::Field<uint32_t> glidingDistance{0u};
-  } mastery;
+  } mastery{};
 
   dao::Field<uint32_t> rating{0u};
   dao::Field<uint32_t> clazz{0u};
