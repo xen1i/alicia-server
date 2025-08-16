@@ -168,7 +168,7 @@ RanchDirector::RanchDirector(ServerInstance& serverInstance)
       HandleRemoveEquipment(clientId, command);
     });
 
-  _commandServer.RegisterCommandHandler<protocol::RanchCommandUseItem>(
+  _commandServer.RegisterCommandHandler<protocol::AcCmdCRUseItem>(
     [this](ClientId clientId, auto& command)
     {
       HandleUseItem(clientId, command);
@@ -2004,36 +2004,36 @@ void RanchDirector::BroadcastEquipmentUpdate(ClientId clientId)
 }
 
 void RanchDirector::HandleUseFeedItem(
-  const protocol::RanchCommandUseItem& command,
-  protocol::RanchCommandUseItemOK& response)
+  const protocol::AcCmdCRUseItem& command,
+  protocol::AcCmdCRUseItemOK& response)
 {
   // feed, Action 1 through 3
   //   success - both bytes zero
   //   failure - Action empty
 
   // Food tab is the first tab, hence the use of RanchCommandUseItemOK::ActionType::Action1
-  response.type = protocol::RanchCommandUseItemOK::ActionType::Action1;
+  response.type = protocol::AcCmdCRUseItemOK::ActionType::Feed;
 
   // TODO: Update the horse's stats based on the feed item used.
 }
 
 void RanchDirector::HandleUseCleanItem(
-  const protocol::RanchCommandUseItem& command,
-  protocol::RanchCommandUseItemOK& response)
+  const protocol::AcCmdCRUseItem& command,
+  protocol::AcCmdCRUseItemOK& response)
 {
   // brushes, always empty response
   //   success - Action empty
 
   // Clean tab is the second tab, hence the use of RanchCommandUseItemOK::ActionType::Action2
-  response.type = protocol::RanchCommandUseItemOK::ActionType::Action2;
-  response.actionTwoBytes.play = protocol::RanchCommandUseItemOK::PlayResponse::CriticalGood; // 2
+  response.type = protocol::AcCmdCRUseItemOK::ActionType::Wash;
+  response.playSuccessLevel = protocol::AcCmdCRUseItemOK::PlaySuccessLevel::CriticalGood; // 2
 
   // TODO: Update the horse's stats based on the clean item used.
 }
 
 void RanchDirector::HandleUsePlayItem(
-  const protocol::RanchCommandUseItem& command,
-  protocol::RanchCommandUseItemOK& response)
+  const protocol::AcCmdCRUseItem& command,
+  protocol::AcCmdCRUseItemOK& response)
 {
   // toys, always Action 1 to Action 3,
   //   play success indicated by the second byte
@@ -2044,21 +2044,21 @@ void RanchDirector::HandleUsePlayItem(
 
   // TODO: Action 1, 2 and 3 are valid.
   // Assuming action 3 = play following the tab order.
-  response.type = protocol::RanchCommandUseItemOK::ActionType::Action3;
-  switch (command.play)
+  response.type = protocol::AcCmdCRUseItemOK::ActionType::Play;
+  switch (command.playSuccessLevel)
   {
-    case protocol::RanchCommandUseItem::Play::Bad:
-      response.actionTwoBytes.play = protocol::RanchCommandUseItemOK::PlayResponse::Bad;
+    case protocol::AcCmdCRUseItem::PlaySuccessLevel::Bad:
+      response.playSuccessLevel = protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Bad;
       break;
-    case protocol::RanchCommandUseItem::Play::Good:
-      response.actionTwoBytes.play = crit ?
-        protocol::RanchCommandUseItemOK::PlayResponse::CriticalGood :
-        protocol::RanchCommandUseItemOK::PlayResponse::Good;
+    case protocol::AcCmdCRUseItem::PlaySuccessLevel::Good:
+      response.playSuccessLevel = crit ?
+        protocol::AcCmdCRUseItemOK::PlaySuccessLevel::CriticalGood :
+        protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Good;
       break;
-    case protocol::RanchCommandUseItem::Play::Perfect:
-      response.actionTwoBytes.play = crit ?
-        protocol::RanchCommandUseItemOK::PlayResponse::CriticalPerfect :
-        protocol::RanchCommandUseItemOK::PlayResponse::Perfect;
+    case protocol::AcCmdCRUseItem::PlaySuccessLevel::Perfect:
+      response.playSuccessLevel = crit ?
+        protocol::AcCmdCRUseItemOK::PlaySuccessLevel::CriticalPerfect :
+        protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Perfect;
       break;
   }
 
@@ -2066,18 +2066,18 @@ void RanchDirector::HandleUsePlayItem(
     command.itemUid,
     command.horseUid,
     command.always1,
-    command.play == protocol::RanchCommandUseItem::Play::Bad
+    command.playSuccessLevel == protocol::AcCmdCRUseItem::PlaySuccessLevel::Bad
       ? "Bad"
-      : command.play == protocol::RanchCommandUseItem::Play::Good
+      : command.playSuccessLevel == protocol::AcCmdCRUseItem::PlaySuccessLevel::Good
         ? "Good"
         : "Perfect",
-    response.actionTwoBytes.play == protocol::RanchCommandUseItemOK::PlayResponse::Bad
+    response.playSuccessLevel == protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Bad
       ? "Bad"
-      : response.actionTwoBytes.play == protocol::RanchCommandUseItemOK::PlayResponse::Good
+      : response.playSuccessLevel == protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Good
         ? "Good"
-        : response.actionTwoBytes.play == protocol::RanchCommandUseItemOK::PlayResponse::CriticalGood
+        : response.playSuccessLevel == protocol::AcCmdCRUseItemOK::PlaySuccessLevel::CriticalGood
           ? "Critical Good"
-          : response.actionTwoBytes.play == protocol::RanchCommandUseItemOK::PlayResponse::Perfect
+          : response.playSuccessLevel == protocol::AcCmdCRUseItemOK::PlaySuccessLevel::Perfect
             ? "Perfect"
             : "Critical Perfect");
 
@@ -2085,22 +2085,25 @@ void RanchDirector::HandleUsePlayItem(
 }
 
 void RanchDirector::HandleUseCureItem(
-  const protocol::RanchCommandUseItem& command,
-  protocol::RanchCommandUseItemOK& response)
+  const protocol::AcCmdCRUseItem& command,
+  protocol::AcCmdCRUseItemOK& response)
 {
   // No info
+
+  response.type = protocol::AcCmdCRUseItemOK::ActionType::Cure;
+  response.experiencePoints = 0;
 
   // TODO: Update the horse's stats based on the cure item used.
 }
 
 void RanchDirector::HandleUseItem(
   ClientId clientId,
-  const protocol::RanchCommandUseItem& command)
+  const protocol::AcCmdCRUseItem& command)
 {
-  protocol::RanchCommandUseItemOK response{
+  protocol::AcCmdCRUseItemOK response{
     response.itemUid = command.itemUid,
     response.updatedItemCount = command.always1,
-    response.type = protocol::RanchCommandUseItemOK::ActionType::Empty};
+    response.type = protocol::AcCmdCRUseItemOK::ActionType::Generic};
 
   const auto& clientContext = GetClientContext(clientId);
   auto characterRecord = GetServerInstance().GetDataDirector().GetCharacter(
@@ -2121,7 +2124,7 @@ void RanchDirector::HandleUseItem(
     return;
   }
 
-  auto itemRecord = GetServerInstance().GetDataDirector().GetItem(command.itemUid);
+  const auto itemRecord = GetServerInstance().GetDataDirector().GetItem(command.itemUid);
   auto itemTid = data::InvalidTid;
   itemRecord.Immutable([&itemTid](const data::Item& item)
   {
@@ -2133,7 +2136,7 @@ void RanchDirector::HandleUseItem(
     itemTid,
     command.always1,
     command.horseUid,
-    (uint32_t)command.play);
+    static_cast<uint32_t>(command.playSuccessLevel));
 
   if (itemTid > 41000 && itemTid < 41008)
   {

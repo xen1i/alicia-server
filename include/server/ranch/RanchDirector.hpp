@@ -226,24 +226,24 @@ private:
     ClientId clientId);
 
   void HandleUseFeedItem(
-    const protocol::RanchCommandUseItem& command,
-    protocol::RanchCommandUseItemOK& response);
+    const protocol::AcCmdCRUseItem& command,
+    protocol::AcCmdCRUseItemOK& response);
 
   void HandleUseCleanItem(
-    const protocol::RanchCommandUseItem& command,
-    protocol::RanchCommandUseItemOK& response);
+    const protocol::AcCmdCRUseItem& command,
+    protocol::AcCmdCRUseItemOK& response);
   
   void HandleUsePlayItem(
-    const protocol::RanchCommandUseItem& command,
-    protocol::RanchCommandUseItemOK& response);
+    const protocol::AcCmdCRUseItem& command,
+    protocol::AcCmdCRUseItemOK& response);
 
   void HandleUseCureItem(
-    const protocol::RanchCommandUseItem& command,
-    protocol::RanchCommandUseItemOK& response);
+    const protocol::AcCmdCRUseItem& command,
+    protocol::AcCmdCRUseItemOK& response);
 
   void HandleUseItem(
     ClientId clientId,
-    const protocol::RanchCommandUseItem& command);
+    const protocol::AcCmdCRUseItem& command);
 
   void HandleHousingBuild(
     ClientId clientId,

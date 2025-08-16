@@ -46,13 +46,13 @@ uint32_t DateTimeToAliciaTime(const DateTime& dateTime)
   // [0000'00] [0[0]'000] [0'0000] [0000]  [0000'0000'0000]
   // [minute]  [hour]     [day]   [month]  [year]
   // <0-63>    <0-15>     <0-31>  <0-15>  <0-4095>
-
   const uint32_t value = 0
     | std::min(dateTime.years, int32_t{4095}) << 0
     | std::min(dateTime.months, uint32_t{15}) << 12
     | std::min(dateTime.days, uint32_t{31}) << (12 + 4)
     | std::min(dateTime.hours, int32_t{31}) << (12 + 4 + 5)
-    | std::min(dateTime.minutes, int32_t{63}) << (12 + 4 + 5 + 4 + 1);
+    | std::min(dateTime.minutes, int32_t{63}) << (12 + 4 + 5 + 5);
+
   return value;
 }
 

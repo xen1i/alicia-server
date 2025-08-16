@@ -26,100 +26,61 @@
 namespace server::protocol
 {
 
-void RanchCommandUseItem::Write(
-  const RanchCommandUseItem& command,
+void AcCmdCRUseItem::Write(
+  const AcCmdCRUseItem& command,
   SinkStream& stream)
 {
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandUseItem::Read(
-  RanchCommandUseItem& command,
+void AcCmdCRUseItem::Read(
+  AcCmdCRUseItem& command,
   SourceStream& stream)
 {
   stream.Read(command.itemUid)
     .Read(command.always1)
     .Read(command.horseUid)
-    .Read(command.play);
+    .Read(command.playSuccessLevel);
 }
 
-void RanchCommandUseItemOK::ActionTwoBytes::Write(
-  const ActionTwoBytes& action,
-  SinkStream& stream)
-{
-  stream.Write(action.xpReward)
-    .Write(action.play);
-}
-
-void RanchCommandUseItemOK::ActionTwoBytes::Read(
-  ActionTwoBytes& action,
-  SourceStream& stream)
-{
-  throw std::runtime_error("Not implemented.");
-}
-
-void RanchCommandUseItemOK::ActionOneByte::Write(
-  const ActionOneByte& action,
-  SinkStream& stream)
-{
-  stream.Write(action.unk0);
-}
-
-void RanchCommandUseItemOK::ActionOneByte::Read(
-  ActionOneByte& action,
-  SourceStream& stream)
-{
-  throw std::runtime_error("Not implemented.");
-}
-
-void RanchCommandUseItemOK::Write(
-  const RanchCommandUseItemOK& command,
+void AcCmdCRUseItemOK::Write(
+  const AcCmdCRUseItemOK& command,
   SinkStream& stream)
 {
   stream.Write(command.itemUid)
-    .Write(command.updatedItemCount);
+    .Write(command.updatedItemCount)
+    .Write(command.type);
 
-  stream.Write(command.type);
-  switch (command.type)
+  if (command.type == ActionType::Generic)
+    return;
+
+  stream.Write(command.experiencePoints);
+
+  if (command.type == ActionType::Feed
+    || command.type == ActionType::Wash
+    || command.type == ActionType::Play)
   {
-    case ActionType::Empty:
-      {
-        break;
-      }
-    case ActionType::Action1:
-    case ActionType::Action2:
-    case ActionType::Action3:
-      {
-        stream.Write(command.actionTwoBytes);
-        break;
-      }
-    case ActionType::Action4:
-      {
-        stream.Write(command.actionOneByte);
-        break;
-      }
-    default:
-      throw std::runtime_error("Not implemented.");
+    stream.Write(command.playSuccessLevel);
   }
 }
 
-void RanchCommandUseItemOK::Read(
-  RanchCommandUseItemOK& command,
+void AcCmdCRUseItemOK::Read(
+  AcCmdCRUseItemOK& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented.");
 }
 
-void RanchCommandUseItemCancel::Write(
-  const RanchCommandUseItemCancel& command,
+void AcCmdCRUseItemCancel::Write(
+  const AcCmdCRUseItemCancel& command,
   SinkStream& stream)
 {
-  stream.Write(command.unk0)
-    .Write(command.unk1);
+  stream.Write(command.itemUid)
+    .Write(command.rewardExperience);
 }
 
-void RanchCommandUseItemCancel::Read(
-  RanchCommandUseItemCancel& command,
+void AcCmdCRUseItemCancel::Read(
+  AcCmdCRUseItemCancel& command,
   SourceStream& stream)
 {
   throw std::runtime_error("Not implemented.");
