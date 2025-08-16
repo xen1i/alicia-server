@@ -553,7 +553,7 @@ struct RanchCommandSearchStallionOK
     uint32_t matePrice{};
     uint32_t unk7{};
     // 1304
-    uint32_t time{};
+    uint32_t expiresAt{};
     Horse::Stats stats{};
     Horse::Parts parts{};
     Horse::Appearance appearance{};

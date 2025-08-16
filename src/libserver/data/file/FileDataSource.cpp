@@ -425,6 +425,8 @@ void server::FileDataSource::RetrieveItem(data::Uid uid, data::Item& item)
 
   item.uid = json["uid"].get<data::Uid>();
   item.tid = json["tid"].get<data::Tid>();
+  item.expiresAt = data::Clock::time_point(
+    std::chrono::seconds(json["expiresAt"].get<int64_t>()));
   item.count = json["count"].get<uint32_t>();
 }
 
@@ -443,6 +445,8 @@ void server::FileDataSource::StoreItem(data::Uid uid, const data::Item& item)
   nlohmann::json json;
   json["uid"] = item.uid();
   json["tid"] = item.tid();
+  json["expiresAt"] = std::chrono::ceil<std::chrono::seconds>(
+    item.expiresAt().time_since_epoch()).count();
   json["count"] = item.count();
   dataFile << json.dump(2);
 }

@@ -51,7 +51,7 @@ struct DateTime
 //! Converts a time point to the Windows file time.
 //! @param timePoint Point in time.
 //! @return Windows file time representing specified point in time.
-WinFileTime UnixTimeToFileTime(const Clock::time_point& timePoint);
+WinFileTime TimePointToFileTime(const Clock::time_point& timePoint);
 
 //! Converts date time to alicia time.
 //! @param dateTime Date and time.

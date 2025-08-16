@@ -160,7 +160,8 @@ void BuildProtocolItem(
 {
   protocolItem.uid = item.uid();
   protocolItem.tid = item.tid();
-  protocolItem.val = 0xFFFF;
+  protocolItem.expiresAt = util::TimePointToAliciaTime(
+    util::Clock::now() + std::chrono::days(10));
   protocolItem.count = item.count();
 }
 

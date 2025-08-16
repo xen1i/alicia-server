@@ -312,13 +312,8 @@ void LoginHandler::QueueUserLoginAccepted(
   if (not userRecord)
     throw std::runtime_error("User record unavailable");
 
-  const auto lobbyServerTime = util::UnixTimeToFileTime(
-    std::chrono::system_clock::now());
-
   protocol::LobbyCommandLoginOK response{
-    .lobbyTime =
-      {.dwLowDateTime = static_cast<uint32_t>(lobbyServerTime.dwLowDateTime),
-       .dwHighDateTime = static_cast<uint32_t>(lobbyServerTime.dwHighDateTime)},
+    .lobbyTime = util::TimePointToFileTime(util::Clock::now()),
     .member0 = 0xCA794,
     .motd = std::format(
       "Welcome to Story of Alicia. Players online: {}",

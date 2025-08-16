@@ -24,13 +24,21 @@
 namespace server::util
 {
 
-WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint)
+WinFileTime TimePointToFileTime(const std::chrono::system_clock::time_point& timePoint)
 {
-  const uint64_t unixTime = timePoint.time_since_epoch().count();
-  const uint64_t convertedUnixTime = unixTime * 10'000'000ull + 116444736000000000;
+  // The time difference between 1970 and 1601 in seconds.
+  constexpr uint64_t EpochDifference = 11'644'473'600ULL;
+  // The transformation constant to convert seconds to 100ns intervals.
+  constexpr uint64_t FileTimeIntervalToSecondsConstant = 10'000'000ull;
+
+  // The total time in seconds since the FILETIME epoch.
+  const uint64_t totalTime = std::chrono::ceil<std::chrono::seconds>(
+    timePoint.time_since_epoch()).count() + EpochDifference;
+  const uint64_t fileTime = totalTime * FileTimeIntervalToSecondsConstant;
+
   return WinFileTime{
-    .dwLowDateTime = static_cast<uint32_t>(convertedUnixTime),
-    .dwHighDateTime = static_cast<uint32_t>(convertedUnixTime >> 32)};
+    .dwLowDateTime = static_cast<uint32_t>(fileTime),
+    .dwHighDateTime = static_cast<uint32_t>(fileTime >> 32)};
 }
 
 uint32_t DateTimeToAliciaTime(const DateTime& dateTime)

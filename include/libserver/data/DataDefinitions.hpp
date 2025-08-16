@@ -138,6 +138,8 @@ struct Item
   dao::Field<Uid> uid{InvalidUid};
   //! A type identifier.
   dao::Field<Tid> tid{InvalidTid};
+  //! A time point of when the item expires.
+  dao::Field<Clock::time_point> expiresAt{};
   //! Amount of an item.
   dao::Field<uint32_t> count{};
 };

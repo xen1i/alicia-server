@@ -1003,6 +1003,7 @@ std::vector<std::string> RanchDirector::HandleCommand(
       {
         item.tid() = createdItemTid;
         item.count() = itemCount;
+        item.expiresAt() = data::Clock::now() + std::chrono::days(10);
 
         createdItemUid = item.uid();
       });
@@ -1159,10 +1160,7 @@ void RanchDirector::HandleSearchStallion(
       protocolStallion.name = stallion.name();
       protocolStallion.grade = stallion.grade();
 
-      static uint32_t test = 1;
-      test <<= 1;
-      spdlog::warn("Test: {}", test);
-      protocolStallion.time = test;
+      protocolStallion.expiresAt = util::TimePointToAliciaTime(util::Clock::now() + std::chrono::hours(1));
 
       protocol::BuildProtocolHorseStats(protocolStallion.stats, stallion.stats);
       protocol::BuildProtocolHorseParts(protocolStallion.parts, stallion.parts);
