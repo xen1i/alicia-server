@@ -150,6 +150,7 @@ void HorseRegistry::BuildRandomHorse(
     1, _coats.size());
 
   const Coat& coat = _coats[coatRandomDist(_randomDevice)];
+  assert(coat.tid != 0);
   parts.skinTid = coat.tid;
 
   // If the coat has a face available, pick a random face.
@@ -168,6 +169,7 @@ void HorseRegistry::BuildRandomHorse(
       1, _manes.size());
 
     const Mane& mane = _manes[maneRandomDist(_randomDevice)];
+    assert(mane.tid != 0);
     parts.maneTid = mane.tid;
   }
 
@@ -177,6 +179,7 @@ void HorseRegistry::BuildRandomHorse(
       1, _tails.size());
 
     const Tail& tail = _tails[tailRandomDist(_randomDevice)];
+    assert(tail.tid != 0);
     parts.tailTid = tail.tid;
   }
 
