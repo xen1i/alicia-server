@@ -253,7 +253,7 @@ struct Character
 
   dao::Field<std::vector<Uid>> housing{};
 
-  dao::Field<bool> isRanchLocked{true};
+  dao::Field<bool> isRanchLocked{};
 };
 
 struct Horse
