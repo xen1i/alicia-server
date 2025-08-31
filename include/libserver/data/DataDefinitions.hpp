@@ -339,10 +339,11 @@ struct Housing
 struct Egg
 {
   dao::Field<Uid> uid{InvalidUid};
-  dao::Field<Tid> tid{InvalidTid};
-  dao::Field<Tid> petTid{InvalidTid};
-
-  dao::Field<Clock::time_point> hatchTimestamp{};
+  dao::Field<Uid> itemUid{InvalidUid};
+  dao::Field<Tid> itemTid{InvalidTid};
+  dao::Field<Clock::time_point> incubatedAt{};
+  dao::Field<uint32_t> incubatorSlot{};
+  dao::Field<uint32_t> boostsUsed;
 };
 
 } // namespace data
