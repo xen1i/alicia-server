@@ -522,6 +522,7 @@ void RanchDirector::HandleEnterRanch(
         }
       }
 
+      response.incubatorSlots = rancher.incubatorSlots();
       // Fill the housing info.
       const auto housingRecords = GetServerInstance().GetDataDirector().GetHousing().Get(
         rancher.housing());
@@ -532,7 +533,9 @@ void RanchDirector::HandleEnterRanch(
           housingRecord.Immutable([&response](const data::Housing& housing){
             constexpr uint16_t IncubatorHousingId = 52;
             // Certain types of housing have durability instead of expiration time.
-            const bool hasDurability = (housing.housingId() == IncubatorHousingId) ;
+            const bool hasDurability = (housing.housingId() == IncubatorHousingId);
+            if (hasDurability)
+              response.incubatorUseCount = housing.durability();
 
             protocol::BuildProtocolHousing(response.housing.emplace_back(), housing, hasDurability);
           });
@@ -2029,6 +2032,8 @@ void RanchDirector::HandleRequestPetBirth(
           });
       }
 
+      // TODO: reduce the incubator durability (if it is a double incubator)
+
       // Remove the hatched egg from the incubator and from the character's inventory.
       if (auto it = std::ranges::find(character.eggs(), hatchingEggUid);
         it != character.eggs().end())
@@ -2399,23 +2404,31 @@ void RanchDirector::HandleHousingBuild(
     });
 
   auto housingUid = data::InvalidUid;
+  constexpr int16_t DoubleIncubatorId = 52;
+  constexpr int16_t SingleIncubatorId = 51;
 
+  // TODO: add dublication check for double incubator, since rebuilding triggers HousingBuild and not HousingRepair
   const auto housingRecord = GetServerInstance().GetDataDirector().CreateHousing();
-  housingRecord.Mutable([housingId = command.housingTid, &housingUid](data::Housing& housing)
+  housingRecord.Mutable([housingId = command.housingTid, &housingUid, DoubleIncubatorId](data::Housing& housing)
   {
     housing.housingId = housingId;
     housingUid = housing.uid();
 
-    constexpr int16_t HousingDoubleIncubatorId = 52;
-    if (housingId == HousingDoubleIncubatorId)
+    if (housingId == DoubleIncubatorId)
       housing.durability = 10;
     else
       housing.expiresAt = std::chrono::system_clock::now() + std::chrono::days(20);
   });
 
-  characterRecord.Mutable([&housingUid](data::Character& character)
+  characterRecord.Mutable([&housingUid, housingId = command.housingTid, DoubleIncubatorId, SingleIncubatorId](data::Character& character)
   {
     character.housing().emplace_back(housingUid);
+
+    // prototype implementation
+    if (housingId == SingleIncubatorId)
+      character.incubatorSlots = 1;
+    if (housingId == DoubleIncubatorId)
+      character.incubatorSlots = 2;
   });
 
   assert(clientContext.visitingRancherUid == clientContext.characterUid);

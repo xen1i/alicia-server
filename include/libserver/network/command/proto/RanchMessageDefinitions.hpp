@@ -112,7 +112,7 @@ struct AcCmdCREnterRanchOK
   //! TODO: implement the Logic in Ranchdirector for RanchEnter & HousingBuild
   //! Add the fields to character save 
   uint32_t incubatorSlots{2};
-  uint32_t incubatorUseCount{10};
+  uint32_t incubatorUseCount{};
 
   std::array<Egg, 3> incubator;
 
