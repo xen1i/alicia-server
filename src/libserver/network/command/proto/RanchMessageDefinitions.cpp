@@ -1825,7 +1825,7 @@ void AcCmdCRHousingBuildNotify::Write(
   SinkStream& stream)
 {
   stream.Write(command.member1)
-    .Write(command.housingTid);
+    .Write(command.housingId);
 }
 
 void AcCmdCRHousingBuildNotify::Read(

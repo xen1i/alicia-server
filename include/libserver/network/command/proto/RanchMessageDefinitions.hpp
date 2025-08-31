@@ -2754,7 +2754,7 @@ struct AcCmdCRHousingBuildCancel
 struct AcCmdCRHousingBuildNotify
 {
   uint32_t member1{};
-  uint16_t housingTid{};
+  uint16_t housingId{};
 
   static Command GetCommand()
   {
