@@ -208,7 +208,6 @@ void server::FileDataSource::RetrieveCharacter(data::Uid uid, data::Character& c
   character.eggs = json["eggs"].get<std::vector<data::Uid>>();
 
   character.housing = json["housing"].get<std::vector<data::Uid>>();
-  character.incubatorSlots = json["incubatorSlots"].get<uint32_t>();
 
   character.isRanchLocked = json["isRanchLocked"].get<bool>();
 }
@@ -271,7 +270,6 @@ void server::FileDataSource::StoreCharacter(data::Uid uid, const data::Character
   json["eggs"] = character.eggs();
 
   json["housing"] = character.housing();
-  json["incubatorSlots"] = character.incubatorSlots();
 
   json["isRanchLocked"] = character.isRanchLocked();
 
@@ -664,6 +662,7 @@ void server::FileDataSource::RetrieveHousing(data::Uid uid, data::Housing& housi
   housing.expiresAt = data::Clock::time_point(
     std::chrono::seconds(json["expiresAt"].get<uint64_t>()));
   housing.durability = json["durability"].get<uint32_t>();
+  housing.incubatorSlots = json["incubatorSlots"].get<uint32_t>();
 }
 
 void server::FileDataSource::StoreHousing(data::Uid uid, const data::Housing& housing)
@@ -684,6 +683,7 @@ void server::FileDataSource::StoreHousing(data::Uid uid, const data::Housing& ho
   json["expiresAt"] = std::chrono::duration_cast<std::chrono::seconds>(
     housing.expiresAt().time_since_epoch()).count();
   json["durability"] = housing.durability();
+  json["incubatorSlots"] = housing.incubatorSlots();
 
   dataFile << json.dump(2);
 }

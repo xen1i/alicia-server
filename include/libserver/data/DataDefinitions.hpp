@@ -238,7 +238,6 @@ struct Character
   dao::Field<std::vector<Uid>> eggs{};
 
   dao::Field<std::vector<Uid>> housing{};
-  dao::Field<uint32_t> incubatorSlots{};
 
   dao::Field<bool> isRanchLocked{};
 };
@@ -321,6 +320,7 @@ struct Housing
   dao::Field<uint16_t> housingId{};
   dao::Field<Clock::time_point> expiresAt{};
   dao::Field<uint32_t> durability{};
+  dao::Field<uint32_t> incubatorSlots{};
 };
 
 struct Egg
