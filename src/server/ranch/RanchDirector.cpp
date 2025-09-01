@@ -2407,7 +2407,7 @@ void RanchDirector::HandleHousingBuild(
   constexpr int16_t DoubleIncubatorId = 52;
   constexpr int16_t SingleIncubatorId = 51;
 
-  // TODO: add dublication check for double incubator, since rebuilding triggers HousingBuild and not HousingRepair
+  // TODO: add a duplication check for double incubator, since rebuilding triggers HousingBuild and not HousingRepair
   const auto housingRecord = GetServerInstance().GetDataDirector().CreateHousing();
   housingRecord.Mutable([housingId = command.housingTid, &housingUid, DoubleIncubatorId](data::Housing& housing)
   {
