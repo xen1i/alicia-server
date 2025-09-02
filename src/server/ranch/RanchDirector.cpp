@@ -2418,12 +2418,7 @@ void RanchDirector::HandleHousingBuild(
     housingUid = housing.uid();
 
     if (housingId == DoubleIncubatorId)
-    {
       housing.durability = 10;
-      housing.incubatorSlots = 2;
-    }
-    else if(housingId == SingleIncubatorId)
-      housing.incubatorSlots = 1;
     else
       housing.expiresAt = std::chrono::system_clock::now() + std::chrono::days(20);
   });
