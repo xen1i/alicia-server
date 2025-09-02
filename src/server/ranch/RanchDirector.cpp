@@ -536,9 +536,11 @@ void RanchDirector::HandleEnterRanch(
 
             // Certain types of housing have durability instead of expiration time.
             const bool hasDurability = (housing.housingId() == SingleIncubatorId || housing.housingId() == DoubleIncubatorId);
-            if (hasDurability)
+            if (hasDurability) 
+            {
               response.incubatorUseCount = housing.durability();
-              response.incubatorSlots = housing.incubatorSlots();
+              response.incubatorSlots = housing.housingId() == DoubleIncubatorId ? 2 : 1;
+            }
 
             protocol::BuildProtocolHousing(response.housing.emplace_back(), housing, hasDurability);
           });
