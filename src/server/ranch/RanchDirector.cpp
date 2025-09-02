@@ -2423,7 +2423,7 @@ void RanchDirector::HandleHousingBuild(
       housing.expiresAt = std::chrono::system_clock::now() + std::chrono::days(20);
   });
 
-  characterRecord.Mutable([&housingUid, housingId = command.housingTid](data::Character& character)
+  characterRecord.Mutable([&housingUid](data::Character& character)
   {
     character.housing().emplace_back(housingUid);
   });
