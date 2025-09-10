@@ -72,6 +72,14 @@ public:
 
   void RequestCharacterCreator(data::Uid characterUid);
 
+  void Disconnect(data::Uid characterUid);
+  void Mute(data::Uid characterUid, data::Clock::time_point expiration);
+  void Notice(data::Uid characterUid, const std::string& message);
+
+  // todo: refactor
+  std::vector<std::string> GetOnlineUsers();
+  std::vector<data::Uid> GetOnlineCharacters();
+
   // prototype function
   [[deprecated]] void UpdateVisitPreference(
     data::Uid characterUid,
@@ -193,6 +201,7 @@ protected:
   {
     //! Whether the client is authenticated.
     bool isAuthenticated{false};
+    std::string userName;
     data::Uid characterUid = data::InvalidUid;
     data::Uid rancherVisitPreference = data::InvalidUid;
   };
