@@ -448,6 +448,17 @@ void ChatSystem::RegisterUserCommands()
           return {"Please give yourself eggs to hatch pets."};
         }
 
+        //List of items that break the client
+        uint32_t illegalItems[] = {41010, 41011, 41012, 46019, 88888, 86868, 97001, 97003, 70001,
+           47001, 47002, 92001, 45006, 50006, 46023, 88889, 20013, 20023, 20012, 20014, 10055, 
+           10057, 10059, 10063, 10067, 10103, 10056, 10058, 10064, 10045, 10047, 10049, 10054, 
+           30098, 30099, 30038, 30039, 30040, 30051, 30053, 30059, 30060, 30061, 30041, 30028, 46005, 89901};
+        
+        if (std::ranges::contains(illegalItems, createdItemTid))
+        {
+          return {"Item not given. That item would crash your game!"};
+        }
+
         // Create the item.
         auto createdItemUid = data::InvalidUid;
         const auto createdItemRecord = _serverInstance.GetDataDirector().CreateItem();
