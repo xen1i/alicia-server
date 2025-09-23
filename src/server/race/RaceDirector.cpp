@@ -79,9 +79,9 @@ RaceDirector::RaceDirector(ServerInstance& serverInstance)
         []()
         {
           return protocol::RaceCommandCountdown{
-            .timestamp = std::chrono::duration_cast<std::chrono::seconds>(
-              (std::chrono::steady_clock::now() + std::chrono::seconds(10))
-                .time_since_epoch()).count()};
+            .timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
+              std::chrono::steady_clock::now().time_since_epoch())
+              .count() / 100 + 5 * 10'000'000};
         });
     });
 
@@ -318,19 +318,70 @@ void RaceDirector::HandleStartRace(
   // Start the race or AcCmdRCRoomCountdown
   const protocol::RaceCommandStartRaceNotify response{
     .gameMode = room.gameMode,
-    .skills = true,
-    .someonesOid = 20,
+    .skills = false,
+    .someonesOid = 1,
+    .member4 = room.uid,
     .mapBlockId = room.mapBlockId,
     .racers = {
       {
         .oid = 1,
-        .name = "r",
+        .name = "Xenii",
+        .unk2 = 1,
+        .unk3 = 1,
+        .unk4 = 1,
+        .p2dId = 2,
+        .unk6 = 1,
+        .unk7 = 1,
+      },
+      {
+        .oid = 2,
+        .name = "Story of Alicia",
+        .unk2 = 1,
+        .unk3 = 1,
+        .unk4 = 1,
+        .p2dId = 2,
+        .unk6 = 1,
+        .unk7 = 1,
+      },
+      {
+        .oid = 4,
+        .name = "Racer",
         .unk2 = 1,
         .unk3 = 1,
         .unk4 = 1,
         .p2dId = 3,
         .unk6 = 1,
-        .unk7 = 3,
+        .unk7 = 1,
+      },
+      {
+        .oid = 5,
+        .name = "Me",
+        .unk2 = 1,
+        .unk3 = 1,
+        .unk4 = 1,
+        .p2dId = 2,
+        .unk6 = 1,
+        .unk7 = 1,
+      },
+      {
+        .oid = 6,
+        .name = "You",
+        .unk2 = 1,
+        .unk3 = 1,
+        .unk4 = 1,
+        .p2dId = 3,
+        .unk6 = 1,
+        .unk7 = 1,
+      },
+      {
+        .oid = 3,
+        .name = "NPC Racer",
+        .unk2 = 1,
+        .unk3 = 1,
+        .unk4 = 1,
+        .p2dId = 3,
+        .unk6 = 1,
+        .unk7 = 1,
       }},
     .ip = GetConfig().listen.address.to_uint(),
     .port = htons(GetConfig().listen.port),
