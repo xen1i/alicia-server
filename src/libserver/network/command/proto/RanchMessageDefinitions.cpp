@@ -1246,7 +1246,7 @@ void AcCmdCRWearEquipment::Read(
   AcCmdCRWearEquipment& command,
   SourceStream& stream)
 {
-  stream.Read(command.itemUid)
+  stream.Read(command.equipmentUid)
     .Read(command.member);
 }
 
