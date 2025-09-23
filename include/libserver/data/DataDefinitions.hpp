@@ -247,7 +247,7 @@ struct Character
   dao::Field<std::vector<Uid>> gifts{};
   dao::Field<std::vector<Uid>> purchases{};
   
-  dao::Field<std::vector<Uid>> items{};
+  dao::Field<std::vector<Uid>> inventory{};
   dao::Field<std::vector<Uid>> characterEquipment{};
   dao::Field<std::vector<Uid>> mountEquipment{};
   

@@ -533,7 +533,7 @@ void LobbyDirector::QueueShowInventory(ClientId clientId)
     [this, &response](const data::Character& character)
     {
       const auto itemRecords = GetServerInstance().GetDataDirector().GetItemCache().Get(
-        character.items());
+        character.inventory());
       protocol::BuildProtocolItems(response.items, *itemRecords);
 
       const auto horseRecords = GetServerInstance().GetDataDirector().GetHorseCache().Get(

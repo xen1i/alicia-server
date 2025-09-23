@@ -1803,7 +1803,7 @@ struct RanchCommandRequestNpcDressListCancel
 
 struct AcCmdCRWearEquipment
 {
-  uint32_t itemUid{};
+  uint32_t equipmentUid{};
   uint8_t member{};
 
   static Command GetCommand()
