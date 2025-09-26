@@ -27,6 +27,7 @@
 #include "server/tracker/WorldTracker.hpp"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace server
@@ -55,51 +56,104 @@ public:
   Config::Race& GetConfig();
 
 private:
-  //!
-  void HandleEnterRoom(
-    ClientId clientId,
-    const protocol::RaceCommandEnterRoom& command);
-
-  //!
-  void HandleChangeRoomOptions(
-    ClientId clientId,
-    const protocol::RaceCommandChangeRoomOptions& command);
-
-  void HandleLeaveRoom(
-    ClientId clientId);
-  //!
-  void HandleStartRace(
-    ClientId clientId,
-    const protocol::RaceCommandStartRace& command);
-
-  //!
-  void HandleRaceTimer(
-    ClientId clientId,
-    const protocol::RaceCommandUserRaceTimer& command);
-
-  void HandleReadyRace(
-    ClientId clientId,
-    const protocol::RaceCommandReadyRace& command);
-
-  //!
-  ServerInstance& _serverInstance;
-  //!
-  CommandServer _commandServer;
-
   struct ClientContext
   {
     data::Uid characterUid{data::InvalidUid};
     data::Uid roomUid{data::InvalidUid};
     bool ready = false;
+    bool authorized = false;
   };
-  std::unordered_map<ClientId, ClientContext> _clientContexts;
 
-  struct Room
+  struct RoomInstance
   {
-    std::vector<ClientId> clients;
+    std::unordered_set<ClientId> clients;
     WorldTracker worldTracker;
+    data::Uid leaderCharacterUid{data::InvalidUid};
+    //Clients that are loaded into the race
+    std::unordered_set<uint16_t> loadedRaceClients;
+    std::unordered_map<uint16_t, uint32_t> starPointTracker;
+    std::unordered_map<uint16_t, uint32_t> jumpComboTracker;
   };
-  std::unordered_map<uint32_t, Room> _roomInstances;
+
+  void HandleEnterRoom(
+    ClientId clientId,
+    const protocol::AcCmdCREnterRoom& command);
+
+  void HandleChangeRoomOptions(
+    ClientId clientId,
+    const protocol::AcCmdCRChangeRoomOptions& command);
+
+  void HandleLeaveRoom(
+    ClientId clientId);
+
+  void HandleStartRace(
+    ClientId clientId,
+    const protocol::AcCmdCRStartRace& command);
+
+  void HandleRaceTimer(
+    ClientId clientId,
+    const protocol::AcCmdUserRaceTimer& command);
+
+  void HandleLoadingComplete(
+    ClientId clientId,
+    const protocol::AcCmdCRLoadingComplete& command);
+
+  void HandleReadyRace(
+    ClientId clientId,
+    const protocol::AcCmdCRReadyRace& command);
+
+  void HandleUserRaceFinal(
+    ClientId clientId,
+    const protocol::AcCmdUserRaceFinal& command);
+
+  void HandleRaceResult(
+    ClientId clientId,
+    const protocol::AcCmdCRRaceResult& command);
+
+  void HandleP2PRaceResult(
+    ClientId clientId,
+    const protocol::AcCmdCRP2PResult& command);
+
+  void HandleP2PUserRaceResult(
+    ClientId clientId,
+    const protocol::AcCmdUserRaceP2PResult& command);
+
+  void HandleAwardStart(
+    ClientId clientId,
+    const protocol::AcCmdCRAwardStart& command);
+
+  void HandleAwardEnd(
+    ClientId clientId,
+    const protocol::AcCmdCRAwardEnd& command);
+
+  void HandleStarPointGet(
+    ClientId clientId,
+    const protocol::AcCmdCRStarPointGet& command);
+
+  void HandleRequestSpur(
+    ClientId clientId,
+    const protocol::AcCmdCRRequestSpur& command);
+
+  void HandleHurdleClearResult(
+    ClientId clientId,
+    const protocol::AcCmdCRHurdleClearResult& command);
+
+  void HandleStartingRate(
+    ClientId clientId,
+    const protocol::AcCmdCRStartingRate& command);
+
+  //!
+  std::thread test;
+  std::atomic_bool run_test{true};
+
+  //! A server instance.
+  ServerInstance& _serverInstance;
+  //! A command server instance.
+  CommandServer _commandServer;
+  //! A map of all client contexts.
+  std::unordered_map<ClientId, ClientContext> _clients;
+  //! A map of all room instances.
+  std::unordered_map<uint32_t, RoomInstance> _roomInstances;
 };
 
 } // namespace server

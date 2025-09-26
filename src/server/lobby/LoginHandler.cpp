@@ -258,7 +258,7 @@ void LoginHandler::HandleUserCreateCharacter(
 
     auto mountUid = data::InvalidUid;
     mountRecord.Mutable(
-      [&mountUid](data::Horse& horse)
+      [this, &mountUid](data::Horse& horse)
       {
         // The TID of the horse specifies which body mesh is used for that horse.
         // Can be found in the `MountPartInfo` table.
@@ -266,7 +266,7 @@ void LoginHandler::HandleUserCreateCharacter(
         horse.dateOfBirth() = data::Clock::now();
         horse.mountCondition.stamina = 3500;
 
-        HorseRegistry::Get().BuildRandomHorse(
+        _lobbyDirector._serverInstance.GetHorseRegistry().BuildRandomHorse(
           horse.parts,
           horse.appearance);
 
@@ -346,23 +346,23 @@ void LoginHandler::QueueUserLoginAccepted(
 
   protocol::LobbyCommandLoginOK response{
     .lobbyTime = util::TimePointToFileTime(util::Clock::now()),
-    .member0 = 0xCA794,
+    // .member0 = 0xCA794,
     .motd = std::format(
       "Welcome to Story of Alicia. Players online: {}",
       _lobbyDirector._clients.size()),
     .val1 = 0x0,
     .val3 = 0x0,
-    .optionType = OptionType::Value,
-    .valueOptions = 0x64,
-
-    .val5 = {
-      {0x18, {{2, 1}}},
-      {0x1F, {{2, 1}}},
-      {0x23, {{2, 1}}},
-      {0x29, {{2, 1}}},
-      {0x2A, {{2, 1}}},
-      {0x2B, {{2, 1}}},
-      {0x2E, {{2, 1}}}},
+    // .optionType = OptionType::Value,
+    // .valueOptions = 0x64,
+    //
+    // .val5 = {
+    //   {0x18, {{2, 1}}},
+    //   {0x1F, {{2, 1}}},
+    //   {0x23, {{2, 1}}},
+    //   {0x29, {{2, 1}}},
+    //   {0x2A, {{2, 1}}},
+    //   {0x2B, {{2, 1}}},
+    //   {0x2E, {{2, 1}}}},
 
     .ranchAddress = _lobbyDirector.GetConfig().advertisement.ranch.address.to_uint(),
     .ranchPort = _lobbyDirector.GetConfig().advertisement.ranch.port,
@@ -370,14 +370,15 @@ void LoginHandler::QueueUserLoginAccepted(
 
     .systemContent = _lobbyDirector._systemContent,
 
-    .managementSkills = {4, 0x2B, 4},
-    .skillRanks = {.values = {{1,1}}},
-    .val14 = 0xca1b87db,
-    .guild = {.val1 = 1},
-    .val16 = 4,
-    .val18 = 0x2a,
-    .val19 = 0x38d,
-    .val20 = 0x1c7};
+    // .managementSkills = {4, 0x2B, 4},
+    // .skillRanks = {.values = {{1,1}}},
+    // .val14 = 0xca1b87db,
+    // .guild = {.val1 = 1},
+    // .val16 = 4,
+    // .val18 = 0x2a,
+    // .val19 = 0x38d,
+    //.val20 = 0x1c7
+  };
 
   // Get the character UID of the user.
   auto userCharacterUid{data::InvalidUid};
